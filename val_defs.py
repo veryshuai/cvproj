@@ -15,9 +15,9 @@ def val_init(mov_params, dep_stats, lam, dis, p, init=[]):
 
     vals = tree()
     trans = tree();
-    for qual in range(2):
-        for field in range(1):
-            for lat in range(1):
+    for qual in range(3):
+        for field in range(2):
+            for lat in range(2):
                 wage = calc_wage(mov_params, dep_stats,
                                  qual, field, lat)
                 try:
@@ -77,7 +77,7 @@ def val_loop_inner(current, w, lam, dis, p):
     # runs actual val loop
     dif = 1
     iters = 0
-    while dif > 1e-3 and iters < 20:
+    while dif > 1e-1 and iters < 20:
         new = val_eval(current, w, lam, dis, p)
         dif = pow(new - current,2)
         dif = dif.sum()
@@ -146,3 +146,5 @@ mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
 dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
 vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 100)
 vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 100, vals)
+
+
