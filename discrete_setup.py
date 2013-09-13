@@ -12,6 +12,12 @@ from time import clock, time
 from copy import deepcopy
 import re
 from fuzzywuzzy import fuzz
+import collections
+
+#From stefan at stack overflow:
+#http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
+def tree():
+    return collections.defaultdict(tree)
 
 first_yr = 1986
 last_yr = 1996
@@ -152,4 +158,27 @@ aut_pan['isMove'] = False
 
 # SAVE INITIAL MATRIX
 aut_pan.to_pickle('initial_panel.pickle')
+
+# MOVES
+ind = dep_list.set_index('dep').index
+zeros = np.zeros([len(ind),len(ind)])
+moves = pd.DataFrame(zeros,index=ind,columns=ind)
+for qual in range(3):
+    for field in range(2):
+        for lat in range(2):
+            movelist = tree()
+            author_groups = aut_pan[(aut_pan['qual'] == qual).groupby('au')
+            for name, group in author_groups:
+            try:
+                last = group.shift(1)
+                movelist += zip(last[1:], group[1:])
+            except Exception as e:
+                print e
+            for last, now in movelist: 
+                moves.ix[last][now] += 1
+moves.to_pickle('moves.pickle')
+
+# 
+
+
 
