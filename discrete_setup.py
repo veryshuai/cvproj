@@ -20,7 +20,7 @@ def tree():
     return collections.defaultdict(tree)
 
 first_yr = 1986
-last_yr = 1996
+last_yr = 1993
 
 # LOAD FIRST CITATION TIMES AND TOTAL CITES
 cit_times_df = pd.read_csv('cit_times.csv')
@@ -190,4 +190,10 @@ nocits = aut_pan[aut_pan['ever_cit'] == 0]
 first_cits.to_pickle('first_cits.pickle')
 citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
+
+# SAVE MOVLIK STUFF
+aut_pan['last_dep'] = aut_pan['dep'].shift(1)
+mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
+mov_dat = mov_dat[['au','dep','last_dep','qual','isField']]
+mov_dat.to_pickle('mov_dat.pickle')
 

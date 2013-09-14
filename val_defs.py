@@ -12,26 +12,31 @@ import pickle
 def tree():
     return collections.defaultdict(tree)
 
-def val_init(mov_params, dep_stats, lam, dis, p, init=[]):
+def val_init(big_mov_params, dep_stats, dis, init=[]):
     # initializes value function iteration
 
+    [mov_params, lam, p] = big_mov_params
     vals = tree()
     trans = tree();
     for qual in range(3):
         for field in range(2):
             for lat in range(2):
-                wage = calc_wage(mov_params, dep_stats,
-                                 qual, field, lat)
-                try:
-                    sp = init[qual][field][lat]
+                if field == 0 and lat == 1:
                     vals[qual][field][lat], trans[qual][field][lat]\
-                        = val_loop(wage, lam, dis, p, sp)
-                except Exception as e:
-                    print 'WARNING: Value function start point error,\
-                             file val_defs.py, function val_init'
-                    print e
-                    vals[qual][field][lat], trans[qual][field][lat]\
-                        = val_loop(wage, lam, dis, p)
+                            = [], []
+                else:
+                    wage = calc_wage(mov_params, dep_stats,
+                                     qual, field, lat)
+                    try:
+                        sp = init[qual][field][lat]
+                        vals[qual][field][lat], trans[qual][field][lat]\
+                            = val_loop(wage, lam, dis, p, sp)
+                    except Exception as e:
+                        print 'WARNING: Value function start point error,\
+                                 file val_defs.py, function val_init'
+                        print e
+                        vals[qual][field][lat], trans[qual][field][lat]\
+                            = val_loop(wage, lam, dis, p)
     return vals, trans
 
 def mins(v, dat, p):
@@ -141,13 +146,18 @@ def calc_wage(mp, dep, qual, field, lat):
 
     return w
 
-mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
-dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 10)
-vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 10, vals)
-
-f = file('trans.pickle','wb')
-pickle.dump(trans,f)
+# mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
+# dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
+# vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 10)
+# vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 10, vals)
+# 
+# f = file('trans.pickle','wb')
+# pickle.dump(trans,f)
+# f.close()
+# 
+# f = file('val_init.pickle','wb')
+# pickle.dump(vals,f)
+# f.close()
 
 
 
