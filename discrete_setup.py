@@ -179,3 +179,15 @@ aut_pan['isMove'] = False
 # SAVE INITIAL MATRIX
 aut_pan.to_pickle('initial_panel.pickle')
 
+# SAVE CIT LIK STUFF
+aut_pan = aut_pan[aut_pan['date'] > first_yr]
+first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
+             .groupby('au').first().reset_index()
+aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
+        .transform(lambda x: max(x))
+citers = aut_pan[(aut_pan['ever_cit'] == 1) & (aut_pan['isCiter'] == 0)]
+nocits = aut_pan[aut_pan['ever_cit'] == 0]
+first_cits.to_pickle('first_cits.pickle')
+citers.to_pickle('citers.pickle')
+nocits.to_pickle('nocits.pickle')
+

@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import collections
 import cyfuncs as cyf
+import pickle
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -23,8 +24,8 @@ def val_init(mov_params, dep_stats, lam, dis, p, init=[]):
                                  qual, field, lat)
                 try:
                     sp = init[qual][field][lat]
-                    vals[qual][field][lat] = val_loop(wage, lam,
-                                                      dis, p, sp)
+                    vals[qual][field][lat], trans[qual][field][lat]\
+                        = val_loop(wage, lam, dis, p, sp)
                 except Exception as e:
                     print 'WARNING: Value function start point error,\
                              file val_defs.py, function val_init'
@@ -124,7 +125,6 @@ def wd(ind, dep):
     out = dep.apply(lambda x: 1 / (1 + pow(ind - x,2)))
     return out
 
-
 def calc_wage(mp, dep, qual, field, lat):
     # returns wage at each of the departments
 
@@ -145,5 +145,9 @@ mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
 dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
 vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 10)
 vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 10, vals)
+
+f = file('trans.pickle','wb')
+pickle.dump(trans,f)
+
 
 

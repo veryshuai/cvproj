@@ -6,6 +6,7 @@ import math
 from time import clock, time
 import collections
 import random
+import pickle
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -74,15 +75,12 @@ def fc_lik(alp, bet, gam, lp, dep_aut, dep_year):
     return math.log(lp * arg0 + (1 - lp) * arg1)
 
 dep_year = pd.read_pickle('dep_years.pickle')
-aut_pan = pd.read_pickle('initial_panel.pickle')
-aut_pan = aut_pan[aut_pan['date'] > 1986]
-first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
-             .groupby('au').first().reset_index()
-print first_cits
-aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
-        .transform(lambda x: max(x))
-citers = aut_pan[aut_pan['ever_cit'] == 1]
-nocits = aut_pan[aut_pan['ever_cit'] == 0]
+first_cits = pd.read_pickle('first_cits.pickle')
+citers = pd.read_pickle('citers.pickle')
+nocits = pd.read_pickle('nocits.pickle')
+f = file('trans.pickle','rb')
+trans = pickle.load(f)
+print trans[0][0][0]
 
 alp = tree()
 gam = tree()
