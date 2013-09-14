@@ -161,6 +161,11 @@ def know_frac(autpan,location,newvar):
     return autpan
 aut_pan      = know_frac(aut_pan,'dep','kfrac')
 
+# PIVOT KNOW FRACTIONS
+dep_years = aut_pan[['dep','date','kfrac']].drop_duplicates()
+dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
+dep_years.to_pickle('dep_years.pickle')
+
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
 dep_list.to_pickle('dep_list.pickle')

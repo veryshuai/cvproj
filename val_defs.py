@@ -4,6 +4,7 @@
 import pandas as pd
 import numpy as np
 import collections
+import cyfuncs as cyf
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -34,13 +35,12 @@ def val_init(mov_params, dep_stats, lam, dis, p, init=[]):
 
 def mins(v, dat, p):
     # Returns the min operation used in val fun iteration
-    out = dat.apply(lambda x: min(pow(x[1]/(v[0] + v[1] - x[0]),p),
-                                       1), axis = 1)
+    out = dat.apply(lambda x: cyf.cminex(x[1], x[0], v[1], v[0], p), axis=1)
     return out
 
 def maxs(v, dat, p):
     # Returns the max operation used in val fun iteration
-    out = dat.apply(lambda x: max(x[1], v[1] + v[0] - x[0]), axis = 1)
+    out = dat.apply(lambda x: cyf.cmaxex(x[1], x[0], v[1], v[0]), axis=1)
     return out
 
 def ft(dat):
@@ -121,7 +121,6 @@ def val_loop(w, lam, dis, p, init='nope'):
 
 def wd(ind, dep):
     # peforms distance calculation for wage
-
     out = dep.apply(lambda x: 1 / (1 + pow(ind - x,2)))
     return out
 
@@ -144,7 +143,7 @@ def calc_wage(mp, dep, qual, field, lat):
 
 mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
 dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 100)
-vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 100, vals)
+vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 10)
+vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 10, vals)
 
 
