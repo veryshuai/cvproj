@@ -15,30 +15,7 @@ def tree():
 
 def val_init(big_mov_params, dep_stats, dis, init=[]):
     # initializes value function iteration
-
     vals, trans = vm.call_parallel(big_mov_params, dep_stats, dis, init)
-    # [mov_params, lam, p] = big_mov_params
-    # vals = tree()
-    # trans = tree();
-    # for qual in range(3):
-    #     for field in range(2):
-    #         for lat in range(2):
-    #             if field == 0 and lat == 1:
-    #                 vals[qual][field][lat], trans[qual][field][lat]\
-    #                         = [], []
-    #             else:
-    #                 wage = calc_wage(mov_params, dep_stats,
-    #                                  qual, field, lat)
-    #                 try:
-    #                     sp = init[qual][field][lat]
-    #                     vals[qual][field][lat], trans[qual][field][lat]\
-    #                         = val_loop(wage, lam, dis, p, sp)
-    #                 except Exception as e:
-    #                     print 'WARNING: Value function start point error,\
-    #                              file val_defs.py, function val_init'
-    #                     print e
-    #                     vals[qual][field][lat], trans[qual][field][lat]\
-    #                         = val_loop(wage, lam, dis, p)
     return vals, trans
 
 def mins(v, dat, p):
@@ -147,7 +124,7 @@ def calc_wage(mp, dep, qual, field, lat):
 
     return w
 
-# RESET STARTING POINT
+# RESET INITIAL STARTING POINT
 # f = file('val_init.pickle','rb')
 # init = pickle.load(f)
 # f.close()

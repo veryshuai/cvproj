@@ -14,6 +14,24 @@ from copy import copy, deepcopy
 from scipy.stats import norm
 import numpy as np
 
+# COLOR TEXT PRINTING
+# http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
+class bcolors:
+    PURP = '\033[95m'
+    BLUE = '\033[94m'
+    GREEN = '\033[92m'
+    YEL = '\033[93m'
+    RED = '\033[91m'
+    ENDC = '\033[0m'
+
+    def disable(self):
+        self.PURP = ''
+        self.BLUE = ''
+        self.GREEN = ''
+        self.YEL = ''
+        self.RED = ''
+        self.ENDC = ''
+
 def update_cits(cit_params):
     # updates cit parameters
 
@@ -42,7 +60,6 @@ def update_movs(big_mov_params):
     mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.03)
     mov_params['field'] = mov_params['field'] + random.gauss(0,0.03)
     mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.03)
-    print [mov_params, lam, p]
 
     big_mov_params_u = [mov_params, lam, p]
     return big_mov_params_u
@@ -143,11 +160,10 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
     for k in range(20000):
 
         tic = clock()
-        print k
+        print bcolors.RED + str(k) + bcolors.ENDC
 
         if k % 3 == 0:
-            print 'cit'
-            print cit_acc / float(cit_tot)
+            print ''.join(['cit ', str(cit_acc / float(cit_tot))])
             cit_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u\
@@ -156,8 +172,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                                    dep_year, mult_by, init)
 
         if k % 3 == 1:
-            print 'lp'
-            print lp_acc / float(lp_tot)
+            print ''.join(['lp ', str(lp_acc / float(lp_tot))])
             lp_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u\
@@ -165,8 +180,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                                   lp, lik_pieces, mult_by, init)
 
         if k % 3 == 2:
-            print 'mov'
-            print mov_acc / float(mov_tot)
+            print ''.join(['mov ', str(mov_acc / float(mov_tot))])
             mov_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u\
@@ -174,10 +188,10 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                             lp, lik_pieces, dep_stats, mult_by,
                             init, mov_dat)
 
-        print [lik, lik_u]
+        print bcolors.BLUE + str(lik) + ', ' + str(lik_u) + bcolors.ENDC
 
         if math.log(random.random()) < (lik_u - lik):
-            print 'ACCEPTED!'
+            print bcolors.PURP + 'ACCEPTED!' + bcolors.ENDC
             [cit_params, big_mov_params, lp]\
                     = [deepcopy(cit_params_u), deepcopy(big_mov_params_u),
                             deepcopy(copy(lp_u))]
@@ -196,7 +210,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                 lp, out_writer, out_file)
         
         toc = clock() - tic
-        print toc
+        print bcolors.YEL + str(toc) + bcolors.ENDC
 
 def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
     # writes to file

@@ -24,10 +24,8 @@ class Consumer(multiprocessing.Process):
             next_task = self.task_queue.get()
             if next_task is None:
                 # Poison pill means shutdown
-                print '%s: Exiting' % proc_name
                 self.task_queue.task_done()
                 break
-            print '%s: %s' % (proc_name, next_task)
             answer = next_task()
             self.task_queue.task_done()
             self.result_queue.put(answer)
@@ -61,7 +59,6 @@ def call_parallel(big_mov_params, dep_stats, dis, init=[]):
     
     # Start consumers
     num_consumers = 3
-    print 'Creating %d consumers' % num_consumers
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:
@@ -102,7 +99,7 @@ def val_calc(qual, field, lat, big_mov_params, dep_stats, dis, init=[]):
                          qual, field, lat)
         try:
             sp = init[qual][field][lat]
-            vals = vd.val_loop(wage, lam, dis, p, sp)
+            vals, trans = vd.val_loop(wage, lam, dis, p, sp)
         except Exception as e:
             print 'WARNING: Value function start point error,\
                      file val_defs.py, function val_init'
