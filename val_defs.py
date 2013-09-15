@@ -6,6 +6,7 @@ import numpy as np
 import collections
 import cyfuncs as cyf
 import pickle
+import val_mp as vm
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -15,28 +16,29 @@ def tree():
 def val_init(big_mov_params, dep_stats, dis, init=[]):
     # initializes value function iteration
 
-    [mov_params, lam, p] = big_mov_params
-    vals = tree()
-    trans = tree();
-    for qual in range(3):
-        for field in range(2):
-            for lat in range(2):
-                if field == 0 and lat == 1:
-                    vals[qual][field][lat], trans[qual][field][lat]\
-                            = [], []
-                else:
-                    wage = calc_wage(mov_params, dep_stats,
-                                     qual, field, lat)
-                    try:
-                        sp = init[qual][field][lat]
-                        vals[qual][field][lat], trans[qual][field][lat]\
-                            = val_loop(wage, lam, dis, p, sp)
-                    except Exception as e:
-                        print 'WARNING: Value function start point error,\
-                                 file val_defs.py, function val_init'
-                        print e
-                        vals[qual][field][lat], trans[qual][field][lat]\
-                            = val_loop(wage, lam, dis, p)
+    vals, trans = vm.call_parallel(big_mov_params, dep_stats, dis, init)
+    # [mov_params, lam, p] = big_mov_params
+    # vals = tree()
+    # trans = tree();
+    # for qual in range(3):
+    #     for field in range(2):
+    #         for lat in range(2):
+    #             if field == 0 and lat == 1:
+    #                 vals[qual][field][lat], trans[qual][field][lat]\
+    #                         = [], []
+    #             else:
+    #                 wage = calc_wage(mov_params, dep_stats,
+    #                                  qual, field, lat)
+    #                 try:
+    #                     sp = init[qual][field][lat]
+    #                     vals[qual][field][lat], trans[qual][field][lat]\
+    #                         = val_loop(wage, lam, dis, p, sp)
+    #                 except Exception as e:
+    #                     print 'WARNING: Value function start point error,\
+    #                              file val_defs.py, function val_init'
+    #                     print e
+    #                     vals[qual][field][lat], trans[qual][field][lat]\
+    #                         = val_loop(wage, lam, dis, p)
     return vals, trans
 
 def mins(v, dat, p):
