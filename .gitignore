@@ -1,2 +1,7 @@
 *.csv
 *.pickle
+*.c
+*.pyc
+*.txt
+*.so
+build/

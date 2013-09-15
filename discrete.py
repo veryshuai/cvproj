@@ -7,6 +7,10 @@ import collections
 import pickle
 import math
 import est_loop as el
+import numpy as np
+import time
+import random
+import csv
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -46,6 +50,13 @@ def main():
     citers = pd.read_pickle('citers.pickle')
     nocits = pd.read_pickle('nocits.pickle')
     dep_year = pd.read_pickle('dep_years.pickle')
+    mult_by = pd.read_pickle('mult_by.pickle')
+
+    # OUTPUT
+    timestr = time.strftime("%Y%m%d-%H%M%S")\
+        + '_' + str(random.randrange(100000))
+    out_file = open('results/out_' + timestr + '.csv','wb')
+    out_writer = csv.writer(out_file)
 
     # GET INITIAL LIKELIHOOD
     init, trans = vd.val_init(big_mov_params, dep_stats, 0.9, init)
@@ -65,20 +76,23 @@ def main():
     # CALCULATE 
     lik_pieces = []
     for k in range(2):
-        lik_dat = pd.DataFrame(mlik[k], columns='mlik')
+        lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
         lik_dat['cit_liks'] = cit_liks[k]
         lik_dat['fc_liks'] = fc_liks[k]
         lik_dat['nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
     lik_mid = []
-    lik_mid.append(lik_pieces[0].prod(axis = 1) * (1 - lp))
+    not_lp = mult_by.apply(lambda x: max(1 - lp, x))
+    lik_pieces[0]['not_lp'] = not_lp
+    lik_mid.append(lik_pieces[0].prod(axis = 1))
     lik_mid.append(lik_pieces[1].prod(axis = 1) * lp)
-    lik_big = lik_pieces[0] + lik_pieces[1]
+    lik_big = lik_mid[0] + lik_mid[1]
     lik = lik_big.apply(lambda x: math.log(x)).sum()
 
     # CALL ESTIMATION LOOP
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat,
-            first_cits, citers, nocits, dep_year)
+            first_cits, citers, nocits, dep_year,
+            mult_by, out_file, out_writer)
 
 main()

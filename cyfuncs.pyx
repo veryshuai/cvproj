@@ -23,7 +23,11 @@ def cmult(float x):
     return x * 3.16888e-17
 
 def cminex(float w1, float v1, float w0, float v0, float p):
-    return min(pow(w1 / (v0 + w0 - v1), p), 1)
+    den = v0 + w0 - v1
+    if den <= 0:
+        return 1
+    else:
+        return min(pow(w1 / den, p), 1)
 
 def cmaxex(float w1, float v1, float w0, float v0):
     return max(w1, v0 + w0 - v1)

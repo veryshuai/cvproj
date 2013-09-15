@@ -197,3 +197,11 @@ mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
 mov_dat = mov_dat[['au','dep','last_dep','qual','isField']]
 mov_dat.to_pickle('mov_dat.pickle')
 
+# MULTBY
+mult_by = mov_dat.drop_duplicates(cols='au').set_index('au')
+mult_by['mult_by'] = 1
+mult_by['mult_by'][mult_by['isField'] == 1] = 0
+mult_by = mult_by['mult_by']
+mult_by.to_pickle('mult_by.pickle')
+
+

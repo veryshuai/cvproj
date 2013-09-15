@@ -7,6 +7,7 @@ from time import clock, time
 import collections
 import random
 import pickle
+import numpy as np
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -28,34 +29,43 @@ def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[lin1['qual']][lin1['isField']][lat]
-    pgam = gam[lin1['qual']][lin1['isField']][lat]
-    liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                                   bet, dep_year), axis=1)
-    arg = (1 - pgam + pgam * liks.prod())
-    return arg
+    if lat == 1 and lin1['isField'] == 0:
+        return np.nan
+    else:
+        palp = alp[lin1['qual']][lin1['isField']][lat]
+        pgam = gam[lin1['qual']][lin1['isField']][lat]
+        liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
+                                                       bet, dep_year), axis=1)
+        arg = (1 - pgam + pgam * liks.prod())
+        return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[lin1['qual']][lin1['isField']][lat]
-    pgam = gam[lin1['qual']][lin1['isField']][lat]
-    liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                                   bet, dep_year), axis=1)
-    arg = (pgam * liks.prod())
-    return arg
+    if lat == 1 and lin1['isField'] == 0:
+        return np.nan
+    else:
+        palp = alp[lin1['qual']][lin1['isField']][lat]
+        pgam = gam[lin1['qual']][lin1['isField']][lat]
+        liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
+                                                       bet, dep_year), axis=1)
+        arg = (pgam * liks.prod())
+        return arg
 
 def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates first cite likelihoods
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[lin1['qual']][lin1['isField']][lat]
-    pgam = gam[lin1['qual']][lin1['isField']][lat]
-    liks = dep_aut.apply(lambda row: cit_inner(row, palp,
-                                                   bet, dep_year), axis=1)
-    arg = (pgam * liks.prod())
-    return arg
+    if lat == 1 and lin1['isField'] == 0:
+        return np.nan
+    else:
+        palp = alp[lin1['qual']][lin1['isField']][lat]
+        pgam = gam[lin1['qual']][lin1['isField']][lat]
+        liks = dep_aut.apply(lambda row: cit_inner(row, palp,
+                                                       bet, dep_year), axis=1)
+        arg = (pgam * liks.prod())
+        return arg
 
 def trans_prob(row, t):
     # retrieves correct value from transition prob matrix
@@ -68,7 +78,7 @@ def mov_lik(trans, group, lat):
 
     lin1 = group.iloc[0]
     if lat == 1 and lin1['isField'] == 0:
-        return 1
+        return np.nan
     else:
         lin2 = group.iloc[-1]
         t = trans[lin1['qual']][lin1['isField']][lat]

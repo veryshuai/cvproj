@@ -93,7 +93,6 @@ def val_loop_inner(current, w, lam, dis, p):
             print 'WARNING: Value function\
                    did not converge!'
             print dif
-        print dif
     return new
 
 def calc_trans(current, w, lam, dis, p):
@@ -115,7 +114,7 @@ def val_loop(w, lam, dis, p, init='nope'):
     if type(init) != str:
         current = init
     else:
-        current = w.apply(lambda x: x / (1 - dis))
+        current = w.apply(lambda x:  0 * x / (1 - dis))
 
     # MAIN LOOP
     new = val_loop_inner(current, w, lam, dis, p)
@@ -146,10 +145,15 @@ def calc_wage(mp, dep, qual, field, lat):
 
     return w
 
+# RESET STARTING POINT
+# f = file('val_init.pickle','rb')
+# init = pickle.load(f)
+# f.close()
+# 
 # mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
 # dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-# vals, trans = val_init(mov_params, dep_stats, 0.15, 0.90, 10)
-# vals, trans = val_init(mov_params*1.01, dep_stats, 0.15, 0.90, 10, vals)
+# big_mov_params = [mov_params, 0.15, 10]
+# vals, trans = val_init(big_mov_params, dep_stats, 0.90, init)
 # 
 # f = file('trans.pickle','wb')
 # pickle.dump(trans,f)
