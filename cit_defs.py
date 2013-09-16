@@ -32,8 +32,10 @@ def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
     if lat == 1 and lin1['isField'] == 0:
         return np.nan
     else:
-        palp = alp[lin1['qual']][lin1['isField']][lat]
-        pgam = gam[lin1['qual']][lin1['isField']][lat]
+        # palp = alp[lin1['qual']][lin1['isField']][lat]
+        # pgam = gam[lin1['qual']][lin1['isField']][lat]
+        palp = alp[0][lin1['isField']][lat]
+        pgam = gam[0][lin1['isField']][lat]
         liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
                                                        bet, dep_year), axis=1)
         arg = (1 - pgam + pgam * liks.prod())
@@ -46,8 +48,10 @@ def cit_lik_cit(alp, bet, gam, dep_aut, dep_year, lat):
     if lat == 1 and lin1['isField'] == 0:
         return np.nan
     else:
-        palp = alp[lin1['qual']][lin1['isField']][lat]
-        pgam = gam[lin1['qual']][lin1['isField']][lat]
+        # palp = alp[lin1['qual']][lin1['isField']][lat]
+        # pgam = gam[lin1['qual']][lin1['isField']][lat]
+        palp = alp[0][lin1['isField']][lat]
+        pgam = gam[0][lin1['isField']][lat]
         liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
                                                        bet, dep_year), axis=1)
         arg = (pgam * liks.prod())
@@ -60,8 +64,10 @@ def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
     if lat == 1 and lin1['isField'] == 0:
         return np.nan
     else:
-        palp = alp[lin1['qual']][lin1['isField']][lat]
-        pgam = gam[lin1['qual']][lin1['isField']][lat]
+        # palp = alp[lin1['qual']][lin1['isField']][lat]
+        # pgam = gam[lin1['qual']][lin1['isField']][lat]
+        palp = alp[0][lin1['isField']][lat]
+        pgam = gam[0][lin1['isField']][lat]
         liks = dep_aut.apply(lambda row: cit_inner(row, palp,
                                                        bet, dep_year), axis=1)
         arg = (pgam * liks.prod())

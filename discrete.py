@@ -22,20 +22,20 @@ def main():
     #INITIAL CIT PARAMETERS (TO BE MOVED)
     alp = tree()
     gam = tree()
-    for qual in range(3):
+    for qual in range(1):
         for field in range(2):
             for lat in range(2):
                 alp[qual][field][lat] = 0.1
                 gam[qual][field][lat] = 0.1
-    bet = 100
+    bet = 1000
 
     # INITIAL MOV PARAMETERS (TO BE MOVED)
-    mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
+    mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 0})
 
     # OTHER PARAMETERS (TO BE MOVED)
     lp = 0.0 #latent type probability
     lo = 0.15 #offer arrival rate
-    p = 3 #signing bonus distribution parameter
+    p = 1.1 #signing bonus distribution parameter
 
     # PUT PARAMS INTO BOXES FOR EASY MOVING
     big_mov_params = [mov_params, lo, p]
@@ -61,11 +61,11 @@ def main():
     # GET INITIAL LIKELIHOOD
     init, trans = vd.val_init(big_mov_params, dep_stats, 0.9, init)
     mlik = []
-    for lat in range(2):
+    for lat in range(1):
         mlik.append(mov_dat.groupby('au').apply(lambda x: cd.mov_lik(trans, x, lat)))
 
     cit_liks, fc_liks, nocit_liks = [], [], []
-    for lat in range(2):
+    for lat in range(1):
         cit_liks.append(citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(alp, bet, gam, x, dep_year, lat)))
         fc_liks.append(first_cits.groupby('au')\
@@ -75,18 +75,19 @@ def main():
 
     # CALCULATE 
     lik_pieces = []
-    for k in range(2):
+    for k in range(1):
         lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
         lik_dat['cit_liks'] = cit_liks[k]
         lik_dat['fc_liks'] = fc_liks[k]
         lik_dat['nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
     lik_mid = []
-    not_lp = mult_by.apply(lambda x: max(1 - lp, x))
-    lik_pieces[0]['not_lp'] = not_lp
+    # not_lp = mult_by.apply(lambda x: max(1 - lp, x))
+    # lik_pieces[0]['not_lp'] = not_lp
     lik_mid.append(lik_pieces[0].prod(axis = 1))
-    lik_mid.append(lik_pieces[1].prod(axis = 1) * lp)
-    lik_big = lik_mid[0] + lik_mid[1]
+    # lik_mid.append(lik_pieces[1].prod(axis = 1) * lp)
+    # lik_big = lik_mid[0] + lik_mid[1]
+    lik_big = lik_mid[0]
     lik = lik_big.apply(lambda x: math.log(x)).sum()
 
     # CALL ESTIMATION LOOP

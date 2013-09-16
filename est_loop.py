@@ -36,20 +36,20 @@ def update_cits(cit_params):
     # updates cit parameters
 
     [alp, gam, bet] = cit_params
-    for qual in range(3):
+    for qual in range(1): #all qualities share parameters!
         for field in range(2):
             for lat in range(2):
                 alp[qual][field][lat]\
                     = math.exp(math.log(alp[qual][field][lat])
-                                   + random.gauss(0,.1))
+                                   + random.gauss(0,.05))
                 gam[qual][field][lat]\
                     = norm.cdf(norm.ppf(deepcopy(gam[qual][field][lat]),
-                        0, 1) + random.gauss(0, 1), 0, 1)
+                        0, 1) + random.gauss(0, 0.3), 0, 1)
                 #CHANGE WHEN BRING BACK LAT
                 if lat == 1:
                     alp[qual][field][lat] = 0.1 
                     gam[qual][field][lat] = 0.1
-    bet = math.exp(math.log(bet) + random.gauss(0,.1))
+    bet = math.exp(math.log(bet) + random.gauss(0,.05))
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
@@ -63,7 +63,7 @@ def update_movs(big_mov_params):
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.05)
     mov_params['field'] = mov_params['field'] + random.gauss(0,0.05)
-    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
+    # mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
 
     big_mov_params_u = [mov_params, lam, p]
     return big_mov_params_u
@@ -80,7 +80,7 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
     
     cit_liks, fc_liks, nocit_liks = [], [], []
     lik_pieces_u = deepcopy(lik_pieces)
-    for lat in range(2):
+    for lat in range(1):
         cit_liks.append(citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(cit_params_u[0],
                            cit_params_u[2], cit_params_u[1], x, dep_year, lat)))
@@ -103,11 +103,12 @@ def recalc_lik(lik_pieces_u, lp_u, mult_by):
     # recalculates lik from updates lik_pieces
 
     lik_mid = []
-    not_lp = mult_by.apply(lambda x: max(1 - lp_u, x))
-    lik_pieces_u[0]['not_lp'] = not_lp
+    # not_lp = mult_by.apply(lambda x: max(1 - lp_u, x))
+    # lik_pieces_u[0]['not_lp'] = not_lp
     lik_mid.append(lik_pieces_u[0].prod(axis = 1))
-    lik_mid.append(lik_pieces_u[1].prod(axis = 1) * lp_u)
-    lik_big = lik_mid[0] + lik_mid[1]
+    # lik_mid.append(lik_pieces_u[1].prod(axis = 1) * lp_u)
+    # lik_big = lik_mid[0] + lik_mid[1]
+    lik_big = lik_mid[0]
     try:
         lik_u = lik_big.apply(lambda x: math.log(x)).sum()
     except Exception as e:
@@ -142,7 +143,7 @@ def calc_mov_lik(cit_params, big_mov_params,
                               0.9, deepcopy(init))
 
     mlik = []
-    for lat in range(2):
+    for lat in range(1):
         mlik.append(mov_dat.groupby('au')\
                 .apply(lambda x: cd.mov_lik(trans_u, x, lat)))
         lik_pieces_u[lat]['mlik'] = mlik[lat]
@@ -223,7 +224,7 @@ def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
     # writeable form
     cit_write = []
     for pnum in range(2):
-        for qual in range(3):
+        for qual in range(1):
             for field in range(2):
                 for lat in range(2):
                     if field == 0 and lat == 1:
