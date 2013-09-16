@@ -62,13 +62,13 @@ def val_loop_inner(current, w, lam, dis, p):
     # runs actual val loop
     dif = 1
     iters = 0
-    while dif > 1e-1 and iters < 20:
+    while dif > 1e-1 and iters < 100:
         new = val_eval(current, w, lam, dis, p)
         dif = pow(new - current,2)
         dif = dif.sum()
         current = new.copy()
         iters += 1
-        if iters == 20:
+        if iters == 100:
             print 'WARNING: Value function\
                    did not converge!'
             print dif
@@ -93,7 +93,7 @@ def val_loop(w, lam, dis, p, init='nope'):
     if type(init) != str:
         current = init
     else:
-        current = w.apply(lambda x:  0 * x / (1 - dis))
+        current = w.apply(lambda x:  x)
 
     # MAIN LOOP
     new = val_loop_inner(current, w, lam, dis, p)
@@ -124,23 +124,24 @@ def calc_wage(mp, dep, qual, field, lat):
 
     return w
 
-# RESET INITIAL STARTING POINT
-# f = file('val_init.pickle','rb')
-# init = pickle.load(f)
-# f.close()
-# 
-# mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
-# dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-# big_mov_params = [mov_params, 0.15, 10]
-# vals, trans = val_init(big_mov_params, dep_stats, 0.90, init)
-# 
-# f = file('trans.pickle','wb')
-# pickle.dump(trans,f)
-# f.close()
-# 
-# f = file('val_init.pickle','wb')
-# pickle.dump(vals,f)
-# f.close()
+def reset():
+    # RESET INITIAL STARTING POINT
+    f = file('val_init.pickle','rb')
+    init = pickle.load(f)
+    f.close()
+    
+    mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
+    dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
+    big_mov_params = [mov_params, 0.15, 100]
+    vals, trans = val_init(big_mov_params, dep_stats, 0.90)
+    
+    f = file('trans.pickle','wb')
+    pickle.dump(trans,f)
+    f.close()
+    
+    f = file('val_init.pickle','wb')
+    pickle.dump(vals,f)
+    f.close()
 
 
 

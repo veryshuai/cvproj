@@ -5,6 +5,7 @@ import multiprocessing
 import time
 import val_defs as vd
 import collections
+import pickle
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -58,7 +59,7 @@ def call_parallel(big_mov_params, dep_stats, dis, init=[]):
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_consumers = 3
+    num_consumers = 12
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:
@@ -89,10 +90,21 @@ def call_parallel(big_mov_params, dep_stats, dis, init=[]):
         num_jobs -= 1
     return vals, trans
 
+def from_pickle():
+    """reads in vals and trans from pickle"""
+    f = file('trans.pickle','rb')
+    trans = pickle.load(f)
+    f.close()
+    f = file('val_init.pickle','rb')
+    vals = pickle.load(f)
+    f.close()
+    return vals, trans
+
 def val_calc(qual, field, lat, big_mov_params, dep_stats, dis, init=[]):
     """calculates a single value function"""
     [mov_params, lam, p] = big_mov_params
-    if field == 0 and lat == 1:
+    if lat == 1:
+    # if field == 0 and lat == 1:
         vals, trans = [], []
     else:
         wage = vd.calc_wage(mov_params, dep_stats,
@@ -104,6 +116,11 @@ def val_calc(qual, field, lat, big_mov_params, dep_stats, dis, init=[]):
             print 'WARNING: Value function start point error,\
                      file val_defs.py, function val_init'
             print e
-            vals, trans = vd.val_loop(wage, lam, dis, p)
+            try:
+                vals, trans = vd.val_loop(wage, lam, dis, p)
+            except Exception as e:
+                print 'WARNING: reading vals and trans from saves'
+                print e
+                vals, trans = from_pickle()
     return vals, trans
 

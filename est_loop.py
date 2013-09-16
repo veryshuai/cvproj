@@ -41,11 +41,15 @@ def update_cits(cit_params):
             for lat in range(2):
                 alp[qual][field][lat]\
                     = math.exp(math.log(alp[qual][field][lat])
-                                   + random.gauss(0,0.3))
+                                   + random.gauss(0,.1))
                 gam[qual][field][lat]\
                     = norm.cdf(norm.ppf(deepcopy(gam[qual][field][lat]),
-                        0, 1) + random.gauss(0, 0.5), 0, 1)
-    bet = math.exp(math.log(bet) + random.gauss(0,0.3))
+                        0, 1) + random.gauss(0, 1), 0, 1)
+                #CHANGE WHEN BRING BACK LAT
+                if lat == 1:
+                    alp[qual][field][lat] = 0.1 
+                    gam[qual][field][lat] = 0.1
+    bet = math.exp(math.log(bet) + random.gauss(0,.1))
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
@@ -54,12 +58,12 @@ def update_movs(big_mov_params):
 
     [mov_params, lam, p] = big_mov_params
     lam = norm.cdf(norm.ppf(lam, 0, 1) 
-                    + random.gauss(0, 0.3), 0, 1)
+                    + random.gauss(0, 0.5), 0, 1)
     p = math.exp(math.log(p) + random.gauss(0,0.01))
     mov_params = mov_params.astype('float64')
-    mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.03)
-    mov_params['field'] = mov_params['field'] + random.gauss(0,0.03)
-    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.03)
+    mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.05)
+    mov_params['field'] = mov_params['field'] + random.gauss(0,0.05)
+    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
 
     big_mov_params_u = [mov_params, lam, p]
     return big_mov_params_u
@@ -117,8 +121,8 @@ def calc_lp_lik(cit_params, big_mov_params,
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = deepcopy(big_mov_params)
     init_u = deepcopy(init)
-    lp_u = norm.cdf(norm.ppf(deepcopy(lp), 0, 1) 
-                    + random.gauss(0, 1), 0, 1)
+    lp_u = 0 #norm.cdf(norm.ppf(deepcopy(lp), 0, 1) 
+             #       + random.gauss(0, 1), 0, 1)
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, lp_u, mult_by)
     return lik_u, cit_params_u, big_mov_params_u,\
@@ -172,12 +176,13 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                                    dep_year, mult_by, init)
 
         if k % 3 == 1:
-            print ''.join(['lp ', str(lp_acc / float(lp_tot))])
-            lp_tot += 1
-            lik_u, cit_params_u, big_mov_params_u,\
-                    lp_u, lik_pieces_u, init_u\
-                    = calc_lp_lik(cit_params, big_mov_params,
-                                  lp, lik_pieces, mult_by, init)
+        #    print ''.join(['lp ', str(lp_acc / float(lp_tot))])
+        #    lp_tot += 1
+        #    lik_u, cit_params_u, big_mov_params_u,\
+        #            lp_u, lik_pieces_u, init_u\
+        #            = calc_lp_lik(cit_params, big_mov_params,
+        #                          lp, lik_pieces, mult_by, init)
+            lik_u = -1e6
 
         if k % 3 == 2:
             print ''.join(['mov ', str(mov_acc / float(mov_tot))])
@@ -208,7 +213,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
         # WRITE
         write_me(cit_params, big_mov_params,
                 lp, out_writer, out_file)
-        
+
         toc = clock() - tic
         print bcolors.YEL + str(toc) + bcolors.ENDC
 
@@ -230,12 +235,3 @@ def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
     out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + [lp])
     out_file.flush()
     return 0
-
-
-        
-
-
-
-
-
-

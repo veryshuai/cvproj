@@ -77,7 +77,9 @@ def mov_lik(trans, group, lat):
     # DEPARTMENT, YOU NEVER MOVED!
 
     lin1 = group.iloc[0]
-    if lat == 1 and lin1['isField'] == 0:
+    # CHANGE BACK WHEN YOU PUT LAT IN!
+    # if lat == 1 and lin1['isField'] == 0:
+    if lat == 1:
         return np.nan
     else:
         lin2 = group.iloc[-1]

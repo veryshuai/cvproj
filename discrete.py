@@ -33,9 +33,9 @@ def main():
     mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
 
     # OTHER PARAMETERS (TO BE MOVED)
-    lp = 0.1 #latent type probability
+    lp = 0.0 #latent type probability
     lo = 0.15 #offer arrival rate
-    p = 10 #signing bonus distribution parameter
+    p = 3 #signing bonus distribution parameter
 
     # PUT PARAMS INTO BOXES FOR EASY MOVING
     big_mov_params = [mov_params, lo, p]
