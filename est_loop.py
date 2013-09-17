@@ -227,7 +227,6 @@ def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
                         pass
                     else:
                         cit_write.append(cit_params[pnum][qual][field][lat])
-    print cit_write
     [movparams, lam, p] = big_mov_params
     out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + [lp])
     out_file.flush()
