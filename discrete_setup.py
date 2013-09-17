@@ -192,7 +192,7 @@ citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
 
 # SAVE MOVLIK STUFF
-aut_pan['last_dep'] = aut_pan['dep'].shift(1)
+aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)
 mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
 mov_dat = mov_dat[['au','dep','last_dep','qual','isField']]
 mov_dat.to_pickle('mov_dat.pickle')

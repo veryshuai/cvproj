@@ -17,12 +17,12 @@ def tree():
 def no_cit_inner(row, alp, bet, dep_year):
     k_lev = dep_year.at[row['dep'],row['date']-1]
     num = alp + bet * k_lev
-    item = 1 - num / (1 + num)
+    item = 1 - math.exp(num) / (1 + math.exp(num))
     return item
 
 def cit_inner(row, alp, bet, dep_year):
     num = alp + bet * dep_year.at[row['dep'],row['date']-1]
-    item = 1 - num / (1 + num)
+    item = 1 - math.exp(num) / (1 + math.exp(num))
     return item
 
 def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
@@ -36,8 +36,9 @@ def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
         # pgam = gam[lin1['qual']][lin1['isField']][lat]
         palp = alp[0][lin1['isField']][lat]
         pgam = gam[0][lin1['isField']][lat]
+        pbet = bet[0][lin1['isField']][lat]
         liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                                       bet, dep_year), axis=1)
+                                                       pbet, dep_year), axis=1)
         arg = (1 - pgam + pgam * liks.prod())
         return arg
 
@@ -52,15 +53,16 @@ def cit_lik_cit(alp, bet, gam, dep_aut, dep_year, lat):
         # pgam = gam[lin1['qual']][lin1['isField']][lat]
         palp = alp[0][lin1['isField']][lat]
         pgam = gam[0][lin1['isField']][lat]
+        pbet = bet[0][lin1['isField']][lat]
         liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                                       bet, dep_year), axis=1)
+                                                       pbet, dep_year), axis=1)
         arg = (pgam * liks.prod())
         return arg
 
 def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates first cite likelihoods
 
-    lin1 = dep_aut.iloc[0]
+    lin1 = dep_aut.iloc[-1]
     if lat == 1 and lin1['isField'] == 0:
         return np.nan
     else:
@@ -68,14 +70,14 @@ def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
         # pgam = gam[lin1['qual']][lin1['isField']][lat]
         palp = alp[0][lin1['isField']][lat]
         pgam = gam[0][lin1['isField']][lat]
-        liks = dep_aut.apply(lambda row: cit_inner(row, palp,
-                                                       bet, dep_year), axis=1)
-        arg = (pgam * liks.prod())
-        return arg
+        pbet = bet[0][lin1['isField']][lat]
+        num = palp + pbet * dep_year.at[lin1['dep'],lin1['date']-1]
+        item = math.exp(num) / (1 + math.exp(num))
+        return item
 
 def trans_prob(row, t):
     # retrieves correct value from transition prob matrix
-    return t.ix[row['last_dep']][row['dep']]
+    return t.loc[row['last_dep']][row['dep']]
 
 def mov_lik(trans, group, lat): 
     # calculates movement likelihood
@@ -91,7 +93,7 @@ def mov_lik(trans, group, lat):
         lin2 = group.iloc[-1]
         t = trans[lin1['qual']][lin1['isField']][lat]
         if lin1['dep'] == lin2['dep']:
-            out = trans_prob(lin1, t) * group.shape[0]
+            out = pow(trans_prob(lin1, t),group.shape[0])
             return float(out)
         else:
             lik = group.apply(lambda row: trans_prob(row, t), axis=1)

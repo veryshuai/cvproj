@@ -38,18 +38,14 @@ def update_cits(cit_params):
     [alp, gam, bet] = cit_params
     for qual in range(1): #all qualities share parameters!
         for field in range(2):
-            for lat in range(2):
+            for lat in range(1):
                 alp[qual][field][lat]\
-                    = math.exp(math.log(alp[qual][field][lat])
-                                   + random.gauss(0,.05))
+                    = alp[qual][field][lat] + random.gauss(0,.01)
+                bet[qual][field][lat]\
+                    = bet[qual][field][lat] + random.gauss(0,.01)
                 gam[qual][field][lat]\
-                    = norm.cdf(norm.ppf(deepcopy(gam[qual][field][lat]),
-                        0, 1) + random.gauss(0, 0.3), 0, 1)
-                #CHANGE WHEN BRING BACK LAT
-                if lat == 1:
-                    alp[qual][field][lat] = 0.1 
-                    gam[qual][field][lat] = 0.1
-    bet = math.exp(math.log(bet) + random.gauss(0,.05))
+                    = norm.cdf(norm.ppf(gam[qual][field][lat],
+                        0, 1) + random.gauss(0, 0.1), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
@@ -58,11 +54,11 @@ def update_movs(big_mov_params):
 
     [mov_params, lam, p] = big_mov_params
     lam = norm.cdf(norm.ppf(lam, 0, 1) 
-                    + random.gauss(0, 0.5), 0, 1)
+                    + random.gauss(0, 0.05), 0, 1)
     p = math.exp(math.log(p) + random.gauss(0,0.01))
     mov_params = mov_params.astype('float64')
-    mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.05)
-    mov_params['field'] = mov_params['field'] + random.gauss(0,0.05)
+    mov_params['qual'] = 1 # mov_params['qual'] + random.gauss(0,0.01)
+    mov_params['field'] = mov_params['field'] + random.gauss(0,0.01)
     # mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
 
     big_mov_params_u = [mov_params, lam, p]
@@ -139,17 +135,17 @@ def calc_mov_lik(cit_params, big_mov_params,
     lp_u = deepcopy(lp)
     lik_pieces_u = deepcopy(lik_pieces)
     
+    # NEW VAL AND TRANSITIONS
     init_u, trans_u = vd.val_init(big_mov_params_u, dep_stats,
                               0.9, deepcopy(init))
 
+    # NEW LIKELIHOOD CALCUATION
     mlik = []
     for lat in range(1):
         mlik.append(mov_dat.groupby('au')\
                 .apply(lambda x: cd.mov_lik(trans_u, x, lat)))
         lik_pieces_u[lat]['mlik'] = mlik[lat]
-
     lik_u = recalc_lik(lik_pieces_u, lp_u, mult_by)
-    
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u
 
@@ -223,15 +219,15 @@ def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
 
     # writeable form
     cit_write = []
-    for pnum in range(2):
+    for pnum in range(3):
         for qual in range(1):
             for field in range(2):
-                for lat in range(2):
+                for lat in range(1):
                     if field == 0 and lat == 1:
                         pass
                     else:
                         cit_write.append(cit_params[pnum][qual][field][lat])
-    cit_write.append(cit_params[2])
+    print cit_write
     [movparams, lam, p] = big_mov_params
     out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + [lp])
     out_file.flush()

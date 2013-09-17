@@ -22,12 +22,13 @@ def main():
     #INITIAL CIT PARAMETERS (TO BE MOVED)
     alp = tree()
     gam = tree()
+    bet = tree()
     for qual in range(1):
         for field in range(2):
             for lat in range(2):
                 alp[qual][field][lat] = 0.1
+                bet[qual][field][lat] = 10
                 gam[qual][field][lat] = 0.1
-    bet = 1000
 
     # INITIAL MOV PARAMETERS (TO BE MOVED)
     mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 0})
