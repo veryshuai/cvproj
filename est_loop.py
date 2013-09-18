@@ -38,7 +38,7 @@ def update_cits(cit_params):
     [alp, gam, bet] = cit_params
     for qual in range(1): #all qualities share parameters!
         for field in range(2):
-            for lat in range(1):
+            for lat in range(2):
                 alp[qual][field][lat]\
                     = alp[qual][field][lat] + random.gauss(0,.01)
                 bet[qual][field][lat]\
@@ -59,24 +59,25 @@ def update_movs(big_mov_params):
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = 1 # mov_params['qual'] + random.gauss(0,0.01)
     mov_params['field'] = mov_params['field'] + random.gauss(0,0.01)
-    # mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
+    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
 
     big_mov_params_u = [mov_params, lam, p]
     return big_mov_params_u
 
 def calc_cit_lik(cit_params, big_mov_params, citers,
                                  nocits, first_cits, lp, lik_pieces,
-                                 dep_year, mult_by, init):
+                                 dep_year, init, first_ff, ip):
     # Updates cits and recalculates likelihood
 
     cit_params_u = update_cits(deepcopy(cit_params))
     big_mov_params_u = deepcopy(big_mov_params)
     lp_u = deepcopy(lp)
+    ip_u = deepcopy(ip)
     init_u = deepcopy(init)
     
     cit_liks, fc_liks, nocit_liks = [], [], []
     lik_pieces_u = deepcopy(lik_pieces)
-    for lat in range(1):
+    for lat in range(2):
         cit_liks.append(citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(cit_params_u[0],
                            cit_params_u[2], cit_params_u[1], x, dep_year, lat)))
@@ -90,75 +91,87 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
         lik_pieces_u[lat]['fc_liks'] = fc_liks[lat]
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
 
-    lik_u = recalc_lik(lik_pieces_u, lp_u, mult_by)
+    lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     
     return lik_u, cit_params_u, big_mov_params_u,\
-            lp_u, lik_pieces_u, init_u
+            lp_u, lik_pieces_u, init_u, ip_u
 
-def recalc_lik(lik_pieces_u, lp_u, mult_by):
+def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # recalculates lik from updates lik_pieces
 
     lik_mid = []
-    # not_lp = mult_by.apply(lambda x: max(1 - lp_u, x))
-    # lik_pieces_u[0]['not_lp'] = not_lp
+    ff = first_ff.apply(lambda x: norm.cdf(lp_u[0] + x * lp_u[1]))
+    lik_pieces_u[0]['ff'] = ff.apply(lambda x: 1 - x)
+    lik_pieces_u[1]['ff'] = ff
     lik_mid.append(lik_pieces_u[0].prod(axis = 1))
-    # lik_mid.append(lik_pieces_u[1].prod(axis = 1) * lp_u)
-    # lik_big = lik_mid[0] + lik_mid[1]
-    lik_big = lik_mid[0]
+    lik_mid.append(lik_pieces_u[1].prod(axis = 1))
+    lik_big = lik_mid[0] + lik_mid[1]
     try:
         lik_u = lik_big.apply(lambda x: math.log(x)).sum()
     except Exception as e:
+        print "WARNING: Error in lik calculation,\
+                file est_loop.py, function recalc_lik"
         print e
         lik_u = -1e10
     return lik_u
 
 def calc_lp_lik(cit_params, big_mov_params,
-                lp, lik_pieces, mult_by, init):
+                lp, lik_pieces, init, first_ff, ip):
     # updates lp and recalcs lik
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = deepcopy(big_mov_params)
     init_u = deepcopy(init)
-    lp_u = 0 #norm.cdf(norm.ppf(deepcopy(lp), 0, 1) 
-             #       + random.gauss(0, 1), 0, 1)
+    ip_u = deepcopy(ip)
+    lp_u = []
+    lp_u.append(lp[0] + random.gauss(0, 0.05))
+    lp_u.append(lp[1] + random.gauss(0, 0.05))
     lik_pieces_u = deepcopy(lik_pieces)
-    lik_u = recalc_lik(lik_pieces_u, lp_u, mult_by)
+    lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     return lik_u, cit_params_u, big_mov_params_u,\
-            lp_u, lik_pieces_u, init_u
+            lp_u, lik_pieces_u, init_u, ip_u
 
 def calc_mov_lik(cit_params, big_mov_params,
-                 lp, lik_pieces, dep_stats, mult_by,
-                 init, mov_dat):
+                 lp, lik_pieces, dep_stats,
+                 init, mov_dat91, mov_dat_not91,
+                 first_ff, ip, bd):
     # Updates movs and recalculates likelihood
 
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = update_movs(deepcopy(big_mov_params))
     lp_u = deepcopy(lp)
+    ip_u = math.exp(math.log(deepcopy(ip)) + random.gauss(0,0.05))
     lik_pieces_u = deepcopy(lik_pieces)
     
     # NEW VAL AND TRANSITIONS
-    init_u, trans_u = vd.val_init(big_mov_params_u, dep_stats,
-                              0.9, deepcopy(init))
+    init_u, trans_u, itrans_u = vd.val_init(big_mov_params_u, dep_stats,
+                              0.9, ip_u, bd, deepcopy(init))
 
     # NEW LIKELIHOOD CALCUATION
     mlik = []
-    for lat in range(1):
-        mlik.append(mov_dat.groupby('au')\
-                .apply(lambda x: cd.mov_lik(trans_u, x, lat)))
+    for lat in range(2):
+        not91 = mov_dat_not91.groupby('au')\
+                .apply(lambda x: cd.mov_lik(trans_u, x, lat))
+        is91  = mov_dat91.groupby('au')\
+                .apply(lambda x: cd.mov_lik(itrans_u, x, lat))
+        together = pd.DataFrame({'not91': not91, 'is91': is91},
+                                index=not91.index)
+        together = together.fillna(value=1).prod(1)
+        mlik.append(together)
         lik_pieces_u[lat]['mlik'] = mlik[lat]
-    lik_u = recalc_lik(lik_pieces_u, lp_u, mult_by)
+    lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     return lik_u, cit_params_u, big_mov_params_u,\
-            lp_u, lik_pieces_u, init_u
+            lp_u, lik_pieces_u, init_u, ip_u
 
 def est_loop(lik, lik_pieces, big_mov_params, cit_params,
-        lp, init, trans, dep_stats, mov_dat,
+        lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
         first_cits, citers, nocits, dep_year,
-        mult_by, out_file, out_writer):
+        out_file, out_writer, first_ff, ip, bd):
     # called by discrete.py, this is the boss of the
     # estimation loop
 
     cit_tot, lp_tot, mov_tot = 1, 1, 1
     cit_acc, lp_acc, mov_acc = 0, 0, 0
-    for k in range(20000):
+    for k in range(200000):
 
         tic = clock()
         print bcolors.RED + str(k) + bcolors.ENDC
@@ -167,36 +180,36 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
             print ''.join(['cit ', str(cit_acc / float(cit_tot))])
             cit_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
-                    lp_u, lik_pieces_u, init_u\
+                    lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_cit_lik(cit_params, big_mov_params, citers,
                                    nocits, first_cits, lp, lik_pieces,
-                                   dep_year, mult_by, init)
+                                   dep_year, init, first_ff, ip)
 
         if k % 3 == 1:
-        #    print ''.join(['lp ', str(lp_acc / float(lp_tot))])
-        #    lp_tot += 1
-        #    lik_u, cit_params_u, big_mov_params_u,\
-        #            lp_u, lik_pieces_u, init_u\
-        #            = calc_lp_lik(cit_params, big_mov_params,
-        #                          lp, lik_pieces, mult_by, init)
-            lik_u = -1e6
+            print ''.join(['lp ', str(lp_acc / float(lp_tot))])
+            lp_tot += 1
+            lik_u, cit_params_u, big_mov_params_u,\
+                    lp_u, lik_pieces_u, init_u, ip_u\
+                    = calc_lp_lik(cit_params, big_mov_params,
+                                  lp, lik_pieces, init, first_ff, ip)
 
         if k % 3 == 2:
             print ''.join(['mov ', str(mov_acc / float(mov_tot))])
             mov_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
-                    lp_u, lik_pieces_u, init_u\
+                    lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_mov_lik(cit_params, big_mov_params,
-                            lp, lik_pieces, dep_stats, mult_by,
-                            init, mov_dat)
+                            lp, lik_pieces, dep_stats,
+                            init, mov_dat91, mov_dat_not91,
+                            first_ff, ip, bd)
 
         print bcolors.BLUE + str(lik) + ', ' + str(lik_u) + bcolors.ENDC
 
         if math.log(random.random()) < (lik_u - lik):
             print bcolors.PURP + 'ACCEPTED!' + bcolors.ENDC
-            [cit_params, big_mov_params, lp]\
+            [cit_params, big_mov_params, lp, ip]\
                     = [deepcopy(cit_params_u), deepcopy(big_mov_params_u),
-                            deepcopy(copy(lp_u))]
+                            deepcopy(lp_u), deepcopy(ip_u)]
             init = deepcopy(init_u)
             lik = deepcopy(lik_u)
             lik_pieces = deepcopy(lik_pieces_u)
@@ -209,12 +222,12 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 
         # WRITE
         write_me(cit_params, big_mov_params,
-                lp, out_writer, out_file)
+                lp, ip, out_writer, out_file)
 
         toc = clock() - tic
         print bcolors.YEL + str(toc) + bcolors.ENDC
 
-def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
+def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
 
     # writeable form
@@ -222,12 +235,9 @@ def write_me(cit_params, big_mov_params, lp, out_writer, out_file):
     for pnum in range(3):
         for qual in range(1):
             for field in range(2):
-                for lat in range(1):
-                    if field == 0 and lat == 1:
-                        pass
-                    else:
+                for lat in range(2):
                         cit_write.append(cit_params[pnum][qual][field][lat])
     [movparams, lam, p] = big_mov_params
-    out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + [lp])
+    out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + lp + [ip])
     out_file.flush()
     return 0

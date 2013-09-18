@@ -13,10 +13,11 @@ import val_mp as vm
 def tree():
     return collections.defaultdict(tree)
 
-def val_init(big_mov_params, dep_stats, dis, init=[]):
+def val_init(big_mov_params, dep_stats, dis, ip, bd, init=[]):
     # initializes value function iteration
-    vals, trans = vm.call_parallel(big_mov_params, dep_stats, dis, init)
-    return vals, trans
+    vals, trans, itrans = vm.call_parallel(big_mov_params, dep_stats,
+                                           dis, ip, bd, init)
+    return vals, trans, itrans
 
 def mins(v, dat, p):
     # Returns the min operation used in val fun iteration
@@ -86,7 +87,7 @@ def calc_trans(current, w, lam, dis, p):
     trans = pd.DataFrame(trans_mat,index=ind,columns=cols)
     return trans
 
-def val_loop(w, lam, dis, p, init='nope'):
+def val_loop(w, lam, dis, p, ip, bd, init='nope'):
     # This function calls the value function loop
 
     # INITIAL GUESS
@@ -100,8 +101,16 @@ def val_loop(w, lam, dis, p, init='nope'):
 
     # GET TRANSITIONS
     trans = calc_trans(new, w, lam, dis, p)
+    # instrument transisitons
+    insw = pd.DataFrame({'w': w.sort_index(),
+                        'bd': bd.sort_index()},
+                        index = w.index)
+    insw = insw.apply(lambda x: x['w'] *
+                      (1 - x['bd'] * ip), axis=1)
+    insw['OTHER'] = w['OTHER']
+    ins_trans = calc_trans(new, insw, lam, dis, p) 
 
-    return new, trans
+    return new, trans, ins_trans
 
 def wd(ind, dep):
     # peforms distance calculation for wage
@@ -119,7 +128,7 @@ def calc_wage(mp, dep, qual, field, lat):
     # CALCULATE WAGE
     wq = q * wd(qual, dep['dep_qual'])
     wf = f * wd(field, dep['dmean'])
-    wl = l * wd(lat, dep['dmean'])
+    wl = l * dep['dmean'] * lat
     w = wq + wf + wl
 
     return w

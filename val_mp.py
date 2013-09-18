@@ -35,7 +35,7 @@ class Consumer(multiprocessing.Process):
 
 class Task(object):
     def __init__(self, q, f, l, bmp,
-                 ds, d, init):
+                 ds, d, ip, bd, init):
         self.q = q
         self.f = f
         self.l = l
@@ -43,15 +43,18 @@ class Task(object):
         self.ds = ds
         self.d = d
         self.init = init
+        self.ip = ip
+        self.bd = bd
     def __call__(self):
-        val, trans = val_calc(self.q, self.f, self.l,
-                              self.bmp, self.ds, self.d, self.init)
-        return [self.q, self.f, self.l, val, trans]
+        val, trans, itrans = val_calc(self.q, self.f, self.l,
+                              self.bmp, self.ds, self.d,
+                              self.ip, self.bd, self.init)
+        return [self.q, self.f, self.l, val, trans, itrans]
     def __str__(self):
         return 'q %s, f %s, l %s ' % (self.q, self.f, self.l)
 
 
-def call_parallel(big_mov_params, dep_stats, dis, init=[]):
+def call_parallel(big_mov_params, dep_stats, dis, ip, bd, init=[]):
     """Calls parallel loop for calculating value function"""
 
     # Establish communication queues
@@ -59,7 +62,7 @@ def call_parallel(big_mov_params, dep_stats, dis, init=[]):
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_consumers = 6
+    num_consumers = 3
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:
@@ -70,7 +73,8 @@ def call_parallel(big_mov_params, dep_stats, dis, init=[]):
         for f in range(2):
             for l in range(2):
                 tasks.put(Task(q, f, l, big_mov_params,
-                               dep_stats, dis, init))
+                               dep_stats, dis,
+                               ip, bd, init))
     
     # Add a poison pill for each consumer
     for i in xrange(num_consumers):
@@ -82,13 +86,15 @@ def call_parallel(big_mov_params, dep_stats, dis, init=[]):
     # Start printing results
     vals = tree()
     trans = tree()
-    num_jobs = 12 
+    itrans = tree()
+    num_jobs = 12
     while num_jobs:
         r = results.get()
-        vals[r[0]][r[1]][r[2]] = r[3]
-        trans[r[0]][r[1]][r[2]] = r[4]
+        vals[r[0]][r[1]][r[2]]   = r[3]
+        trans[r[0]][r[1]][r[2]]  = r[4]
+        itrans[r[0]][r[1]][r[2]] = r[5]
         num_jobs -= 1
-    return vals, trans
+    return vals, trans, itrans
 
 def from_pickle():
     """reads in vals and trans from pickle"""
@@ -98,29 +104,28 @@ def from_pickle():
     f = file('val_init.pickle','rb')
     vals = pickle.load(f)
     f.close()
-    return vals, trans
+    return vals, trans, trans
 
-def val_calc(qual, field, lat, big_mov_params, dep_stats, dis, init=[]):
+def val_calc(qual, field, lat, big_mov_params,
+             dep_stats, dis, ip, bd, init=[]):
     """calculates a single value function"""
     [mov_params, lam, p] = big_mov_params
-    if lat == 1:
-    # if field == 0 and lat == 1:
-        vals, trans = [], []
-    else:
-        wage = vd.calc_wage(mov_params, dep_stats,
-                         qual, field, lat)
+    wage = vd.calc_wage(mov_params, dep_stats,
+                     qual, field, lat)
+    try:
+        sp = init[qual][field][lat]
+        vals, trans, itrans = vd.val_loop(wage, lam, dis,
+                                  p, ip, bd, sp)
+    except Exception as e:
+        print 'WARNING: Value function start point error,\
+                 file val_defs.py, function val_init'
+        print e
         try:
-            sp = init[qual][field][lat]
-            vals, trans = vd.val_loop(wage, lam, dis, p, sp)
+            vals, trans, itrans = vd.val_loop(wage, lam, dis,
+                                      p, ip, bd)
         except Exception as e:
-            print 'WARNING: Value function start point error,\
-                     file val_defs.py, function val_init'
+            print 'WARNING: reading vals and trans from saves'
             print e
-            try:
-                vals, trans = vd.val_loop(wage, lam, dis, p)
-            except Exception as e:
-                print 'WARNING: reading vals and trans from saves'
-                print e
-                vals, trans = from_pickle()
-    return vals, trans
+            vals, trans, itrans = from_pickle()
+    return vals, trans, itrans
 

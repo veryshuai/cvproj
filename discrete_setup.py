@@ -171,7 +171,7 @@ dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
 dep_list.to_pickle('dep_list.pickle')
 
 # CLEAN UP AUTPAN
-aut_pan           = aut_pan[['au', 'date', 'dep', 'qual', 'dep_qual', 'kfrac', 'isField',
+aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean', 'qual', 'dep_qual', 'kfrac', 'isField',
                              'start_times', 'end_times', 'cit_times',
                              'tot_cits', 'isCiter']].reset_index()
 aut_pan['isMove'] = False
@@ -180,7 +180,10 @@ aut_pan['isMove'] = False
 aut_pan.to_pickle('initial_panel.pickle')
 
 # SAVE CIT LIK STUFF
-aut_pan = aut_pan[aut_pan['date'] > first_yr]
+aut_pan = aut_pan[(aut_pan['date'] > first_yr) & (aut_pan['date'] <= last_yr)]
+first_deps = aut_pan.sort_index(by='date')\
+            .groupby('au').first().reset_index()
+first_ff = first_deps.set_index('au')['dmean']
 first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
              .groupby('au').first().reset_index()
 aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
@@ -190,12 +193,19 @@ nocits = aut_pan[aut_pan['ever_cit'] == 0]
 first_cits.to_pickle('first_cits.pickle')
 citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
+first_ff.to_pickle('first_ff.pickle')
 
 # SAVE MOVLIK STUFF
 aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)
 mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
-mov_dat = mov_dat[['au','dep','last_dep','qual','isField']]
+mov_dat = mov_dat[['au','dep','last_dep','qual','isField','date']]
 mov_dat.to_pickle('mov_dat.pickle')
+
+# FOR INSTRUMENT VERSION
+mov_dat91 = mov_dat[mov_dat['date'] == 1991]
+mov_dat91.to_pickle('mov_dat91.pickle')
+mov_dat_not91 = mov_dat[mov_dat['date'] != 1991]
+mov_dat_not91.to_pickle('mov_dat_not91.pickle')
 
 # MULTBY
 mult_by = mov_dat.drop_duplicates(cols='au').set_index('au')
@@ -203,5 +213,12 @@ mult_by['mult_by'] = 1
 mult_by['mult_by'][mult_by['isField'] == 1] = 0
 mult_by = mult_by['mult_by']
 mult_by.to_pickle('mult_by.pickle')
+
+# CREATE DEPARTMENT 1991 INSTRUMENT EFFECTS
+bd = pd.read_csv('top_depts_bd.csv', delimiter='|')
+bd = bd.drop_duplicates(cols='name').set_index('name')
+bd = bd['budget_def'].fillna(value=0)
+bd = bd.apply(lambda x: float(x) * 0.01)
+bd.to_pickle('budget_def.pickle')
 
 

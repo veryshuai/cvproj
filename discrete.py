@@ -17,41 +17,23 @@ import csv
 def tree():
     return collections.defaultdict(tree)
 
-def main():
+def main(cit_params, big_mov_params, lp, ip):
 
-    #INITIAL CIT PARAMETERS (TO BE MOVED)
-    alp = tree()
-    gam = tree()
-    bet = tree()
-    for qual in range(1):
-        for field in range(2):
-            for lat in range(2):
-                alp[qual][field][lat] = 0.1
-                bet[qual][field][lat] = 10
-                gam[qual][field][lat] = 0.1
-
-    # INITIAL MOV PARAMETERS (TO BE MOVED)
-    mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 0})
-
-    # OTHER PARAMETERS (TO BE MOVED)
-    lp = 0.0 #latent type probability
-    lo = 0.15 #offer arrival rate
-    p = 1.1 #signing bonus distribution parameter
-
-    # PUT PARAMS INTO BOXES FOR EASY MOVING
-    big_mov_params = [mov_params, lo, p]
-    cit_params = [alp, gam, bet]
+    [alp, gam, bet] = cit_params
+    [mov_params, lo, p] = big_mov_params
 
     # READ IN OTHER DATA
     dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
     f = file('val_init.pickle','rb')
     init = pickle.load(f)
-    mov_dat = pd.read_pickle('mov_dat.pickle')
+    mov_dat91 = pd.read_pickle('mov_dat91.pickle')
+    mov_dat_not91 = pd.read_pickle('mov_dat_not91.pickle')
     first_cits = pd.read_pickle('first_cits.pickle')
     citers = pd.read_pickle('citers.pickle')
     nocits = pd.read_pickle('nocits.pickle')
     dep_year = pd.read_pickle('dep_years.pickle')
-    mult_by = pd.read_pickle('mult_by.pickle')
+    first_ff = pd.read_pickle('first_ff.pickle')
+    bd = pd.read_pickle('budget_def.pickle')
 
     # OUTPUT
     timestr = time.strftime("%Y%m%d-%H%M%S")\
@@ -60,13 +42,18 @@ def main():
     out_writer = csv.writer(out_file)
 
     # GET INITIAL LIKELIHOOD
-    init, trans = vd.val_init(big_mov_params, dep_stats, 0.9, init)
+    init, trans, itrans = vd.val_init(big_mov_params, dep_stats, 0.9, ip, bd, init)
     mlik = []
-    for lat in range(1):
-        mlik.append(mov_dat.groupby('au').apply(lambda x: cd.mov_lik(trans, x, lat)))
+    for lat in range(2):
+        not91 = mov_dat_not91.groupby('au').apply(lambda x: cd.mov_lik(trans, x, lat))
+        is91  = mov_dat91.groupby('au').apply(lambda x: cd.mov_lik(itrans, x, lat))
+        together = pd.DataFrame({'not91': not91, 'is91': is91}, index=not91.index)
+        together = together.fillna(value=1)
+        together = together.prod(1)
+        mlik.append(together)
 
     cit_liks, fc_liks, nocit_liks = [], [], []
-    for lat in range(1):
+    for lat in range(2):
         cit_liks.append(citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(alp, bet, gam, x, dep_year, lat)))
         fc_liks.append(first_cits.groupby('au')\
@@ -76,25 +63,17 @@ def main():
 
     # CALCULATE 
     lik_pieces = []
-    for k in range(1):
+    for k in range(2):
         lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
         lik_dat['cit_liks'] = cit_liks[k]
         lik_dat['fc_liks'] = fc_liks[k]
         lik_dat['nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
-    lik_mid = []
-    # not_lp = mult_by.apply(lambda x: max(1 - lp, x))
-    # lik_pieces[0]['not_lp'] = not_lp
-    lik_mid.append(lik_pieces[0].prod(axis = 1))
-    # lik_mid.append(lik_pieces[1].prod(axis = 1) * lp)
-    # lik_big = lik_mid[0] + lik_mid[1]
-    lik_big = lik_mid[0]
-    lik = lik_big.apply(lambda x: math.log(x)).sum()
+    lik = el.recalc_lik(lik_pieces, first_ff, lp)
 
     # CALL ESTIMATION LOOP
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
-            lp, init, trans, dep_stats, mov_dat,
+            lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
             first_cits, citers, nocits, dep_year,
-            mult_by, out_file, out_writer)
+            out_file, out_writer, first_ff, ip, bd)
 
-main()
