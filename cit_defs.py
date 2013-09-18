@@ -30,7 +30,7 @@ def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
 
     lin1 = dep_aut.iloc[0]
     if lin1['isField'] == 0 and lat == 1:
-        return dep_aut['isField'] # tricky way of returning zeros
+        return 0 # tricky way of returning zeros
     else:
         palp = alp[0][lin1['isField']][lat]
         pgam = gam[0][lin1['isField']][lat]
@@ -45,7 +45,7 @@ def cit_lik_cit(alp, bet, gam, dep_aut, dep_year, lat):
 
     lin1 = dep_aut.iloc[0]
     if lin1['isField'] == 0 and lat == 1:
-        return dep_aut['isField'] # tricky way of returning zeros
+        return 0 # tricky way of returning zeros
     else:
         palp = alp[0][lin1['isField']][lat]
         pgam = gam[0][lin1['isField']][lat]
@@ -60,7 +60,7 @@ def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
 
     lin1 = dep_aut.iloc[-1]
     if lin1['isField'] == 0 and lat == 1:
-        return dep_aut['isField'] # tricky way of returning zeros
+        return 0 # tricky way of returning zeros
     else:
         palp = alp[0][lin1['isField']][lat]
         pgam = gam[0][lin1['isField']][lat]
@@ -79,14 +79,17 @@ def mov_lik(trans, group, lat):
     # DEPARTMENT, YOU NEVER MOVED!
 
     lin1 = group.iloc[0]
-    lin2 = group.iloc[-1]
     t = trans[lin1['qual']][lin1['isField']][lat]
-    if lin1['last_dep'] == lin2['dep']:
-        out = pow(trans_prob(lin1, t),group.shape[0])
-        return float(out)
+    if not t:
+        return 1
     else:
-        lik = group.apply(lambda row: trans_prob(row, t), axis=1)
-        return lik.prod()
+        lin2 = group.iloc[-1]
+        if lin1['last_dep'] == lin2['dep']:
+            out = pow(trans_prob(lin1, t),group.shape[0])
+            return float(out)
+        else:
+            lik = group.apply(lambda row: trans_prob(row, t), axis=1)
+            return lik.prod()
 
 
 # aut_pan = pd.read_pickle('initial_panel.pickle')

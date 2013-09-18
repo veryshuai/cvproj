@@ -105,6 +105,7 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # recalculates lik from updates lik_pieces
 
     lik_mid = []
+    print norm.cdf(lp_u[0] + 0.05 *lp_u[1])
     ff = first_ff['dmean'].apply(lambda x: norm.cdf(lp_u[0] + x * lp_u[1]))
     ff = ff * first_ff['isField'] # LAT ONLY AVAILABLE FOR FIELDS
     lik_pieces_u[0]['ff'] = ff.apply(lambda x: 1 - x)
@@ -129,8 +130,8 @@ def calc_lp_lik(cit_params, big_mov_params,
     init_u = deepcopy(init)
     ip_u = deepcopy(ip)
     lp_u = []
-    lp_u.append(lp[0] + random.gauss(0, 1))
-    lp_u.append(lp[1] + random.gauss(0, 1))
+    lp_u.append(deepcopy(lp[0]) + random.gauss(0, 1))
+    lp_u.append(deepcopy(lp[1]) + random.gauss(0, 1))
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     return lik_u, cit_params_u, big_mov_params_u,\
