@@ -62,7 +62,7 @@ def call_parallel(big_mov_params, dep_stats, dis, ip, bd, init=[]):
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_consumers = 3
+    num_consumers = 12
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:

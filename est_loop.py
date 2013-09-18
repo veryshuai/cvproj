@@ -40,12 +40,12 @@ def update_cits(cit_params):
         for field in range(2):
             for lat in range(2):
                 alp[qual][field][lat]\
-                    = alp[qual][field][lat] + random.gauss(0,.01)
+                    = alp[qual][field][lat] + random.gauss(0,.1)
                 bet[qual][field][lat]\
-                    = bet[qual][field][lat] + random.gauss(0,.01)
+                    = bet[qual][field][lat] + random.gauss(0,.1)
                 gam[qual][field][lat]\
                     = norm.cdf(norm.ppf(gam[qual][field][lat],
-                        0, 1) + random.gauss(0, 0.1), 0, 1)
+                        0, 1) + random.gauss(0, .1), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
@@ -54,12 +54,12 @@ def update_movs(big_mov_params):
 
     [mov_params, lam, p] = big_mov_params
     lam = norm.cdf(norm.ppf(lam, 0, 1) 
-                    + random.gauss(0, 0.05), 0, 1)
-    p = math.exp(math.log(p) + random.gauss(0,0.01))
+                    + random.gauss(0, 0.1), 0, 1)
+    p = math.exp(math.log(p) + random.gauss(0,0.05))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = 1 # mov_params['qual'] + random.gauss(0,0.01)
-    mov_params['field'] = mov_params['field'] + random.gauss(0,0.01)
-    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
+    mov_params['field'] = mov_params['field'] + random.gauss(0,0.1)
+    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.1)
 
     big_mov_params_u = [mov_params, lam, p]
     return big_mov_params_u
@@ -123,8 +123,8 @@ def calc_lp_lik(cit_params, big_mov_params,
     init_u = deepcopy(init)
     ip_u = deepcopy(ip)
     lp_u = []
-    lp_u.append(lp[0] + random.gauss(0, 0.05))
-    lp_u.append(lp[1] + random.gauss(0, 0.05))
+    lp_u.append(lp[0] + random.gauss(0, 1))
+    lp_u.append(lp[1] + random.gauss(0, 1))
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     return lik_u, cit_params_u, big_mov_params_u,\
@@ -139,7 +139,7 @@ def calc_mov_lik(cit_params, big_mov_params,
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = update_movs(deepcopy(big_mov_params))
     lp_u = deepcopy(lp)
-    ip_u = math.exp(math.log(deepcopy(ip)) + random.gauss(0,0.05))
+    ip_u = math.exp(math.log(deepcopy(ip)) + random.gauss(0,0.1))
     lik_pieces_u = deepcopy(lik_pieces)
     
     # NEW VAL AND TRANSITIONS

@@ -11,6 +11,7 @@ import numpy as np
 import time
 import random
 import csv
+import cProfile
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -35,6 +36,9 @@ def main(cit_params, big_mov_params, lp, ip):
     first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
+    pr = cProfile.Profile()
+    pr.enable()
+
     # OUTPUT
     timestr = time.strftime("%Y%m%d-%H%M%S")\
         + '_' + str(random.randrange(100000))
@@ -43,6 +47,7 @@ def main(cit_params, big_mov_params, lp, ip):
 
     # GET INITIAL LIKELIHOOD
     init, trans, itrans = vd.val_init(big_mov_params, dep_stats, 0.9, ip, bd, init)
+    vd.reset(init, trans)
     mlik = []
     for lat in range(2):
         not91 = mov_dat_not91.groupby('au').apply(lambda x: cd.mov_lik(trans, x, lat))
@@ -71,6 +76,7 @@ def main(cit_params, big_mov_params, lp, ip):
         lik_pieces.append(lik_dat)
     lik = el.recalc_lik(lik_pieces, first_ff, lp)
 
+    pr.dump_stats('profile.out')
     # CALL ESTIMATION LOOP
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,

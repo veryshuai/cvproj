@@ -133,16 +133,8 @@ def calc_wage(mp, dep, qual, field, lat):
 
     return w
 
-def reset():
+def reset(vals, trans):
     # RESET INITIAL STARTING POINT
-    f = file('val_init.pickle','rb')
-    init = pickle.load(f)
-    f.close()
-    
-    mov_params = pd.Series({'qual': 1, 'field': 1, 'lat': 1})
-    dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-    big_mov_params = [mov_params, 0.15, 100]
-    vals, trans = val_init(big_mov_params, dep_stats, 0.90)
     
     f = file('trans.pickle','wb')
     pickle.dump(trans,f)
