@@ -107,7 +107,7 @@ def val_loop(w, lam, dis, p, ip, bd, init='nope'):
                         'bd': bd.sort_index()},
                         index = w.index)
     insw = insw.apply(lambda x: x['w'] *
-                      (1 - x['bd'] * ip), axis=1)
+                      math.exp(- ip * x['bd']), axis=1)
     insw['OTHER'] = w['OTHER']
     ins_trans = calc_trans(new, insw, lam, dis, p) 
 

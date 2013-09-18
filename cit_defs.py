@@ -29,36 +29,45 @@ def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[0][lin1['isField']][lat]
-    pgam = gam[0][lin1['isField']][lat]
-    pbet = bet[0][lin1['isField']][lat]
-    liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                                   pbet, dep_year), axis=1)
-    arg = (1 - pgam + pgam * liks.prod())
-    return arg
+    if lin1['isField'] == 0 and lat == 1:
+        return dep_aut['isField'] # tricky way of returning zeros
+    else:
+        palp = alp[0][lin1['isField']][lat]
+        pgam = gam[0][lin1['isField']][lat]
+        pbet = bet[0][lin1['isField']][lat]
+        liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
+                                                       pbet, dep_year), axis=1)
+        arg = (1 - pgam + pgam * liks.prod())
+        return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[0][lin1['isField']][lat]
-    pgam = gam[0][lin1['isField']][lat]
-    pbet = bet[0][lin1['isField']][lat]
-    liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
+    if lin1['isField'] == 0 and lat == 1:
+        return dep_aut['isField'] # tricky way of returning zeros
+    else:
+        palp = alp[0][lin1['isField']][lat]
+        pgam = gam[0][lin1['isField']][lat]
+        pbet = bet[0][lin1['isField']][lat]
+        liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
                                                    pbet, dep_year), axis=1)
-    arg = (pgam * liks.prod())
-    return arg
+        arg = (pgam * liks.prod())
+        return arg
 
 def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
     # calculates first cite likelihoods
 
     lin1 = dep_aut.iloc[-1]
-    palp = alp[0][lin1['isField']][lat]
-    pgam = gam[0][lin1['isField']][lat]
-    pbet = bet[0][lin1['isField']][lat]
-    num = palp + pbet * dep_year.at[lin1['dep'],lin1['date']-1]
-    item = math.exp(num) / (1 + math.exp(num))
-    return item
+    if lin1['isField'] == 0 and lat == 1:
+        return dep_aut['isField'] # tricky way of returning zeros
+    else:
+        palp = alp[0][lin1['isField']][lat]
+        pgam = gam[0][lin1['isField']][lat]
+        pbet = bet[0][lin1['isField']][lat]
+        num = palp + pbet * dep_year.at[lin1['dep'],lin1['date']-1]
+        item = math.exp(num) / (1 + math.exp(num))
+        return item
 
 def trans_prob(row, t):
     # retrieves correct value from transition prob matrix

@@ -109,23 +109,27 @@ def from_pickle():
 def val_calc(qual, field, lat, big_mov_params,
              dep_stats, dis, ip, bd, init=[]):
     """calculates a single value function"""
-    [mov_params, lam, p] = big_mov_params
-    wage = vd.calc_wage(mov_params, dep_stats,
-                     qual, field, lat)
-    try:
-        sp = init[qual][field][lat]
-        vals, trans, itrans = vd.val_loop(wage, lam, dis,
-                                  p, ip, bd, sp)
-    except Exception as e:
-        print 'WARNING: Value function start point error,\
-                 file val_defs.py, function val_init'
-        print e
+
+    if field == 0 and lat == 1:
+        return [], [], []
+    else:
+        [mov_params, lam, p] = big_mov_params
+        wage = vd.calc_wage(mov_params, dep_stats,
+                         qual, field, lat)
         try:
+            sp = init[qual][field][lat]
             vals, trans, itrans = vd.val_loop(wage, lam, dis,
-                                      p, ip, bd)
+                                      p, ip, bd, sp)
         except Exception as e:
-            print 'WARNING: reading vals and trans from saves'
+            print 'WARNING: Value function start point error,\
+                     file val_defs.py, function val_init'
             print e
-            vals, trans, itrans = from_pickle()
+            try:
+                vals, trans, itrans = vd.val_loop(wage, lam, dis,
+                                          p, ip, bd)
+            except Exception as e:
+                print 'WARNING: reading vals and trans from saves'
+                print e
+                vals, trans, itrans = from_pickle()
     return vals, trans, itrans
 

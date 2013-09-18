@@ -36,8 +36,8 @@ def main(cit_params, big_mov_params, lp, ip):
     first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
-    pr = cProfile.Profile()
-    pr.enable()
+    # pr = cProfile.Profile()
+    # pr.enable()
 
     # OUTPUT
     timestr = time.strftime("%Y%m%d-%H%M%S")\
@@ -76,7 +76,7 @@ def main(cit_params, big_mov_params, lp, ip):
         lik_pieces.append(lik_dat)
     lik = el.recalc_lik(lik_pieces, first_ff, lp)
 
-    pr.dump_stats('profile.out')
+    # pr.dump_stats('profile.out')
     # CALL ESTIMATION LOOP
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,

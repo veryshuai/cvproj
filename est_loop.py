@@ -39,13 +39,18 @@ def update_cits(cit_params):
     for qual in range(1): #all qualities share parameters!
         for field in range(2):
             for lat in range(2):
-                alp[qual][field][lat]\
-                    = alp[qual][field][lat] + random.gauss(0,.1)
-                bet[qual][field][lat]\
-                    = bet[qual][field][lat] + random.gauss(0,.1)
-                gam[qual][field][lat]\
-                    = norm.cdf(norm.ppf(gam[qual][field][lat],
-                        0, 1) + random.gauss(0, .1), 0, 1)
+                if field == 0 and lat == 1:
+                    alp[qual][field][lat] = 0
+                    bet[qual][field][lat] = 0
+                    gam[qual][field][lat] = 0
+                else:
+                    alp[qual][field][lat]\
+                        = alp[qual][field][lat] + random.gauss(0,.1)
+                    bet[qual][field][lat]\
+                        = bet[qual][field][lat] + random.gauss(0,.1)
+                    gam[qual][field][lat]\
+                        = norm.cdf(norm.ppf(gam[qual][field][lat],
+                            0, 1) + random.gauss(0, .1), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
@@ -100,7 +105,8 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # recalculates lik from updates lik_pieces
 
     lik_mid = []
-    ff = first_ff.apply(lambda x: norm.cdf(lp_u[0] + x * lp_u[1]))
+    ff = first_ff['dmean'].apply(lambda x: norm.cdf(lp_u[0] + x * lp_u[1]))
+    ff = ff * first_ff['isField'] # LAT ONLY AVAILABLE FOR FIELDS
     lik_pieces_u[0]['ff'] = ff.apply(lambda x: 1 - x)
     lik_pieces_u[1]['ff'] = ff
     lik_mid.append(lik_pieces_u[0].prod(axis = 1))

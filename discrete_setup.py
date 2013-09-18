@@ -183,7 +183,7 @@ aut_pan.to_pickle('initial_panel.pickle')
 aut_pan = aut_pan[(aut_pan['date'] > first_yr) & (aut_pan['date'] <= last_yr)]
 first_deps = aut_pan.sort_index(by='date')\
             .groupby('au').first().reset_index()
-first_ff = first_deps.set_index('au')['dmean']
+first_ff = first_deps.set_index('au')[['dmean', 'isField']]
 first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
              .groupby('au').first().reset_index()
 aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
