@@ -28,10 +28,10 @@ if __name__ == '__main__':
              gam[0][field][1] = 0.1
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'qual': 1, 'field': 1.6987073884478081, 'lat': 0})
+    mov_params = pd.Series({'qual': -1, 'field': -1.6987073884478081, 'lat': 1})
     
     # OTHER PARAMETERS 
-    lp = [0.1, 1] #latent type probability
+    lp = [-1, 1] #latent type probability
     lo = 0.058882490293258982 #offer arrival rate
     p = 1.3625786095456844 #signing bonus distribution parameter
     ip = 1 #instrument parameter (affects 1991 wages)

@@ -57,7 +57,7 @@ def update_movs(big_mov_params):
                     + random.gauss(0, 0.1), 0, 1)
     p = math.exp(math.log(p) + random.gauss(0,0.05))
     mov_params = mov_params.astype('float64')
-    mov_params['qual'] = 1 # mov_params['qual'] + random.gauss(0,0.01)
+    mov_params['qual'] = -1 # mov_params['qual'] + random.gauss(0,0.01)
     mov_params['field'] = mov_params['field'] + random.gauss(0,0.1)
     mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.1)
 

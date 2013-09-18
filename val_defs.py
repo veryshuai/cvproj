@@ -7,6 +7,7 @@ import collections
 import cyfuncs as cyf
 import pickle
 import val_mp as vm
+import math
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -114,7 +115,7 @@ def val_loop(w, lam, dis, p, ip, bd, init='nope'):
 
 def wd(ind, dep):
     # peforms distance calculation for wage
-    out = dep.apply(lambda x: 1 / (1 + pow(ind - x,2)))
+    out = dep.apply(lambda x: pow(ind - x,2))
     return out
 
 def calc_wage(mp, dep, qual, field, lat):
@@ -129,7 +130,8 @@ def calc_wage(mp, dep, qual, field, lat):
     wq = q * wd(qual, dep['dep_qual'])
     wf = f * wd(field, dep['dmean'])
     wl = l * dep['dmean'] * lat
-    w = wq + wf + wl
+    w_mid = wq + wf + wl
+    w = w_mid.apply(lambda x: math.exp(x))
 
     return w
 
