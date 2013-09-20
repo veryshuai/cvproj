@@ -35,39 +35,48 @@ class bcolors:
 def update_cits(cit_params):
     # updates cit parameters
 
+    # get user jump size
+    jump = pd.read_csv('jump_size.csv').set_index('block')
+    s = list(jump.loc['cit'])[0]
+
     [alp, gam, bet] = cit_params
     for qual in range(1): #all qualities share parameters!
         for field in range(2):
             for lat in range(2):
-                if field == 0 and lat == 1:
-                    alp[qual][field][lat] = 0
+                # if field == 0 and lat == 1:
+                if lat == 1:
+                    alp[qual][field][lat] = 1
                     bet[qual][field][lat] = 0
-                    gam[qual][field][lat] = 0
+                    gam[qual][field][lat] = 0.1
                 else:
                     alp[qual][field][lat]\
-                        = alp[qual][field][lat] + random.gauss(0,.1)
+                        = alp[qual][field][lat] + random.gauss(0,.1 * s)
                     bet[qual][field][lat]\
-                        = bet[qual][field][lat] + random.gauss(0,.3)
+                        = bet[qual][field][lat] + random.gauss(0,.3 * s)
                     gam[qual][field][lat]\
                         = norm.cdf(norm.ppf(gam[qual][field][lat],
-                            0, 1) + random.gauss(0, .2), 0, 1)
+                            0, 1) + random.gauss(0, .2 * s), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
 def update_movs(big_mov_params):
     # updates mov parameters
 
+    # get user jump size
+    jump = pd.read_csv('jump_size.csv').set_index('block')
+    s = list(jump.loc['mov'])[0]
+
     [mov_params, lam, p] = big_mov_params
     lam = norm.cdf(norm.ppf(lam, 0, 1) 
-                    + random.gauss(0, 0.1), 0, 1)
-    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,0.05))
+                    + random.gauss(0, 0.1 * s), 0, 1)
+    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,0.05 * s))
     mov_params = mov_params.astype('float64')
-    mov_params['qual'] = -1 # mov_params['qual'] + random.gauss(0,0.01)
-    mov_params['field'] = mov_params['field'] + random.gauss(0,0.05)
-    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
+    mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.05 * s)
+    mov_params['field'] = mov_params['field'] + random.gauss(0,0.05 * s)
+    mov_params['lat'] = -1 # mov_params['lat'] + random.gauss(0,0.05 * s)
 
     big_mov_params_u = [mov_params, lam, p]
-    return big_mov_params_u
+    return big_mov_params_u, s
 
 def calc_cit_lik(cit_params, big_mov_params, citers,
                                  nocits, first_cits, lp, lik_pieces,
@@ -125,13 +134,18 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
 def calc_lp_lik(cit_params, big_mov_params,
                 lp, lik_pieces, init, first_ff, ip):
     # updates lp and recalcs lik
+
+    # get user jump size
+    jump = pd.read_csv('jump_size.csv').set_index('block')
+    s = list(jump.loc['lp'])[0]
+
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = deepcopy(big_mov_params)
     init_u = deepcopy(init)
     ip_u = deepcopy(ip)
     lp_u = []
-    lp_u.append(deepcopy(lp[0]) + random.gauss(0, 1))
-    lp_u.append(deepcopy(lp[1]) + random.gauss(0, 1))
+    lp_u.append(deepcopy(lp[0]) + random.gauss(0, 1 * s))
+    lp_u.append(deepcopy(lp[1]) + random.gauss(0, 1 * s))
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     return lik_u, cit_params_u, big_mov_params_u,\
@@ -144,9 +158,9 @@ def calc_mov_lik(cit_params, big_mov_params,
     # Updates movs and recalculates likelihood
 
     cit_params_u = deepcopy(cit_params)
-    big_mov_params_u = update_movs(deepcopy(big_mov_params))
+    big_mov_params_u, s = update_movs(deepcopy(big_mov_params))
     lp_u = deepcopy(lp)
-    ip_u = math.exp(math.log(deepcopy(ip)) + random.gauss(0,0.1))
+    ip_u = math.exp(math.log(deepcopy(ip)) + random.gauss(0,0.1 * s))
     lik_pieces_u = deepcopy(lik_pieces)
     
     # NEW VAL AND TRANSITIONS

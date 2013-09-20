@@ -20,7 +20,7 @@ def tree():
     return collections.defaultdict(tree)
 
 first_yr = 1986
-last_yr = 1993
+last_yr = 1994
 
 # LOAD FIRST CITATION TIMES AND TOTAL CITES
 cit_times_df = pd.read_csv('cit_times.csv')
@@ -221,4 +221,16 @@ bd = bd['budget_def'].fillna(value=0)
 bd = bd.apply(lambda x: float(x) * 0.01)
 bd.to_pickle('budget_def.pickle')
 
-
+# GENERATE SUMMARY STATISTICS
+aut_sum = aut_pan.groupby('au').first()
+print aut_sum
+print aut_sum.qual.describe()
+print mov_dat[mov_dat['last_dep'] != mov_dat['dep']]
+dep_sum = aut_pan[aut_pan['date'] == 1987].groupby(['dep','date'])['au'].count()
+print dep_sum.describe()
+dep_sum = aut_pan[aut_pan['date'] == 1994].groupby(['dep','date'])['au'].count()
+print dep_sum.describe()
+dep_sum = aut_pan[aut_pan['date'] == 1987].groupby(['dep','date'])['isField'].mean()
+print dep_sum.describe()
+dep_sum = aut_pan[aut_pan['date'] == 1987].groupby(['dep','date'])['qual'].mean()
+print dep_sum.describe()
