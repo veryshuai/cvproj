@@ -47,10 +47,10 @@ def update_cits(cit_params):
                     alp[qual][field][lat]\
                         = alp[qual][field][lat] + random.gauss(0,.1)
                     bet[qual][field][lat]\
-                        = bet[qual][field][lat] + random.gauss(0,.1)
+                        = bet[qual][field][lat] + random.gauss(0,.3)
                     gam[qual][field][lat]\
                         = norm.cdf(norm.ppf(gam[qual][field][lat],
-                            0, 1) + random.gauss(0, .1), 0, 1)
+                            0, 1) + random.gauss(0, .2), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
@@ -60,11 +60,11 @@ def update_movs(big_mov_params):
     [mov_params, lam, p] = big_mov_params
     lam = norm.cdf(norm.ppf(lam, 0, 1) 
                     + random.gauss(0, 0.1), 0, 1)
-    p = math.exp(math.log(p) + random.gauss(0,0.05))
+    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,0.05))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = -1 # mov_params['qual'] + random.gauss(0,0.01)
-    mov_params['field'] = mov_params['field'] + random.gauss(0,0.1)
-    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.1)
+    mov_params['field'] = mov_params['field'] + random.gauss(0,0.05)
+    mov_params['lat'] = mov_params['lat'] + random.gauss(0,0.05)
 
     big_mov_params_u = [mov_params, lam, p]
     return big_mov_params_u
