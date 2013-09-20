@@ -13,6 +13,7 @@ from time import clock, time
 from copy import copy, deepcopy
 from scipy.stats import norm
 from scipy.stats import beta as betad
+import adapt
 import numpy as np
 
 # COLOR TEXT PRINTING
@@ -41,7 +42,7 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += math.log(betad.pdf(gam[0][0][0],0.125,2))
     return run_sum
 
-def update_cits(cit_params):
+def update_cits(cit_params, rnd):
     # updates cit parameters
 
     # get user jump size
@@ -49,26 +50,18 @@ def update_cits(cit_params):
     s = list(jump.loc['cit'])[0]
 
     [alp, gam, bet] = cit_params
-    for qual in range(1): #all qualities share parameters!
-        for field in range(2):
-            for lat in range(2):
-                # if field == 0 and lat == 1:
-                if lat == 1:
-                    alp[qual][field][lat] = 1
-                    bet[qual][field][lat] = 0
-                    gam[qual][field][lat] = 0.1
-                else:
-                    alp[qual][field][lat]\
-                        = alp[qual][field][lat] + random.gauss(0,.1 * s)
-                    bet[qual][field][lat]\
-                        = bet[qual][field][lat] + random.gauss(0,.3 * s)
-                    gam[qual][field][lat]\
-                        = norm.cdf(norm.ppf(gam[qual][field][lat],
-                            0, 1) + random.gauss(0, .2 * s), 0, 1)
+    alp[0][0][0] = alp[0][0][0] + random.gauss(0,rnd['alpha_0'] * s)
+    alp[0][1][0] = alp[0][1][0] + random.gauss(0,rnd['alpha_1'] * s)
+    bet[0][0][0] = bet[0][0][0] + random.gauss(0,rnd['bet_0'] * s)
+    bet[0][1][0] = bet[0][1][0] + random.gauss(0,rnd['bet_1'] * s)
+    gam[0][0][0] = norm.cdf(norm.ppf(gam[0][0][0], 0, 1) +
+                            random.gauss(0,rnd['gam_0'] * s), 0, 1)
+    gam[0][1][0] = norm.cdf(norm.ppf(gam[0][1][0], 0, 1) +
+                            random.gauss(0,rnd['gam_1'] * s), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
-def update_movs(big_mov_params):
+def update_movs(big_mov_params, rnd):
     # updates mov parameters
 
     # get user jump size
@@ -77,22 +70,25 @@ def update_movs(big_mov_params):
 
     [mov_params, lam, p] = big_mov_params
     lam = norm.cdf(norm.ppf(lam, 0, 1) 
-                    + random.gauss(0, 0.1 * s), 0, 1)
-    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,0.05 * s))
+                    + random.gauss(0, rnd['lo'] * s), 0, 1)
+    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * s))
     mov_params = mov_params.astype('float64')
-    mov_params['qual'] = mov_params['qual'] + random.gauss(0,0.05 * s)
-    mov_params['field'] = mov_params['field'] + random.gauss(0,0.05 * s)
-    mov_params['lat'] = -1 # mov_params['lat'] + random.gauss(0,0.05 * s)
-
+    mov_params['qual'] = mov_params['qual']\
+                          + random.gauss(0,rnd['qual_co'] * s)
+    mov_params['field'] = mov_params['field']\
+                          + random.gauss(0,rnd['field_co'] * s)
+    mov_params['lat'] =  mov_params['lat']\
+                          + random.gauss(0,rnd['lat_co'] * s)
     big_mov_params_u = [mov_params, lam, p]
+
     return big_mov_params_u, s
 
 def calc_cit_lik(cit_params, big_mov_params, citers,
                                  nocits, first_cits, lp, lik_pieces,
-                                 dep_year, init, first_ff, ip):
+                                 dep_year, init, first_ff, ip, cit_rnd):
     # Updates cits and recalculates likelihood
 
-    cit_params_u = update_cits(deepcopy(cit_params))
+    cit_params_u = update_cits(deepcopy(cit_params), cit_rnd)
     big_mov_params_u = deepcopy(big_mov_params)
     lp_u = deepcopy(lp)
     ip_u = deepcopy(ip)
@@ -126,7 +122,7 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     lik_mid = []
     print norm.cdf(lp_u[0] + 0.05 *lp_u[1])
     ff = first_ff['dmean'].apply(lambda x: norm.cdf(lp_u[0] + x * lp_u[1]))
-    ff = ff * first_ff['isField'] # LAT ONLY AVAILABLE FOR FIELDS
+    # ff = ff * first_ff['isField'] # LAT ONLY AVAILABLE FOR FIELDS
     lik_pieces_u[0]['ff'] = ff.apply(lambda x: 1 - x)
     lik_pieces_u[1]['ff'] = ff
     lik_mid.append(lik_pieces_u[0].prod(axis = 1))
@@ -154,8 +150,8 @@ def calc_lp_lik(cit_params, big_mov_params,
     init_u = deepcopy(init)
     ip_u = deepcopy(ip)
     lp_u = []
-    lp_u.append(deepcopy(lp[0]) + random.gauss(0, 1 * s))
-    lp_u.append(deepcopy(lp[1]) + random.gauss(0, 1 * s))
+    lp_u.append(deepcopy(lp[0]) + random.gauss(0, 0.1 * s))
+    lp_u.append(deepcopy(lp[1]) + random.gauss(0, 0.1 * s))
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
@@ -165,13 +161,15 @@ def calc_lp_lik(cit_params, big_mov_params,
 def calc_mov_lik(cit_params, big_mov_params,
                  lp, lik_pieces, dep_stats,
                  init, mov_dat91, mov_dat_not91,
-                 first_ff, ip, bd):
+                 first_ff, ip, bd, loc_rnd):
     # Updates movs and recalculates likelihood
 
     cit_params_u = deepcopy(cit_params)
-    big_mov_params_u, s = update_movs(deepcopy(big_mov_params))
+    big_mov_params_u, s = update_movs(deepcopy(big_mov_params),
+                                      loc_rnd)
     lp_u = deepcopy(lp)
-    ip_u = math.exp(math.log(deepcopy(ip)) + random.gauss(0,0.1 * s))
+    ip_u = math.exp(math.log(deepcopy(ip))
+                    + random.gauss(0,loc_rnd['ip'] * s))
     lik_pieces_u = deepcopy(lik_pieces)
     
     # NEW VAL AND TRANSITIONS
@@ -198,7 +196,7 @@ def calc_mov_lik(cit_params, big_mov_params,
 def est_loop(lik, lik_pieces, big_mov_params, cit_params,
         lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
         first_cits, citers, nocits, dep_year,
-        out_file, out_writer, first_ff, ip, bd):
+        out_file, out_writer, first_ff, ip, bd, timestr):
     # called by discrete.py, this is the boss of the
     # estimation loop
 
@@ -209,16 +207,17 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
         tic = clock()
         print bcolors.RED + str(k) + bcolors.ENDC
 
-        if k % 3 == 0:
+        if k % 3 == 1:
             print ''.join(['cit ', str(cit_acc / float(cit_tot))])
             cit_tot += 1
+            [cit_rnd, loc_rnd] = adapt.get_cov(timestr, k, 'cit')
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_cit_lik(cit_params, big_mov_params, citers,
                                    nocits, first_cits, lp, lik_pieces,
-                                   dep_year, init, first_ff, ip)
+                                   dep_year, init, first_ff, ip, cit_rnd)
 
-        if k % 3 == 1:
+        if k % 3 == 0:
             print ''.join(['lp ', str(lp_acc / float(lp_tot))])
             lp_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
@@ -228,13 +227,14 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 
         if k % 3 == 2:
             print ''.join(['mov ', str(mov_acc / float(mov_tot))])
+            [cit_rnd, loc_rnd] = adapt.get_cov(timestr, k, 'loc')
             mov_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_mov_lik(cit_params, big_mov_params,
                             lp, lik_pieces, dep_stats,
                             init, mov_dat91, mov_dat_not91,
-                            first_ff, ip, bd)
+                            first_ff, ip, bd, loc_rnd)
 
         print bcolors.BLUE + str(lik) + ', ' + str(lik_u) + bcolors.ENDC
 
@@ -268,7 +268,7 @@ def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     for pnum in range(3):
         for qual in range(1):
             for field in range(2):
-                for lat in range(0):
+                for lat in range(1):
                         cit_write.append(cit_params[pnum][qual][field][lat])
     [movparams, lam, p] = big_mov_params
     out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + lp + [ip])

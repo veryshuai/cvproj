@@ -82,5 +82,5 @@ def main(cit_params, big_mov_params, lp, ip):
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
             first_cits, citers, nocits, dep_year,
-            out_file, out_writer, first_ff, ip, bd)
+            out_file, out_writer, first_ff, ip, bd, timestr)
 

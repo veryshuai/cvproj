@@ -74,7 +74,7 @@ def mov_lik(trans, group, lat):
     lin1 = group.iloc[0]
     t = trans[lin1['qual']][lin1['isField']][lat]
     if not t:
-        return 1
+        return 0
     else:
         lin2 = group.iloc[-1]
         if lin1['last_dep'] == lin2['dep']:
