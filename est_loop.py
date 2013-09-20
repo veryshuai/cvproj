@@ -12,6 +12,7 @@ import random
 from time import clock, time
 from copy import copy, deepcopy
 from scipy.stats import norm
+from scipy.stats import beta as betad
 import numpy as np
 
 # COLOR TEXT PRINTING
@@ -31,6 +32,14 @@ class bcolors:
         self.YEL = ''
         self.RED = ''
         self.ENDC = ''
+
+def prior(cit_params, big_mov_params, lp, ip):
+    # calculates the prior probability
+    run_sum = 0
+    [alp, gam, bet] = cit_params
+    run_sum += math.log(betad.pdf(gam[0][1][0],1,2))
+    run_sum += math.log(betad.pdf(gam[0][0][0],0.125,2))
+    return run_sum
 
 def update_cits(cit_params):
     # updates cit parameters
@@ -106,6 +115,7 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
 
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
+    lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
     
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u, ip_u
@@ -148,6 +158,7 @@ def calc_lp_lik(cit_params, big_mov_params,
     lp_u.append(deepcopy(lp[1]) + random.gauss(0, 1 * s))
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
+    lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u, ip_u
 
@@ -180,6 +191,7 @@ def calc_mov_lik(cit_params, big_mov_params,
         mlik.append(together)
         lik_pieces_u[lat]['mlik'] = mlik[lat]
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
+    lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u, ip_u
 
@@ -256,7 +268,7 @@ def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     for pnum in range(3):
         for qual in range(1):
             for field in range(2):
-                for lat in range(2):
+                for lat in range(0):
                         cit_write.append(cit_params[pnum][qual][field][lat])
     [movparams, lam, p] = big_mov_params
     out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + lp + [ip])

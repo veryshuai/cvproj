@@ -74,7 +74,8 @@ def main(cit_params, big_mov_params, lp, ip):
         lik_dat['fc_liks'] = fc_liks[k]
         lik_dat['nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
-    lik = el.recalc_lik(lik_pieces, first_ff, lp)
+    lik = el.prior(cit_params, big_mov_params, lp, ip)
+    lik += el.recalc_lik(lik_pieces, first_ff, lp)
 
     # pr.dump_stats('profile.out')
     # CALL ESTIMATION LOOP
