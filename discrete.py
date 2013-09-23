@@ -12,6 +12,7 @@ import time
 import random
 import csv
 import cProfile
+import cf_suite as cf
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -44,6 +45,11 @@ def main(cit_params, big_mov_params, lp, ip):
         + '_' + str(random.randrange(100000))
     out_file = open('results/out_' + timestr + '.csv','wb')
     out_writer = csv.writer(out_file)
+
+    # COUNTER FACTUALS
+    aut_pan = pd.read_pickle('initial_panel.pickle')
+    cf.offer_cf(0.1, cit_params, big_mov_params,
+                lp, init, ip, dep_stats, bd, aut_pan)
 
     # GET INITIAL LIKELIHOOD
     init, trans, itrans = vd.val_init(big_mov_params, dep_stats, 0.9, ip, bd, init)

@@ -171,7 +171,8 @@ dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
 dep_list.to_pickle('dep_list.pickle')
 
 # CLEAN UP AUTPAN
-aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean', 'qual', 'dep_qual', 'kfrac', 'isField',
+aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',
+                             'qual', 'dep_qual', 'kfrac', 'isField',
                              'start_times', 'end_times', 'cit_times',
                              'tot_cits', 'isCiter']].reset_index()
 aut_pan['isMove'] = False

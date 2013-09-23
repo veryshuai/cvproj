@@ -38,8 +38,8 @@ def prior(cit_params, big_mov_params, lp, ip):
     # calculates the prior probability
     run_sum = 0
     [alp, gam, bet] = cit_params
-    run_sum += math.log(betad.pdf(gam[0][1][0],1,2))
-    run_sum += math.log(betad.pdf(gam[0][0][0],0.125,2))
+    run_sum += betad.logpdf(gam[0][1][0],1,2)
+    run_sum += betad.logpdf(gam[0][0][0],0.125,2)
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -246,9 +246,9 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
             init = deepcopy(init_u)
             lik = deepcopy(lik_u)
             lik_pieces = deepcopy(lik_pieces_u)
-            if k % 3 == 0:
-                cit_acc += 1
             if k % 3 == 1:
+                cit_acc += 1
+            if k % 3 == 0:
                 lp_acc += 1
             if k % 3 == 2:
                 mov_acc += 1
