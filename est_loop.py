@@ -5,6 +5,7 @@
 import pandas as pd
 import val_defs as vd
 import cit_defs as cd
+import cit_mp as cm
 import collections
 import pickle
 import math
@@ -103,18 +104,12 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
     ip_u = deepcopy(ip)
     init_u = deepcopy(init)
     
-    cit_liks, fc_liks, nocit_liks = [], [], []
+    cit_liks, fc_liks, nocit_liks\
+            = cm.call_parallel(cit_params_u, dep_year,
+                               lp_u, citers, first_cits, nocits)
+
     lik_pieces_u = deepcopy(lik_pieces)
-    for lat in range(3):
-        cit_liks.append(citers.groupby('au')\
-                    .apply(lambda x: cd.cit_lik_cit(cit_params_u[0],
-                           cit_params_u[2], cit_params_u[1], x, dep_year, lat, lp_u)))
-        fc_liks.append(first_cits.groupby('au')\
-                    .apply(lambda x: cd.fc_lik(cit_params_u[0],
-                           cit_params_u[2], cit_params_u[1],  x, dep_year, lat, lp_u)))
-        nocit_liks.append(nocits.groupby('au')\
-                    .apply(lambda x: cd.cit_lik_no_cit(cit_params_u[0],
-                           cit_params_u[2], cit_params_u[1], x, dep_year, lat, lp_u)))
+    for lat in range(5):
         lik_pieces_u[lat]['cit_liks'] = cit_liks[lat]
         lik_pieces_u[lat]['fc_liks'] = fc_liks[lat]
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
@@ -126,35 +121,40 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
             lp_u, lik_pieces_u, init_u, ip_u
 
 
-def init_cond(mean, lp_u, lat):
-    """calculates initial latent type multiple for simpson's rule"""
+def init_cond(mean, qw, qp, lat, lp_u):
+    """calculates initial latent type multiple for quadrature"""
     
-    # BOUND DIFFERENCE FROM ZERO
-    scale = 4 * lp_u[2] / float(6)
-    if lat == 0:
-        arg = norm.pdf(-2 * lp_u[2], mean, lp_u[2])
-        return scale * arg
-    if lat == 1:
-        arg = 4 * norm.pdf(0, mean, lp_u[2])
-        return scale * arg 
-    if lat == 2:
-        arg = norm.pdf(2 * lp_u[2], mean, lp_u[2])
-        return scale * arg 
+    res = qw[lat] * norm.pdf(qp[lat], mean, lp_u[2])
+    return res
 
 
 def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # recalculates lik from updates lik_pieces
 
     lik_mid = []
+    # GET INDIVIDUAL SPECIFIC NORMAL MEAN
     ff_mean = first_ff['dmean'].apply(lambda x: 0.2 *
-                                norm.cdf(lp_u[0] + x * lp_u[1]) - 1)
-    for k in range(3):
+                                norm.cdf(lp_u[0] + x * lp_u[1]) - 0.1)
+    
+    # QUADRATURE POINTS AND WEIGHTS 
+    qa = [2 * lp_u[2] / float(3) * math.sqrt(5 -
+            2 * math.sqrt(10 / float(7))),
+            2 * lp_u[2] / float(3) * math.sqrt(5 +
+            2 * math.sqrt(10 / float(7)))]
+    qp =  [-qa[1], -qa[0], 0, qa[0], qa[1]]
+    qa = [(322 - 13 * math.sqrt(70)) / float(900),
+            (322 + 13 * math.sqrt(70)) / float(900)]
+    qw = [qa[0], qa[1], 128 / float(225), qa[1], qa[0]]
+
+    # GET WEIGHTED QUADRATURE SUM VALUES
+    for k in range(5):
         lik_pieces_u[k]['ff'] = ff_mean.apply(lambda x:
-                                        init_cond(x, lp_u, k))
-    lik_mid.append(lik_pieces_u[0].prod(axis = 1))
-    lik_mid.append(lik_pieces_u[1].prod(axis = 1))
-    lik_mid.append(lik_pieces_u[2].prod(axis = 1))
-    lik_big = lik_mid[0] + lik_mid[1] + lik_mid[2]
+                                        init_cond(x, qw,
+                                            qp, k, lp_u))
+        lik_mid.append(lik_pieces_u[0].prod(axis=1))
+
+    lik_big = lik_mid[0] + lik_mid[1] + lik_mid[2]\
+            + lik_mid[3] + lik_mid[4]
     try:
         lik_u = lik_big.apply(lambda x: math.log(x)).sum()
     except Exception as e:
@@ -165,7 +165,10 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     return lik_u
 
 def calc_lp_lik(cit_params, big_mov_params,
-                lp, lik_pieces, init, first_ff, ip):
+                lp, lik_pieces, init, first_ff,
+                ip, citers, nocits, first_cits,
+                dep_year, dep_stats, mov_dat91,
+                mov_dat_not91, bd):
     # updates lp and recalcs lik
 
     # get user jump size
@@ -174,16 +177,43 @@ def calc_lp_lik(cit_params, big_mov_params,
     s1 = list(jump.loc['lp1'])[0]
     s2 = list(jump.loc['lp2'])[0]
 
+    # COPY OLD DATA
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = deepcopy(big_mov_params)
     init_u = deepcopy(init)
     ip_u = deepcopy(ip)
+
+    # UPDATE PARAMETERS
     lp_u = []
     lp_u.append(deepcopy(lp[0]) + random.gauss(0, s0))
     lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
     lp_u.append(math.exp(math.log(deepcopy(lp[2]))
                          + random.gauss(0, s2)))
+
+    # UPDATE MOVE LIKS
+    init_u, trans_u, itrans_u = vd.val_init(big_mov_params_u, dep_stats,
+                              0.9, ip_u, bd, deepcopy(init), lp_u)
+
+    # UPDATE CIT LIKS 
+    cit_liks, fc_liks, nocit_liks\
+            = cm.call_parallel(cit_params_u, dep_year,
+                               lp_u, citers, first_cits, nocits)
+
+    mlik = []
     lik_pieces_u = deepcopy(lik_pieces)
+    for lat in range(5):
+        not91 = mov_dat_not91.groupby('au')\
+                .apply(lambda x: cd.mov_lik(trans_u, x, lat))
+        is91  = mov_dat91.groupby('au')\
+                .apply(lambda x: cd.mov_lik(itrans_u, x, lat))
+        together = pd.DataFrame({'not91': not91, 'is91': is91},
+                                index=not91.index)
+        together = together.fillna(value=1).prod(1)
+        mlik.append(together)
+        lik_pieces_u[lat]['mlik'] = mlik[lat]
+        lik_pieces_u[lat]['cit_liks'] = cit_liks[lat]
+        lik_pieces_u[lat]['fc_liks'] = fc_liks[lat]
+        lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
     return lik_u, cit_params_u, big_mov_params_u,\
@@ -207,7 +237,7 @@ def calc_mov_lik(cit_params, big_mov_params,
 
     # NEW LIKELIHOOD CALCUATION
     mlik = []
-    for lat in range(3):
+    for lat in range(5):
         not91 = mov_dat_not91.groupby('au')\
                 .apply(lambda x: cd.mov_lik(trans_u, x, lat))
         is91  = mov_dat91.groupby('au')\
@@ -226,19 +256,22 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
         lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
         first_cits, citers, nocits, dep_year,
         out_file, out_writer, first_ff, ip, bd, timestr):
-    # called by discrete.py, this is the boss of the
-    # estimation loop
+    """called by discrete.py, this is the boss of the
+    estimation loop"""
 
     cit_tot, lp_tot, mov_tot = 1, 1, 1
     cit_acc, lp_acc, mov_acc = 0, 0, 0
     for k in range(200000):
 
+        # TICK TOCK
         tic = clock()
         print bcolors.RED + str(k) + bcolors.ENDC
 
-        if k % 3 == 1:
+        # NEW CITS
+        if k % 5 == 1 or k % 5 == 3 or k % 5 == 5:
             print ''.join(['cit ', str(cit_acc / float(cit_tot))])
             cit_tot += 1
+            # get new random shocks
             [cit_rnd, loc_rnd] = adapt.get_cov(timestr, k, 'cit')
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u, ip_u\
@@ -246,15 +279,20 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                                    nocits, first_cits, lp, lik_pieces,
                                    dep_year, init, first_ff, ip, cit_rnd)
 
-        if k % 3 == 0:
+        # NEW LIPS
+        if k % 7 == 0:
             print ''.join(['lp ', str(lp_acc / float(lp_tot))])
             lp_tot += 1
             lik_u, cit_params_u, big_mov_params_u,\
                     lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_lp_lik(cit_params, big_mov_params,
-                                  lp, lik_pieces, init, first_ff, ip)
+                                  lp, lik_pieces, init,
+                                  first_ff, ip, citers, nocits,
+                                  first_cits, dep_year, dep_stats,
+                                  mov_dat91, mov_dat_not91, bd)
 
-        if k % 3 == 2:
+        # NEW MOPS
+        if k % 5 == 2 or k % 5 == 4 or k % 5 == 6:
             print ''.join(['mov ', str(mov_acc / float(mov_tot))])
             [cit_rnd, loc_rnd] = adapt.get_cov(timestr, k, 'loc')
             mov_tot += 1
@@ -267,6 +305,9 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 
         print bcolors.BLUE + str(lik) + ', ' + str(lik_u) + bcolors.ENDC
 
+        if lik_u - lik > 1000:
+            import pdb; pdb.set_trace()
+
         if math.log(random.random()) < (lik_u - lik):
             print bcolors.PURP + 'ACCEPTED!' + bcolors.ENDC
             [cit_params, big_mov_params, lp, ip]\
@@ -275,11 +316,11 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
             init = deepcopy(init_u)
             lik = deepcopy(lik_u)
             lik_pieces = deepcopy(lik_pieces_u)
-            if k % 3 == 1:
+            if k % 7 == 1 or k % 7 == 3 or k % 7 == 5 :
                 cit_acc += 1
-            if k % 3 == 0:
+            if k % 7 == 0:
                 lp_acc += 1
-            if k % 3 == 2:
+            if k % 7 == 2 or k % 7 == 4 or k % 7 == 6 :
                 mov_acc += 1
 
         # WRITE

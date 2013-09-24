@@ -14,43 +14,43 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def no_cit_inner(row, alp, bet, dep_year, lat, lp):
+def no_cit_inner(row, alp, bet, dep_year, lat, qp):
     k_lev = dep_year.at[row['dep'],row['date']-1]
-    num = alp + bet * k_lev + (lat - 1) * 2 * lp[2]
+    num = alp + bet * k_lev + qp[lat]
     item = 1 - math.exp(num) / (1 + math.exp(num))
     return item
 
 def cit_lik_no_cit(alp, bet, gam, dep_aut,
-                   dep_year, lat, lp):
+                   dep_year, lat, qp):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
                                                    bet, dep_year,
-                                                   lat, lp), axis=1)
+                                                   lat, qp), axis=1)
     arg = (1 - pgam + pgam * liks.prod())
     return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut,
-                dep_year, lat, lp):
+                dep_year, lat, qp):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
                                                bet, dep_year,
-                                               lat, lp), axis=1)
+                                               lat, qp), axis=1)
     arg = (pgam * liks.prod())
     return arg
 
 def fc_lik(alp, bet, gam, dep_aut,
-           dep_year, lat, lp):
+           dep_year, lat, qp):
     # calculates first cite likelihoods
 
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
-    num = alp + (lat - 1) * 2 * lp[2]\
+    num = alp + qp[lat]\
             + bet * dep_year.at[lin1['dep'],lin1['date']-1]
     item = math.exp(num) / (1 + math.exp(num))
     return item
@@ -72,7 +72,7 @@ def mov_lik(trans, group, lat):
         lin2 = group.iloc[-1]
         if lin1['last_dep'] == lin2['dep']:
             out = pow(trans_prob(lin1, t),group.shape[0])
-            return float(out)
+            return max(float(out), 1e-12) #avoit zeros
         else:
             lik = group.apply(lambda row: trans_prob(row, t), axis=1)
             return max(lik.prod(), 1e-12)  #avoid zeros

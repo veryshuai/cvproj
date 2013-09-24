@@ -6,6 +6,7 @@ import time
 import val_defs as vd
 import collections
 import pickle
+import math
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -65,7 +66,7 @@ def call_parallel(big_mov_params, dep_stats, dis,
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_consumers = 12
+    num_consumers = 10
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:
@@ -74,7 +75,7 @@ def call_parallel(big_mov_params, dep_stats, dis,
     # Enqueue jobs
     for q in range(2):
         for f in range(2):
-            for l in range(3):
+            for l in range(5):
                 tasks.put(Task(q, f, l, big_mov_params,
                                dep_stats, dis,
                                ip, bd, init, lp))
@@ -90,7 +91,7 @@ def call_parallel(big_mov_params, dep_stats, dis,
     vals = tree()
     trans = tree()
     itrans = tree()
-    num_jobs = 12
+    num_jobs = 20 
     while num_jobs:
         r = results.get()
         vals[r[0]][r[1]][r[2]]   = r[3]
@@ -113,9 +114,19 @@ def val_calc(qual, field, lat, big_mov_params,
              dep_stats, dis, ip, bd, init, lp):
     """calculates a single value function"""
 
+    # UNPACK
     [mov_params, lam_param, p] = big_mov_params
+    
+    # QUADRATURE POINTS 
+    qa = [2 * lp[2] / float(3) * math.sqrt(5 -
+            2 * math.sqrt(10 / float(7))),
+            2 * lp[2] / float(3) * math.sqrt(5 +
+            2 * math.sqrt(10 / float(7)))]
+    qp =  [-qa[1], -qa[0], 0, qa[0], qa[1]]
+
+    # CALCULATE WAGES
     wage = vd.calc_wage(mov_params, dep_stats,
-                     qual, field, lat, lp)
+                     qual, field, lat, qp)
     lam = lam_param[0] + qual * lam_param[1]
     try:
         sp = init[qual][field][lat]

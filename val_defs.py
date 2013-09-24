@@ -118,7 +118,7 @@ def wd(ind, dep):
     out = dep.apply(lambda x: pow(ind - x,2))
     return out
 
-def calc_wage(mp, dep, qual, field, lat, lp):
+def calc_wage(mp, dep, qual, field, lat, qp):
     # returns wage at each of the departments
 
     # EASY PARAMETER REFERENCE
@@ -129,8 +129,8 @@ def calc_wage(mp, dep, qual, field, lat, lp):
     # CALCULATE WAGE
     wq = q * dep['dep_qual']
     wf = f * wd(field, dep['dmean'])
-    # lat simpson's rule points are -2 std dev, 0, and 2 std dev
-    wl = l * dep['dmean'] * (lat - 1) * 2 * lp[2]
+    # quadrature points 
+    wl = l * dep['dmean'] * qp[lat]
     w_mid = wq + wf + wl
     w = w_mid.apply(lambda x: math.exp(x))
 

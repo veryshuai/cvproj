@@ -36,10 +36,10 @@ def get_cov(snip, k, block_name):
                 flag = False
             cit_cov = citdat.cov()
             if flag:
-                cit_rnd = mvn(np.zeros(d), np.identity(d) * 0.01 * s / float(d))
+                cit_rnd = mvn(np.zeros(d), np.identity(d) * 0.0001 * s / float(d))
             else:
                 cit_rnd = (1 - b) * mvn(np.zeros(d), cit_cov * s / float(d))\
-                        + b * mvn(np.zeros(d), np.identity(d) * 0.01 * s / float(d))
+                        + b * mvn(np.zeros(d), np.identity(d) * s / float(d))
             cit_rnd = pd.Series(cit_rnd, index=['alpha', 'gam_0', 'gam_1', 'bet'])
             print cit_rnd
             loc_rnd = 0
@@ -56,10 +56,10 @@ def get_cov(snip, k, block_name):
                 flag = False
             loc_cov = locdat.cov()
             if flag:
-                loc_rnd = mvn(np.zeros(d), np.identity(d) * 0.01 * s / float(d))
+                loc_rnd = mvn(np.zeros(d), np.identity(d) * 0.0001 * s / float(d))
             else:
                 loc_rnd = (1 - b) * mvn(np.zeros(d), loc_cov * s / float(d))\
-                        + b * mvn(np.zeros(d), np.identity(d) * 0.01 * s / float(d))
+                        + b * mvn(np.zeros(d), np.identity(d) * s / float(d))
             loc_rnd = pd.Series(loc_rnd, index=['field_co', 'lat_co', 'qual_co',
                                                 'lo1', 'lo2', 'p', 'ip'])
             print loc_rnd
