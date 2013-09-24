@@ -137,9 +137,9 @@ aut_pan      = aut_pan[(pd.notnull(aut_pan.date)) & (aut_pan.date >= first_yr) &
 
 # DISCRETIZE AND MATCH QUALITY TO AUTHOR PANEL
 qual_list           = pd.read_csv('stata_usonly_qual_bar.csv',delimiter = '|').set_index('au')
-quant               = pd.qcut(qual_list['qual'], [0, 0.33, 0.66, 1])
+quant               = pd.qcut(qual_list['qual'], [0, 0.5, 1])
 junk, quant_id      = np.unique(quant, return_inverse = True)
-qual_list['qual']   = - (quant_id - 2)
+qual_list['qual']   = - (quant_id - 1)
 aut_pan             = aut_pan.join(qual_list).reset_index()
 aut_pan['dep_qual'] = aut_pan.groupby('dep')['qual'].transform(lambda x: x.mean())
 aut_pan             = aut_pan.set_index('au')
@@ -169,6 +169,7 @@ dep_years.to_pickle('dep_years.pickle')
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
 dep_list.to_pickle('dep_list.pickle')
+dep_list.to_csv('dep_list.csv')
 
 # CLEAN UP AUTPAN
 aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',

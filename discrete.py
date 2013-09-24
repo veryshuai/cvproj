@@ -3,7 +3,6 @@
 import pandas as pd
 import val_defs as vd
 import cit_defs as cd
-import collections
 import pickle
 import math
 import est_loop as el
@@ -12,7 +11,7 @@ import time
 import random
 import csv
 import cProfile
-import cf_suite as cf
+import collections
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -46,16 +45,12 @@ def main(cit_params, big_mov_params, lp, ip):
     out_file = open('results/out_' + timestr + '.csv','wb')
     out_writer = csv.writer(out_file)
 
-    # COUNTER FACTUALS
-    aut_pan = pd.read_pickle('initial_panel.pickle')
-    cf.offer_cf(0.1, cit_params, big_mov_params,
-                lp, init, ip, dep_stats, bd, aut_pan)
-
     # GET INITIAL LIKELIHOOD
-    init, trans, itrans = vd.val_init(big_mov_params, dep_stats, 0.9, ip, bd, init)
+    init, trans, itrans = vd.val_init(big_mov_params, dep_stats,
+                                      0.9, ip, bd, init, lp)
     vd.reset(init, trans)
     mlik = []
-    for lat in range(2):
+    for lat in range(3):
         not91 = mov_dat_not91.groupby('au').apply(lambda x: cd.mov_lik(trans, x, lat))
         is91  = mov_dat91.groupby('au').apply(lambda x: cd.mov_lik(itrans, x, lat))
         together = pd.DataFrame({'not91': not91, 'is91': is91}, index=not91.index)
@@ -64,17 +59,17 @@ def main(cit_params, big_mov_params, lp, ip):
         mlik.append(together)
 
     cit_liks, fc_liks, nocit_liks = [], [], []
-    for lat in range(2):
+    for lat in range(3):
         cit_liks.append(citers.groupby('au')\
-                    .apply(lambda x: cd.cit_lik_cit(alp, bet, gam, x, dep_year, lat)))
+                    .apply(lambda x: cd.cit_lik_cit(alp, bet, gam, x, dep_year, lat, lp)))
         fc_liks.append(first_cits.groupby('au')\
-                    .apply(lambda x: cd.fc_lik(alp, bet, gam,  x, dep_year, lat)))
+                    .apply(lambda x: cd.fc_lik(alp, bet, gam,  x, dep_year, lat, lp)))
         nocit_liks.append(nocits.groupby('au')\
-                    .apply(lambda x: cd.cit_lik_no_cit(alp, bet, gam, x, dep_year, lat)))
+                    .apply(lambda x: cd.cit_lik_no_cit(alp, bet, gam, x, dep_year, lat, lp)))
 
     # CALCULATE 
     lik_pieces = []
-    for k in range(2):
+    for k in range(3):
         lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
         lik_dat['cit_liks'] = cit_liks[k]
         lik_dat['fc_liks'] = fc_liks[k]

@@ -14,51 +14,44 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def no_cit_inner(row, alp, bet, dep_year, lat):
+def no_cit_inner(row, alp, bet, dep_year, lat, lp):
     k_lev = dep_year.at[row['dep'],row['date']-1]
-    num = alp + bet * k_lev + lat
+    num = alp + bet * k_lev + (lat - 1) * 2 * lp[2]
     item = 1 - math.exp(num) / (1 + math.exp(num))
     return item
 
-def cit_inner(row, alp, bet, dep_year):
-    num = alp + bet * dep_year.at[row['dep'],row['date']-1]
-    item = 1 - math.exp(num) / (1 + math.exp(num))
-    return item
-
-def cit_lik_no_cit(alp, bet, gam, dep_aut, dep_year, lat):
+def cit_lik_no_cit(alp, bet, gam, dep_aut,
+                   dep_year, lat, lp):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[0][lin1['isField']][0]
-    pgam = gam[0][lin1['isField']][0]
-    pbet = bet[0][lin1['isField']][0]
-    liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                                   pbet, dep_year,
-                                                   lat), axis=1)
+    pgam = gam[lin1['isField']]
+    liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
+                                                   bet, dep_year,
+                                                   lat, lp), axis=1)
     arg = (1 - pgam + pgam * liks.prod())
     return arg
 
-def cit_lik_cit(alp, bet, gam, dep_aut, dep_year, lat):
+def cit_lik_cit(alp, bet, gam, dep_aut,
+                dep_year, lat, lp):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    palp = alp[0][lin1['isField']][0]
-    pgam = gam[0][lin1['isField']][0]
-    pbet = bet[0][lin1['isField']][0]
-    liks = dep_aut.apply(lambda row: no_cit_inner(row, palp,
-                                               pbet, dep_year,
-                                               lat), axis=1)
+    pgam = gam[lin1['isField']]
+    liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
+                                               bet, dep_year,
+                                               lat, lp), axis=1)
     arg = (pgam * liks.prod())
     return arg
 
-def fc_lik(alp, bet, gam, dep_aut, dep_year, lat):
+def fc_lik(alp, bet, gam, dep_aut,
+           dep_year, lat, lp):
     # calculates first cite likelihoods
 
     lin1 = dep_aut.iloc[-1]
-    palp = alp[0][lin1['isField']][0]
-    pgam = gam[0][lin1['isField']][0]
-    pbet = bet[0][lin1['isField']][0]
-    num = palp + lat + pbet * dep_year.at[lin1['dep'],lin1['date']-1]
+    pgam = gam[lin1['isField']]
+    num = alp + (lat - 1) * 2 * lp[2]\
+            + bet * dep_year.at[lin1['dep'],lin1['date']-1]
     item = math.exp(num) / (1 + math.exp(num))
     return item
 
@@ -82,4 +75,4 @@ def mov_lik(trans, group, lat):
             return float(out)
         else:
             lik = group.apply(lambda row: trans_prob(row, t), axis=1)
-            return lik.prod()
+            return max(lik.prod(), 1e-12)  #avoid zeros

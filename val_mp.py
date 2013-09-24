@@ -35,7 +35,7 @@ class Consumer(multiprocessing.Process):
 
 class Task(object):
     def __init__(self, q, f, l, bmp,
-                 ds, d, ip, bd, init):
+                 ds, d, ip, bd, init, lp):
         self.q = q
         self.f = f
         self.l = l
@@ -45,16 +45,19 @@ class Task(object):
         self.init = init
         self.ip = ip
         self.bd = bd
+        self.lp = lp
     def __call__(self):
         val, trans, itrans = val_calc(self.q, self.f, self.l,
                               self.bmp, self.ds, self.d,
-                              self.ip, self.bd, self.init)
+                              self.ip, self.bd,
+                              self.init, self.lp)
         return [self.q, self.f, self.l, val, trans, itrans]
     def __str__(self):
         return 'q %s, f %s, l %s ' % (self.q, self.f, self.l)
 
 
-def call_parallel(big_mov_params, dep_stats, dis, ip, bd, init=[]):
+def call_parallel(big_mov_params, dep_stats, dis,
+                  ip, bd, init, lp):
     """Calls parallel loop for calculating value function"""
 
     # Establish communication queues
@@ -69,12 +72,12 @@ def call_parallel(big_mov_params, dep_stats, dis, ip, bd, init=[]):
         w.start()
     
     # Enqueue jobs
-    for q in range(3):
+    for q in range(2):
         for f in range(2):
-            for l in range(2):
+            for l in range(3):
                 tasks.put(Task(q, f, l, big_mov_params,
                                dep_stats, dis,
-                               ip, bd, init))
+                               ip, bd, init, lp))
     
     # Add a poison pill for each consumer
     for i in xrange(num_consumers):
@@ -107,12 +110,13 @@ def from_pickle():
     return vals, trans, trans
 
 def val_calc(qual, field, lat, big_mov_params,
-             dep_stats, dis, ip, bd, init=[]):
+             dep_stats, dis, ip, bd, init, lp):
     """calculates a single value function"""
 
-    [mov_params, lam, p] = big_mov_params
+    [mov_params, lam_param, p] = big_mov_params
     wage = vd.calc_wage(mov_params, dep_stats,
-                     qual, field, lat)
+                     qual, field, lat, lp)
+    lam = lam_param[0] + qual * lam_param[1]
     try:
         sp = init[qual][field][lat]
         vals, trans, itrans = vd.val_loop(wage, lam, dis,

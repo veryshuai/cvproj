@@ -38,50 +38,59 @@ def prior(cit_params, big_mov_params, lp, ip):
     # calculates the prior probability
     run_sum = 0
     [alp, gam, bet] = cit_params
-    run_sum += betad.logpdf(gam[0][1][0],1,2)
-    run_sum += betad.logpdf(gam[0][0][0],0.125,2)
+    run_sum += betad.logpdf(gam[0],1,2)
+    run_sum += betad.logpdf(gam[1],0.125,2)
     return run_sum
 
 def update_cits(cit_params, rnd):
     # updates cit parameters
 
     # get user jump size
-    jump = pd.read_csv('jump_size.csv').set_index('block')
-    s = list(jump.loc['cit'])[0]
+    j = pd.read_csv('jump_size.csv').set_index('block')
+    s_alp = list(j.loc['cit_alp'])[0]
+    s_bet = list(j.loc['cit_bet'])[0]
+    s_gam0 = list(j.loc['cit_gam0'])[0]
+    s_gam1 = list(j.loc['cit_gam1'])[0]
 
     [alp, gam, bet] = cit_params
-    alp[0][0][0] = alp[0][0][0] + random.gauss(0,rnd['alpha_0'] * s)
-    alp[0][1][0] = alp[0][1][0] + random.gauss(0,rnd['alpha_1'] * s)
-    bet[0][0][0] = bet[0][0][0] + random.gauss(0,rnd['bet_0'] * s)
-    bet[0][1][0] = bet[0][1][0] + random.gauss(0,rnd['bet_1'] * s)
-    gam[0][0][0] = norm.cdf(norm.ppf(gam[0][0][0], 0, 1) +
-                            random.gauss(0,rnd['gam_0'] * s), 0, 1)
-    gam[0][1][0] = norm.cdf(norm.ppf(gam[0][1][0], 0, 1) +
-                            random.gauss(0,rnd['gam_1'] * s), 0, 1)
+    alp = alp + random.gauss(0,rnd['alpha'] * s_alp)
+    bet = bet + random.gauss(0,rnd['bet'] * s_bet)
+    gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
+                      random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)
+    gam[1] = norm.cdf(norm.ppf(gam[1], 0, 1) +
+                      random.gauss(0,rnd['gam_1'] * s_gam1), 0, 1)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 
-def update_movs(big_mov_params, rnd):
+def update_movs(big_mov_params, ip, rnd):
     # updates mov parameters
 
     # get user jump size
-    jump = pd.read_csv('jump_size.csv').set_index('block')
-    s = list(jump.loc['mov'])[0]
+    j = pd.read_csv('jump_size.csv').set_index('block')
+    slo1 = list(j.loc['mov_lo1'])[0]
+    slo2 = list(j.loc['mov_lo2'])[0]
+    sp = list(j.loc['mov_p'])[0]
+    sq = list(j.loc['mov_q'])[0]
+    sf = list(j.loc['mov_f'])[0]
+    sl = list(j.loc['mov_l'])[0]
+    sip = list(j.loc['mov_ip'])[0]
 
     [mov_params, lam, p] = big_mov_params
-    lam = norm.cdf(norm.ppf(lam, 0, 1) 
-                    + random.gauss(0, rnd['lo'] * s), 0, 1)
-    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * s))
+    lam[0] = lam[0] + random.gauss(0, rnd['lo1'] * slo1)
+    lam[1] = lam[1] + random.gauss(0, rnd['lo2'] * slo2)
+    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * sp))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual']\
-                          + random.gauss(0,rnd['qual_co'] * s)
+                          + random.gauss(0,rnd['qual_co'] * sq)
     mov_params['field'] = mov_params['field']\
-                          + random.gauss(0,rnd['field_co'] * s)
+                          + random.gauss(0,rnd['field_co'] * sf)
     mov_params['lat'] =  mov_params['lat']\
-                          + random.gauss(0,rnd['lat_co'] * s)
+                          + random.gauss(0,rnd['lat_co'] * sl)
     big_mov_params_u = [mov_params, lam, p]
+    ip_u = math.exp(math.log(ip)
+                    + random.gauss(0,rnd['ip'] * sip))
 
-    return big_mov_params_u, s
+    return big_mov_params_u, ip_u
 
 def calc_cit_lik(cit_params, big_mov_params, citers,
                                  nocits, first_cits, lp, lik_pieces,
@@ -96,16 +105,16 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
     
     cit_liks, fc_liks, nocit_liks = [], [], []
     lik_pieces_u = deepcopy(lik_pieces)
-    for lat in range(2):
+    for lat in range(3):
         cit_liks.append(citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(cit_params_u[0],
-                           cit_params_u[2], cit_params_u[1], x, dep_year, lat)))
+                           cit_params_u[2], cit_params_u[1], x, dep_year, lat, lp_u)))
         fc_liks.append(first_cits.groupby('au')\
                     .apply(lambda x: cd.fc_lik(cit_params_u[0],
-                           cit_params_u[2], cit_params_u[1],  x, dep_year, lat)))
+                           cit_params_u[2], cit_params_u[1],  x, dep_year, lat, lp_u)))
         nocit_liks.append(nocits.groupby('au')\
                     .apply(lambda x: cd.cit_lik_no_cit(cit_params_u[0],
-                           cit_params_u[2], cit_params_u[1], x, dep_year, lat)))
+                           cit_params_u[2], cit_params_u[1], x, dep_year, lat, lp_u)))
         lik_pieces_u[lat]['cit_liks'] = cit_liks[lat]
         lik_pieces_u[lat]['fc_liks'] = fc_liks[lat]
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
@@ -116,18 +125,36 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u, ip_u
 
+
+def init_cond(mean, lp_u, lat):
+    """calculates initial latent type multiple for simpson's rule"""
+    
+    # BOUND DIFFERENCE FROM ZERO
+    scale = 4 * lp_u[2] / float(6)
+    if lat == 0:
+        arg = norm.pdf(-2 * lp_u[2], mean, lp_u[2])
+        return scale * arg
+    if lat == 1:
+        arg = 4 * norm.pdf(0, mean, lp_u[2])
+        return scale * arg 
+    if lat == 2:
+        arg = norm.pdf(2 * lp_u[2], mean, lp_u[2])
+        return scale * arg 
+
+
 def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # recalculates lik from updates lik_pieces
 
     lik_mid = []
-    print norm.cdf(lp_u[0] + 0.05 *lp_u[1])
-    ff = first_ff['dmean'].apply(lambda x: norm.cdf(lp_u[0] + x * lp_u[1]))
-    # ff = ff * first_ff['isField'] # LAT ONLY AVAILABLE FOR FIELDS
-    lik_pieces_u[0]['ff'] = ff.apply(lambda x: 1 - x)
-    lik_pieces_u[1]['ff'] = ff
+    ff_mean = first_ff['dmean'].apply(lambda x: 0.2 *
+                                norm.cdf(lp_u[0] + x * lp_u[1]) - 1)
+    for k in range(3):
+        lik_pieces_u[k]['ff'] = ff_mean.apply(lambda x:
+                                        init_cond(x, lp_u, k))
     lik_mid.append(lik_pieces_u[0].prod(axis = 1))
     lik_mid.append(lik_pieces_u[1].prod(axis = 1))
-    lik_big = lik_mid[0] + lik_mid[1]
+    lik_mid.append(lik_pieces_u[2].prod(axis = 1))
+    lik_big = lik_mid[0] + lik_mid[1] + lik_mid[2]
     try:
         lik_u = lik_big.apply(lambda x: math.log(x)).sum()
     except Exception as e:
@@ -143,15 +170,19 @@ def calc_lp_lik(cit_params, big_mov_params,
 
     # get user jump size
     jump = pd.read_csv('jump_size.csv').set_index('block')
-    s = list(jump.loc['lp'])[0]
+    s0 = list(jump.loc['lp0'])[0]
+    s1 = list(jump.loc['lp1'])[0]
+    s2 = list(jump.loc['lp2'])[0]
 
     cit_params_u = deepcopy(cit_params)
     big_mov_params_u = deepcopy(big_mov_params)
     init_u = deepcopy(init)
     ip_u = deepcopy(ip)
     lp_u = []
-    lp_u.append(deepcopy(lp[0]) + random.gauss(0, 0.1 * s))
-    lp_u.append(deepcopy(lp[1]) + random.gauss(0, 0.1 * s))
+    lp_u.append(deepcopy(lp[0]) + random.gauss(0, s0))
+    lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
+    lp_u.append(math.exp(math.log(deepcopy(lp[2]))
+                         + random.gauss(0, s2)))
     lik_pieces_u = deepcopy(lik_pieces)
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
@@ -165,20 +196,18 @@ def calc_mov_lik(cit_params, big_mov_params,
     # Updates movs and recalculates likelihood
 
     cit_params_u = deepcopy(cit_params)
-    big_mov_params_u, s = update_movs(deepcopy(big_mov_params),
-                                      loc_rnd)
+    big_mov_params_u, ip_u = update_movs(deepcopy(big_mov_params),
+                                deepcopy(ip), loc_rnd)
     lp_u = deepcopy(lp)
-    ip_u = math.exp(math.log(deepcopy(ip))
-                    + random.gauss(0,loc_rnd['ip'] * s))
     lik_pieces_u = deepcopy(lik_pieces)
     
     # NEW VAL AND TRANSITIONS
     init_u, trans_u, itrans_u = vd.val_init(big_mov_params_u, dep_stats,
-                              0.9, ip_u, bd, deepcopy(init))
+                              0.9, ip_u, bd, deepcopy(init), lp_u)
 
     # NEW LIKELIHOOD CALCUATION
     mlik = []
-    for lat in range(2):
+    for lat in range(3):
         not91 = mov_dat_not91.groupby('au')\
                 .apply(lambda x: cd.mov_lik(trans_u, x, lat))
         is91  = mov_dat91.groupby('au')\
@@ -262,15 +291,8 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 
 def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
-
-    # writeable form
-    cit_write = []
-    for pnum in range(3):
-        for qual in range(1):
-            for field in range(2):
-                for lat in range(1):
-                        cit_write.append(cit_params[pnum][qual][field][lat])
     [movparams, lam, p] = big_mov_params
-    out_writer.writerow(cit_write + list(movparams) + [lam] + [p] + lp + [ip])
+    out_writer.writerow([cit_params[0]] + cit_params[1] + [cit_params[2]]
+            + list(movparams) + lam + [p] + lp + [ip])
     out_file.flush()
     return 0

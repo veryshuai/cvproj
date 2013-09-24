@@ -3,21 +3,21 @@
 
 import pandas as pd
 import numpy as np
-import collections
 import cyfuncs as cyf
 import pickle
 import val_mp as vm
 import math
+import collections
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
 def tree():
     return collections.defaultdict(tree)
 
-def val_init(big_mov_params, dep_stats, dis, ip, bd, init=[]):
+def val_init(big_mov_params, dep_stats, dis, ip, bd, init, lp):
     # initializes value function iteration
     vals, trans, itrans = vm.call_parallel(big_mov_params, dep_stats,
-                                           dis, ip, bd, init)
+                                           dis, ip, bd, init, lp)
     return vals, trans, itrans
 
 def mins(v, dat, p):
@@ -118,7 +118,7 @@ def wd(ind, dep):
     out = dep.apply(lambda x: pow(ind - x,2))
     return out
 
-def calc_wage(mp, dep, qual, field, lat):
+def calc_wage(mp, dep, qual, field, lat, lp):
     # returns wage at each of the departments
 
     # EASY PARAMETER REFERENCE
@@ -127,9 +127,10 @@ def calc_wage(mp, dep, qual, field, lat):
     l = mp['lat']
 
     # CALCULATE WAGE
-    wq = q * wd(qual, dep['dep_qual'])
+    wq = q * dep['dep_qual']
     wf = f * wd(field, dep['dmean'])
-    wl = l * dep['dmean'] * lat
+    # lat simpson's rule points are -2 std dev, 0, and 2 std dev
+    wl = l * dep['dmean'] * (lat - 1) * 2 * lp[2]
     w_mid = wq + wf + wl
     w = w_mid.apply(lambda x: math.exp(x))
 
