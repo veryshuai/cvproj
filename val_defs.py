@@ -14,11 +14,11 @@ import collections
 def tree():
     return collections.defaultdict(tree)
 
-def val_init(big_mov_params, dep_stats, dis, ip, bd, init, lp):
+def val_init(big_mov_params, dep_stats, dis, ip, bd, init, lp, n9, is9):
     # initializes value function iteration
-    vals, trans, itrans = vm.call_parallel(big_mov_params, dep_stats,
-                                           dis, ip, bd, init, lp)
-    return vals, trans, itrans
+    vals, trans, itrans, mlik = vm.call_parallel(big_mov_params, dep_stats,
+                                           dis, ip, bd, init, lp, n9, is9)
+    return vals, trans, itrans, mlik
 
 def mins(v, dat, p):
     # Returns the min operation used in val fun iteration

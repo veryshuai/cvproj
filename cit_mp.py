@@ -64,14 +64,14 @@ def call_parallel(cit_params, dep_year, lp,
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_consumers = 5
+    num_consumers = 4
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:
         w.start()
     
     # Enqueue jobs
-    for l in range(5):
+    for l in range(4):
         tasks.put(Task(cit_params, dep_year, l, lp,
              citers, first_cits, nocits))
     
@@ -84,8 +84,8 @@ def call_parallel(cit_params, dep_year, lp,
     
     # Start printing results
     cit_liks, fc_liks, nocit_liks\
-            = [0,0,0,0,0], [0,0,0,0,0], [0,0,0,0,0]
-    num_jobs = 5
+            = [0,0,0,0], [0,0,0,0], [0,0,0,0]
+    num_jobs = 4
     while num_jobs:
         r = results.get()
         cit_liks[r[0]]   = r[1] 
@@ -103,11 +103,9 @@ def cit_calc(cit_params, dep_year, lat, lp,
     [alp, gam, bet] = cit_params
 
     # QUADRATURE POINTS 
-    qa = [2 * lp[2] / float(3) * math.sqrt(5 -
-            2 * math.sqrt(10 / float(7))),
-            2 * lp[2] / float(3) * math.sqrt(5 +
-            2 * math.sqrt(10 / float(7)))]
-    qp =  [-qa[1], -qa[0], 0, qa[0], qa[1]]
+    qa = [4 * math.sqrt(3 - 2 * math.sqrt(6 / float(5))) / float(7),
+            4 * math.sqrt(3 + 2 * math.sqrt(6 / float(5))) / float(7)]
+    qp =  [-qa[1], -qa[0], qa[0], qa[1]]
 
     try: 
         cl_res = citers.groupby('au')\
@@ -122,6 +120,6 @@ def cit_calc(cit_params, dep_year, lat, lp,
     except Exception as e:
         print 'WARNING: Error in cit_lik calc, cit_mp.py' 
         print e
-        cl_res, fc_res, nc_res = 1, 1, 1, 1, 1
+        cl_res, fc_res, nc_res = 1, 1, 1,
     return cl_res, fc_res, nc_res
 

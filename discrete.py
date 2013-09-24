@@ -37,9 +37,6 @@ def main(cit_params, big_mov_params, lp, ip):
     first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
-    # pr = cProfile.Profile()
-    # pr.enable()
-
     # OUTPUT
     timestr = time.strftime("%Y%m%d-%H%M%S")\
         + '_' + str(random.randrange(100000))
@@ -47,18 +44,10 @@ def main(cit_params, big_mov_params, lp, ip):
     out_writer = csv.writer(out_file)
 
     # GET INITIAL LIKELIHOOD
-    init, trans, itrans = vd.val_init(big_mov_params, dep_stats,
-                                      0.9, ip, bd, init, lp)
-
+    init, trans, itrans, mlik = vd.val_init(big_mov_params, dep_stats,
+                                      0.9, ip, bd, init, lp,
+                                      mov_dat_not91, mov_dat91)
     vd.reset(init, trans)
-    mlik = []
-    for lat in range(5):
-        not91 = mov_dat_not91.groupby('au').apply(lambda x: cd.mov_lik(trans, x, lat))
-        is91  = mov_dat91.groupby('au').apply(lambda x: cd.mov_lik(itrans, x, lat))
-        together = pd.DataFrame({'not91': not91, 'is91': is91}, index=not91.index)
-        together = together.fillna(value=1)
-        together = together.prod(1)
-        mlik.append(together)
 
     cit_liks, fc_liks, nocit_liks\
             = cm.call_parallel(cit_params, dep_year,
@@ -66,7 +55,7 @@ def main(cit_params, big_mov_params, lp, ip):
 
     # CALCULATE 
     lik_pieces = []
-    for k in range(5):
+    for k in range(4):
         lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
         lik_dat['cit_liks'] = cit_liks[k]
         lik_dat['fc_liks'] = fc_liks[k]

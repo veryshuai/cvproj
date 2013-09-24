@@ -4,9 +4,11 @@
 import multiprocessing
 import time
 import val_defs as vd
+import cit_defs as cd
 import collections
 import pickle
 import math
+import pandas as pd
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -56,9 +58,24 @@ class Task(object):
     def __str__(self):
         return 'q %s, f %s, l %s ' % (self.q, self.f, self.l)
 
+class Task_mlik(object):
+    def __init__(self, n9, is9, trans, itrans, lat):
+        self.n9 = n9 
+        self.is9 = is9 
+        self.trans = trans 
+        self.itrans = itrans 
+        self.lat = lat 
+    def __call__(self):
+        together = mlik_calc(self.n9, self.is9,
+                              self.trans, self.itrans,
+                              self.lat)
+        return [self.lat, together]
+    def __str__(self):
+        return 'l %s ' % (self.lat)
+
 
 def call_parallel(big_mov_params, dep_stats, dis,
-                  ip, bd, init, lp):
+                  ip, bd, init, lp, mov_dat_not91, mov_dat91):
     """Calls parallel loop for calculating value function"""
 
     # Establish communication queues
@@ -66,16 +83,17 @@ def call_parallel(big_mov_params, dep_stats, dis,
     results = multiprocessing.Queue()
     
     # Start consumers
-    num_consumers = 10
+    num_consumers = 16 
     consumers = [ Consumer(tasks, results)
                   for i in xrange(num_consumers) ]
     for w in consumers:
         w.start()
     
+    #PART 1: VAL AND TRANS
     # Enqueue jobs
     for q in range(2):
         for f in range(2):
-            for l in range(5):
+            for l in range(4):
                 tasks.put(Task(q, f, l, big_mov_params,
                                dep_stats, dis,
                                ip, bd, init, lp))
@@ -91,14 +109,56 @@ def call_parallel(big_mov_params, dep_stats, dis,
     vals = tree()
     trans = tree()
     itrans = tree()
-    num_jobs = 20 
+    num_jobs = 16
     while num_jobs:
         r = results.get()
         vals[r[0]][r[1]][r[2]]   = r[3]
         trans[r[0]][r[1]][r[2]]  = r[4]
         itrans[r[0]][r[1]][r[2]] = r[5]
         num_jobs -= 1
-    return vals, trans, itrans
+
+    mlik = mlik_part(mov_dat_not91, mov_dat91,
+              trans, itrans)
+
+    return vals, trans, itrans, mlik
+
+
+def mlik_part(mov_dat_not91, mov_dat91,
+              trans, itrans):
+    """ This does the mlik parallel part"""
+
+    # Establish communication queues
+    tasks = multiprocessing.JoinableQueue()
+    results = multiprocessing.Queue()
+    
+    # Start consumers
+    num_consumers = 4
+    consumers = [ Consumer(tasks, results)
+                  for i in xrange(num_consumers) ]
+    for w in consumers:
+        w.start()
+
+    # Enqueue jobs for mlik part
+    for l in range(4):
+        tasks.put(Task_mlik(mov_dat_not91, mov_dat91,
+                            trans, itrans, l))
+
+    # Add a poison pill for each consumer
+    for i in xrange(num_consumers):
+        tasks.put(None)
+
+    # Wait for all of the tasks to finish
+    tasks.join()
+
+    # Start printing results
+    mlik = [0,0,0,0]
+    num_jobs = 4
+    while num_jobs:
+        r = results.get()
+        mlik[r[0]]   = r[1] 
+        num_jobs -= 1
+
+    return mlik
 
 def from_pickle():
     """reads in vals and trans from pickle"""
@@ -118,11 +178,9 @@ def val_calc(qual, field, lat, big_mov_params,
     [mov_params, lam_param, p] = big_mov_params
     
     # QUADRATURE POINTS 
-    qa = [2 * lp[2] / float(3) * math.sqrt(5 -
-            2 * math.sqrt(10 / float(7))),
-            2 * lp[2] / float(3) * math.sqrt(5 +
-            2 * math.sqrt(10 / float(7)))]
-    qp =  [-qa[1], -qa[0], 0, qa[0], qa[1]]
+    qa = [4 * math.sqrt(3 - 2 * math.sqrt(6 / float(5))) / float(7),
+            4 * math.sqrt(3 + 2 * math.sqrt(6 / float(5))) / float(7)]
+    qp =  [-qa[1], -qa[0], qa[0], qa[1]]
 
     # CALCULATE WAGES
     wage = vd.calc_wage(mov_params, dep_stats,
@@ -145,3 +203,13 @@ def val_calc(qual, field, lat, big_mov_params,
             vals, trans, itrans = from_pickle()
     return vals, trans, itrans
 
+def mlik_calc(mov_dat_not91, mov_dat91, trans, itrans, lat):
+    not91 = mov_dat_not91.groupby('au').apply(lambda x:
+            cd.mov_lik(trans, x, lat))
+    is91  = mov_dat91.groupby('au').apply(lambda x:
+            cd.mov_lik(itrans, x, lat))
+    together = pd.DataFrame({'not91': not91,
+        'is91': is91}, index=not91.index)
+    together = together.fillna(value=1)
+    together = together.prod(1)
+    return together
