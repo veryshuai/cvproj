@@ -38,9 +38,9 @@ mkplt(p[' ip'],           3, 3, 8, 'ip'        , 0)
 plt.savefig('params2_plots_lat.png', bbox_inches=0)
 
 fig3 = plt.figure(figsize=(17, 8), dpi=80)
-mkplt(p[' lat_prob1'],    3, 1, 1, 'lat_prob1' , 0)
-mkplt(p[' lat_prob2'],    3, 1, 2, 'lat_prob2' , 0)
-mkplt(p[' lat_prob3'],    3, 1, 3, 'lat_prob3' , 0)
+mkplt(p[' lat_prob1'][::8],    3, 1, 1, 'lat_prob1' , 0)
+mkplt(p[' lat_prob2'][::8],    3, 1, 2, 'lat_prob2' , 0)
+mkplt(p[' lat_prob3'][::8],    3, 1, 3, 'lat_prob3' , 0)
 plt.savefig('params3_plots_lat.png', bbox_inches=0)
 
 plt.show()

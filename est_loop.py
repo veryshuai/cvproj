@@ -47,14 +47,21 @@ def update_cits(cit_params, rnd):
     # updates cit parameters
 
     # get user jump size
-    j = pd.read_csv('jump_size.csv').set_index('block')
-    s_alp = list(j.loc['cit_alp'])[0]
-    s_bet = list(j.loc['cit_bet'])[0]
-    s_gam0 = list(j.loc['cit_gam0'])[0]
-    s_gam1 = list(j.loc['cit_gam1'])[0]
+    try:
+        j = pd.read_csv('jump_size.csv').set_index('block')
+        s_alp = list(j.loc['cit_alp'])[0]
+        s_alpy = list(j.loc['cit_alpy'])[0]
+        s_bet = list(j.loc['cit_bet'])[0]
+        s_gam0 = list(j.loc['cit_gam0'])[0]
+        s_gam1 = list(j.loc['cit_gam1'])[0]
+    except Exception as e:
+        print e
+        s_alp, s_alpy, s_bet, s_gam0, s_gam1\
+                = 1, 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
-    alp = alp + random.gauss(0,rnd['alpha'] * s_alp)
+    alp[0] = alp[0] + random.gauss(0,rnd['alpha'] * s_alp)
+    alp[1] = alp[1] + random.gauss(0,rnd['alphay'] * s_alpy)
     bet = bet + random.gauss(0,rnd['bet'] * s_bet)
     gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
                       random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)
@@ -67,14 +74,19 @@ def update_movs(big_mov_params, ip, rnd):
     # updates mov parameters
 
     # get user jump size
-    j = pd.read_csv('jump_size.csv').set_index('block')
-    slo1 = list(j.loc['mov_lo1'])[0]
-    slo2 = list(j.loc['mov_lo2'])[0]
-    sp = list(j.loc['mov_p'])[0]
-    sq = list(j.loc['mov_q'])[0]
-    sf = list(j.loc['mov_f'])[0]
-    sl = list(j.loc['mov_l'])[0]
-    sip = list(j.loc['mov_ip'])[0]
+    try:
+        j = pd.read_csv('jump_size.csv').set_index('block')
+        slo1 = list(j.loc['mov_lo1'])[0]
+        slo2 = list(j.loc['mov_lo2'])[0]
+        sp = list(j.loc['mov_p'])[0]
+        sq = list(j.loc['mov_q'])[0]
+        sf = list(j.loc['mov_f'])[0]
+        sl = list(j.loc['mov_l'])[0]
+        sip = list(j.loc['mov_ip'])[0]
+    except Exception as e:
+        print e
+        slo1, slo2, sp, sq, sf, sl, sip\
+                = 1, 1, 1, 1, 1, 1, 1
 
     [mov_params, lam, p] = big_mov_params
     lam[0] = lam[0] + random.gauss(0, rnd['lo1'] * slo1)
@@ -171,10 +183,14 @@ def calc_lp_lik(cit_params, big_mov_params,
     # updates lp and recalcs lik
 
     # get user jump size
-    jump = pd.read_csv('jump_size.csv').set_index('block')
-    s0 = list(jump.loc['lp0'])[0]
-    s1 = list(jump.loc['lp1'])[0]
-    s2 = list(jump.loc['lp2'])[0]
+    try:
+        jump = pd.read_csv('jump_size.csv').set_index('block')
+        s0 = list(jump.loc['lp0'])[0]
+        s1 = list(jump.loc['lp1'])[0]
+        s2 = list(jump.loc['lp2'])[0]
+    except Exception as e:
+        print e
+        s0, s1, s2 = 1, 1, 1
 
     # COPY OLD DATA
     cit_params_u = deepcopy(cit_params)
@@ -315,7 +331,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
     [movparams, lam, p] = big_mov_params
-    out_writer.writerow([cit_params[0]] + cit_params[1] + [cit_params[2]]
+    out_writer.writerow(cit_params[0] + cit_params[1] + [cit_params[2]]
             + list(movparams) + lam + [p] + lp + [ip])
     out_file.flush()
     return 0

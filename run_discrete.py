@@ -12,7 +12,7 @@ def tree():
 if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
-    alp = -1.6749907947388878
+    alp = [-1.6749907947388878, 0]
     bet = 10.102329748914448
     gam = [0.04046044427069205,0.3]
     
