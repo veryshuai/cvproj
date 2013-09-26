@@ -75,7 +75,8 @@ class Task_mlik(object):
 
 
 def call_parallel(big_mov_params, dep_stats, dis,
-                  ip, bd, init, lp, mov_dat_not91, mov_dat91):
+                  ip, bd, init, lp, mov_dat_not91,
+                  mov_dat91):
     """Calls parallel loop for calculating value function"""
 
     # Establish communication queues
@@ -104,7 +105,7 @@ def call_parallel(big_mov_params, dep_stats, dis,
 
     # Wait for all of the tasks to finish
     tasks.join()
-    
+
     # Start printing results
     vals = tree()
     trans = tree()
@@ -160,15 +161,19 @@ def mlik_part(mov_dat_not91, mov_dat91,
 
     return mlik
 
-def from_pickle():
+def from_pickle(arg=0):
     """reads in vals and trans from pickle"""
-    f = file('trans.pickle','rb')
-    trans = pickle.load(f)
+    f = file('val_init.pickle','rb'); vals = pickle.load(f)
     f.close()
-    f = file('val_init.pickle','rb')
-    vals = pickle.load(f)
+    f = file('trans.pickle','rb'); trans = pickle.load(f)
     f.close()
-    return vals, trans, trans
+    f = file('itrans.pickle','rb'); itrans = pickle.load(f)
+    f.close()
+    f = file('mlik.pickle','rb'); mlik = pickle.load(f)
+    if arg == 0:
+        return vals, trans, trans
+    if arg == 1:
+        return mlik
 
 def val_calc(qual, field, lat, big_mov_params,
              dep_stats, dis, ip, bd, init, lp):
@@ -200,16 +205,23 @@ def val_calc(qual, field, lat, big_mov_params,
         except Exception as e:
             print 'WARNING: reading vals and trans from saves'
             print e
-            vals, trans, itrans = from_pickle()
+            vals, trans, itrans = from_pickle(0)
     return vals, trans, itrans
 
 def mlik_calc(mov_dat_not91, mov_dat91, trans, itrans, lat):
-    not91 = mov_dat_not91.groupby('au').apply(lambda x:
-            cd.mov_lik(trans, x, lat))
-    is91  = mov_dat91.groupby('au').apply(lambda x:
-            cd.mov_lik(itrans, x, lat))
-    together = pd.DataFrame({'not91': not91,
-        'is91': is91}, index=not91.index)
-    together = together.fillna(value=1)
-    together = together.prod(1)
-    return together
+    try:
+        not91 = mov_dat_not91.groupby('au').apply(lambda x:
+                cd.mov_lik(trans, x, lat))
+        is91  = mov_dat91.groupby('au').apply(lambda x:
+                cd.mov_lik(itrans, x, lat))
+        together = pd.DataFrame({'not91': not91,
+            'is91': is91}, index=not91.index)
+        together = together.fillna(value=1)
+        together = together.prod(1)
+        return together
+    except Exception as e:
+        print e
+        print 'WARNING: reading mlik from save'
+        mlik = from_pickle(1)
+        return mlik[0]
+

@@ -19,7 +19,7 @@ def load_dat(name, col_no, log=False, ppf=False):
         if ppf:
             new = new.apply(lambda x: norm.ppf(x))
         mid = round(new.count() / 2)
-        # mid = 0
+        mid = 0
         liks.append(new[mid:])
         mliks.append(liks[k].describe().loc['mean'])
         min_n = min(liks[k].count(), min_n)
@@ -50,8 +50,8 @@ def make_gels(name, col_no, params=False):
     liks, mliks, min_n, max_n = load_dat(name, col_no)
     if col_no in [10,13] and params:
         liks, mliks, min_n, max_n = load_dat(name, col_no, True)
-    if col_no in [2,3,9] and params:
-        liks, mliks, min_n, max_n = load_dat(name, col_no, False, True)
+    # if col_no in [2,3,9] and params:
+    #     liks, mliks, min_n, max_n = load_dat(name, col_no, False, True)
     W = make_W(liks, mliks)
     B_max, B_min = make_B(mliks, min_n, max_n)
     var_max = (max_n - 1) / float(max_n) * W + 1 / float(max_n) * B_max
@@ -63,8 +63,8 @@ def make_gels(name, col_no, params=False):
 
 under = 0
 total = 0
-for k in range(14):
-    R = make_gels('out_2*', k)
+for k in range(15):
+    R = make_gels('out_2*', k, True)
     if R:
         total += 1
         if R < 1.1:

@@ -6,6 +6,9 @@ from scipy.stats import norm
 #READ IN DATA
 p = pd.read_csv('out.csv')
 
+# EASIER TO DO LOGGING HERE
+p[' p'] = p[' p'].apply(lambda x: math.log(x))
+p[' ip'] = p[' ip'].apply(lambda x: math.log(x))
 
 def mkplt(x, sp1, sp2, sp3, y_name, ytop=0, log=False, ppf=False):
     if log:
@@ -21,10 +24,11 @@ def mkplt(x, sp1, sp2, sp3, y_name, ytop=0, log=False, ppf=False):
     return ax
 
 fig1 = plt.figure(figsize=(17,  8),  dpi=80)
-mkplt(p[' bet'], 2, 2, 1, 'bet', 0)
-mkplt(p['alp'],  2, 2, 2, 'alp', 0)
-mkplt(p[' gam0'], 2, 2, 3, 'gam0', 0)
-mkplt(p[' gam1'], 2, 2, 4, 'gam1', 0)
+mkplt(p[' bet'], 3, 2, 1, 'bet', 0)
+mkplt(p['alp'],  3, 2, 2, 'alp', 0)
+mkplt(p[' alpy'],  3, 2, 3, 'alpy', 0)
+mkplt(p[' gam0'], 3, 2, 4, 'gam0', 0)
+mkplt(p[' gam1'], 3, 2, 5, 'gam1', 0)
 plt.savefig('params1_plots_lat.png', bbox_inches=0)
 
 fig2 = plt.figure(figsize=(17,  8),  dpi=80)

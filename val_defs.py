@@ -136,7 +136,7 @@ def calc_wage(mp, dep, qual, field, lat, qp):
 
     return w
 
-def reset(vals, trans):
+def reset(vals, trans, itrans, mlik):
     # RESET INITIAL STARTING POINT
     
     f = file('trans.pickle','wb')
@@ -147,5 +147,12 @@ def reset(vals, trans):
     pickle.dump(vals,f)
     f.close()
 
+    f = file('itrans.pickle','wb')
+    pickle.dump(itrans,f)
+    f.close()
 
+    f = file('mlik.pickle','wb')
+    pickle.dump(mlik,f)
+    f.close()
 
+    return 0

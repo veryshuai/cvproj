@@ -12,20 +12,20 @@ def tree():
 if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
-    alp = [-1.6749907947388878, 0]
-    bet = 10.102329748914448
-    gam = [0.04046044427069205,0.3]
+    alp = [-1.6912994607298211,0.00074314419443021374]
+    bet = 10.829271047737196
+    gam = [0.034228248703075864,0.098392799712779644]
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'qual': 1, 'field': -1.6987073884478081, 'lat': 1})
+    mov_params = pd.Series({'qual': 0.46218713564513042, 'field': -1.8773030907893029, 'lat': -0.26855264979563331})
     
     # OTHER PARAMETERS 
-    lp = [0, 1, 1] #latent type probability,
+    lp = [-26.251278310241567,61.02761089372683,1.0325140952129204] #latent type probability,
     # two mean parameters and a standard deviation
-    lo = [0.038882490293258982, 0.01]  #offer arrival rate,
+    lo = [0.016572481018500451,0.040909561164198333]  #offer arrival rate,
     # base and qual dependence
-    p = 1.3625786095456844 #signing bonus distribution parameter
-    ip = 1 #instrument parameter (affects 1991 wages)
+    p = 1.282008407975466 #signing bonus distribution parameter
+    ip = 4.044689899777988 #instrument parameter (affects 1991 wages)
     
     # PUT PARAMS INTO BOXES FOR EASY MOVING
     big_mov_params = [mov_params, lo, p]

@@ -47,7 +47,7 @@ def main(cit_params, big_mov_params, lp, ip):
     init, trans, itrans, mlik = vd.val_init(big_mov_params, dep_stats,
                                       0.9, ip, bd, init, lp,
                                       mov_dat_not91, mov_dat91)
-    vd.reset(init, trans)
+    vd.reset(init, trans, itrans, mlik)
 
     cit_liks, fc_liks, nocit_liks\
             = cm.call_parallel(cit_params, dep_year,

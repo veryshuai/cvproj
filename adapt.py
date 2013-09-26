@@ -15,9 +15,14 @@ def get_cov(snip, k, block_name):
                      'bet', 'field_co', 'lat_co',
                      'qual_co', 'lo1', 'lo2', 'p',
                      'lp1', 'lp2', 'lp3', 'ip']
-        dat = pd.read_csv('results/out_' + snip + '.csv', header=None,
-                             names=col_names)
-        # keep only thousand last iterations
+        if k < 5000:
+            dat = pd.read_csv('old_out.csv', header=None,
+                    names=col_names)
+        else:
+            dat = pd.read_csv('results/out_' + snip + '.csv', header=None,
+                    names=col_names)
+
+        # keep only several thousand last iterations
         d = dat.shape[0]
         print d
         if d > 5000:

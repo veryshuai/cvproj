@@ -1,8 +1,11 @@
---------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------
       name:  <unnamed>
        log:  /gpfs/work/d/dcj138/cv_disc/ins_reg/ins_reg.log
   log type:  text
- opened on:  18 Sep 2013, 23:21:28
+ opened on:  25 Sep 2013, 21:48:00
+
+. 
+. set more off
 
 . 
 . g inmov = 0
@@ -818,6 +821,8 @@ corr(u_i, X)   = 0 (assumed)                    Prob > chi2        =    0.0691
        _cons |   1.372838    .086675    15.84   0.000     1.202623    1.543053
 ------------------------------------------------------------------------------
 
+. estimates store f1, title("Budget Deficit Move Effect")
+
 . reg net dum91bd i.date
 
       Source |       SS       df       MS              Number of obs =     617
@@ -841,6 +846,8 @@ corr(u_i, X)   = 0 (assumed)                    Prob > chi2        =    0.0691
              |
        _cons |    1.27451   .2076229     6.14   0.000     .8667674    1.682252
 ------------------------------------------------------------------------------
+
+. estimates store f2, title("Budget Deficit Move Effect")
 
 . xi: reg net dum91bd i.date i.dep_id
 i.date            _Idate_1988-1993    (naturally coded; _Idate_1988 omitted)
@@ -966,6 +973,8 @@ _Idep_id_102 |   1.99e-13   .6454491     0.00   1.000    -1.268078    1.268078
 _Idep_id_103 |   2.833333   .6454491     4.39   0.000     1.565255    4.101412
        _cons |   .0653016   .4676404     0.14   0.889    -.8534457    .9840489
 ------------------------------------------------------------------------------
+
+. estimates store f3, title("Budget Deficit Move Effect")
 
 . xi: reg net dum91bd i.dep_id*date i.date
 i.dep_id          _Idep_id_1-103      (naturally coded; _Idep_id_1 omitted)
@@ -1197,10 +1206,694 @@ _IdepXdat_103 |  -.4857142   .3691505    -1.32   0.189    -1.211399    .2399707
         _cons |  -80.25442   520.6075    -0.15   0.878    -1103.677    943.1685
 -------------------------------------------------------------------------------
 
+. estimates store f4, title("Budget Deficit Move Effect")
+
+. 
+. estout f1 f2 f3 f4 using bdeffect_tab.txt, cells(b(star fmt(3)) se(par fmt(2)))  starlevels(*
+>  0.10 ** 0.05 *** 0.01) style(tex) replace
+(output written to bdeffect_tab.txt)
+
+. 
+. * NOW FOR THE ACTUAL INSTRUMENT
+. * SOME UNUSED OTHER SPECIFICATIONS
+. clear 
+
+. insheet using "aut_pan.csv"
+(18 vars, 84571 obs)
+
+. 
+. *drop if dep == "OTHER"
+. drop if cit_times == .
+(76580 observations deleted)
+
+. drop if cit_times < 1992 | cit_times > 2000
+(5474 observations deleted)
+
+. 
+. g cit92 = 0
+
+. replace cit92 = 1 if cit_times == 1992 | cit_times == 1993
+(657 real changes made)
+
+. 
+. keep if date == 1991
+(2427 observations deleted)
+
+. 
+. ivregress gmm cit92 (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   1,     88) =      11.12
+                                                  Prob > F        =     0.0013
+                                                  R-squared       =     0.0698
+                                                  Adj R-squared   =     0.0593
+                                                  Root MSE        =     0.0277
+
+------------------------------------------------------------------------------
+             |               Robust
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+          bd |  -.1474903   .0442255    -3.33   0.001    -.2353792   -.0596014
+       _cons |   .0319558   .0036151     8.84   0.000     .0247714    .0391401
+------------------------------------------------------------------------------
+
+
+Instrumental variables (GMM) regression                Number of obs =      90
+                                                       Wald chi2(1)  =    1.51
+                                                       Prob > chi2   =  0.2199
+                                                       R-squared     =       .
+GMM weight matrix: Robust                              Root MSE      =  .50944
+
+------------------------------------------------------------------------------
+             |               Robust
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   6.996072   5.702362     1.23   0.220    -4.180352     18.1725
+       _cons |   .0957522   .1554845     0.62   0.538    -.2089918    .4004962
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+
+. ivregress gmm cit92 isfield qual dep_qual (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   4,     85) =      18.90
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3998
+                                                  Adj R-squared   =     0.3715
+                                                  Root MSE        =     0.0227
+
+------------------------------------------------------------------------------
+             |               Robust
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     isfield |  -.0027033   .0092177    -0.29   0.770    -.0210306     .015624
+        qual |   .0002227   .0001614     1.38   0.171    -.0000983    .0005437
+    dep_qual |   .0016262   .0003003     5.42   0.000     .0010292    .0022233
+          bd |  -.0505094   .0408017    -1.24   0.219    -.1316341    .0306153
+       _cons |  -.0171142   .0074439    -2.30   0.024    -.0319148   -.0023137
+------------------------------------------------------------------------------
+
+
+Instrumental variables (GMM) regression                Number of obs =      90
+                                                       Wald chi2(4)  =    2.34
+                                                       Prob > chi2   =  0.6739
+                                                       R-squared     =       .
+GMM weight matrix: Robust                              Root MSE      =  .75299
+
+------------------------------------------------------------------------------
+             |               Robust
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   24.93464   27.43276     0.91   0.363    -28.83257    78.70186
+     isfield |  -.1725789   .2698039    -0.64   0.522    -.7013848     .356227
+        qual |  -.0065437   .0074694    -0.88   0.381    -.0211835     .008096
+    dep_qual |  -.0398973   .0494927    -0.81   0.420    -.1369012    .0571066
+       _cons |   .7930789    .663382     1.20   0.232    -.5071259    2.093284
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   isfield qual dep_qual bd
+
+. reg cit92 kfrac
+
+      Source |       SS       df       MS              Number of obs =      90
+-------------+------------------------------           F(  1,    88) =    0.58
+       Model |  .121095467     1  .121095467           Prob > F      =  0.4483
+    Residual |  18.3677934    88  .208724925           R-squared     =  0.0065
+-------------+------------------------------           Adj R-squared = -0.0047
+       Total |  18.4888889    89  .207740325           Root MSE      =  .45686
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |  -1.290924   1.694822    -0.76   0.448    -4.659026    2.077178
+       _cons |   .3245267   .0671438     4.83   0.000     .1910926    .4579608
+------------------------------------------------------------------------------
+
+. reg cit92 kfrac isfield qual dep_qual
+
+      Source |       SS       df       MS              Number of obs =      90
+-------------+------------------------------           F(  4,    85) =    0.99
+       Model |   .82422109     4  .206055272           Prob > F      =  0.4167
+    Residual |  17.6646678    85  .207819621           R-squared     =  0.0446
+-------------+------------------------------           Adj R-squared = -0.0004
+       Total |  18.4888889    89  .207740325           Root MSE      =  .45587
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |  -2.555302   2.169579    -1.18   0.242    -6.869007    1.758404
+     isfield |  -.2215344   .1485687    -1.49   0.140    -.5169287      .07386
+        qual |  -.0002461   .0025357    -0.10   0.923    -.0052877    .0047956
+    dep_qual |   .0069386    .007018     0.99   0.326    -.0070151    .0208924
+       _cons |   .2207938   .1509494     1.46   0.147    -.0793341    .5209217
+------------------------------------------------------------------------------
+
+. ivregress liml cit92 (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   1,     88) =       6.61
+                                                  Prob > F        =     0.0118
+                                                  R-squared       =     0.0698
+                                                  Adj R-squared   =     0.0593
+                                                  Root MSE        =     0.0277
+
+------------------------------------------------------------------------------
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+          bd |  -.1474903   .0573802    -2.57   0.012    -.2615215   -.0334591
+       _cons |   .0319558    .003376     9.47   0.000     .0252467    .0386648
+------------------------------------------------------------------------------
+
+
+Instrumental variables (LIML) regression               Number of obs =      90
+                                                       Wald chi2(1)  =    0.96
+                                                       Prob > chi2   =  0.3279
+                                                       R-squared     =       .
+                                                       Root MSE      =  .50944
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   6.996072   7.151451     0.98   0.328    -7.020514    21.01266
+       _cons |   .0957522   .2045991     0.47   0.640    -.3052547    .4967591
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+
+. ivregress 2sls cit92 (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   1,     88) =       6.61
+                                                  Prob > F        =     0.0118
+                                                  R-squared       =     0.0698
+                                                  Adj R-squared   =     0.0593
+                                                  Root MSE        =     0.0277
+
+------------------------------------------------------------------------------
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+          bd |  -.1474903   .0573802    -2.57   0.012    -.2615215   -.0334591
+       _cons |   .0319558    .003376     9.47   0.000     .0252467    .0386648
+------------------------------------------------------------------------------
+
+
+Instrumental variables (2SLS) regression               Number of obs =      90
+                                                       Wald chi2(1)  =    0.96
+                                                       Prob > chi2   =  0.3279
+                                                       R-squared     =       .
+                                                       Root MSE      =  .50944
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   6.996072   7.151451     0.98   0.328    -7.020514    21.01266
+       _cons |   .0957522   .2045991     0.47   0.640    -.3052547    .4967591
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+
+. ivregress gmm cit_times (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   1,     88) =      11.12
+                                                  Prob > F        =     0.0013
+                                                  R-squared       =     0.0698
+                                                  Adj R-squared   =     0.0593
+                                                  Root MSE        =     0.0277
+
+------------------------------------------------------------------------------
+             |               Robust
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+          bd |  -.1474903   .0442255    -3.33   0.001    -.2353792   -.0596014
+       _cons |   .0319558   .0036151     8.84   0.000     .0247714    .0391401
+------------------------------------------------------------------------------
+
+
+Instrumental variables (GMM) regression                Number of obs =      90
+                                                       Wald chi2(1)  =    0.43
+                                                       Prob > chi2   =  0.5126
+                                                       R-squared     =       .
+GMM weight matrix: Robust                              Root MSE      =  2.9116
+
+------------------------------------------------------------------------------
+             |               Robust
+   cit_times |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |  -24.81435   37.89859    -0.65   0.513    -99.09423    49.46552
+       _cons |   1996.463   1.065748  1873.30   0.000     1994.374    1998.552
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+
+. ivregress gmm cit_times qual dep_qual (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   3,     86) =      24.59
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3988
+                                                  Adj R-squared   =     0.3779
+                                                  Root MSE        =     0.0225
+
+------------------------------------------------------------------------------
+             |               Robust
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+        qual |   .0002161   .0001526     1.42   0.160    -.0000873    .0005195
+    dep_qual |   .0016384   .0002963     5.53   0.000     .0010494    .0022274
+          bd |   -.048324   .0412878    -1.17   0.245    -.1304015    .0337534
+       _cons |  -.0176301   .0075875    -2.32   0.023    -.0327136   -.0025466
+------------------------------------------------------------------------------
+
+
+Instrumental variables (GMM) regression                Number of obs =      90
+                                                       Wald chi2(3)  =    0.39
+                                                       Prob > chi2   =  0.9416
+                                                       R-squared     =       .
+GMM weight matrix: Robust                              Root MSE      =   3.263
+
+------------------------------------------------------------------------------
+             |               Robust
+   cit_times |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |  -74.23197   135.4055    -0.55   0.584    -339.6218    191.1579
+        qual |   .0173409   .0358826     0.48   0.629    -.0529877    .0876695
+    dep_qual |   .1182053   .2402273     0.49   0.623    -.3526316    .5890422
+       _cons |   1994.413   3.185808   626.03   0.000     1988.168    2000.657
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   qual dep_qual bd
+
+. ivregress gmm cit92 (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   1,     88) =      11.12
+                                                  Prob > F        =     0.0013
+                                                  R-squared       =     0.0698
+                                                  Adj R-squared   =     0.0593
+                                                  Root MSE        =     0.0277
+
+------------------------------------------------------------------------------
+             |               Robust
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+          bd |  -.1474903   .0442255    -3.33   0.001    -.2353792   -.0596014
+       _cons |   .0319558   .0036151     8.84   0.000     .0247714    .0391401
+------------------------------------------------------------------------------
+
+
+Instrumental variables (GMM) regression                Number of obs =      90
+                                                       Wald chi2(1)  =    1.51
+                                                       Prob > chi2   =  0.2199
+                                                       R-squared     =       .
+GMM weight matrix: Robust                              Root MSE      =  .50944
+
+------------------------------------------------------------------------------
+             |               Robust
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   6.996072   5.702362     1.23   0.220    -4.180352     18.1725
+       _cons |   .0957522   .1554845     0.62   0.538    -.2089918    .4004962
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+
+. ivregress gmm cit92 isfield qual dep_qual (kfrac = bd), first
+
+First-stage regressions
+-----------------------
+
+                                                  Number of obs   =         90
+                                                  F(   4,     85) =      18.90
+                                                  Prob > F        =     0.0000
+                                                  R-squared       =     0.3998
+                                                  Adj R-squared   =     0.3715
+                                                  Root MSE        =     0.0227
+
+------------------------------------------------------------------------------
+             |               Robust
+       kfrac |      Coef.   Std. Err.      t    P>|t|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+     isfield |  -.0027033   .0092177    -0.29   0.770    -.0210306     .015624
+        qual |   .0002227   .0001614     1.38   0.171    -.0000983    .0005437
+    dep_qual |   .0016262   .0003003     5.42   0.000     .0010292    .0022233
+          bd |  -.0505094   .0408017    -1.24   0.219    -.1316341    .0306153
+       _cons |  -.0171142   .0074439    -2.30   0.024    -.0319148   -.0023137
+------------------------------------------------------------------------------
+
+
+Instrumental variables (GMM) regression                Number of obs =      90
+                                                       Wald chi2(4)  =    2.34
+                                                       Prob > chi2   =  0.6739
+                                                       R-squared     =       .
+GMM weight matrix: Robust                              Root MSE      =  .75299
+
+------------------------------------------------------------------------------
+             |               Robust
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   24.93464   27.43276     0.91   0.363    -28.83257    78.70186
+     isfield |  -.1725789   .2698039    -0.64   0.522    -.7013848     .356227
+        qual |  -.0065437   .0074694    -0.88   0.381    -.0211835     .008096
+    dep_qual |  -.0398973   .0494927    -0.81   0.420    -.1369012    .0571066
+       _cons |   .7930789    .663382     1.20   0.232    -.5071259    2.093284
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   isfield qual dep_qual bd
+
+. 
+. * IN PAPER, PROBIT IV
+. 
+. clear 
+
+. insheet using "aut_pan.csv"
+(18 vars, 84571 obs)
+
+. 
+. drop if dep == "OTHER"
+(7250 observations deleted)
+
+. g cit92 = 0
+
+. replace cit92 = 1 if cit_times == 1992
+(366 real changes made)
+
+. drop if cit_times < 1992
+(1396 observations deleted)
+
+. 
+. keep if date == 1991
+(72985 observations deleted)
+
+. 
+. ivprobit cit92 (kfrac = bd), first
+
+Fitting exogenous probit model
+
+Iteration 0:   log likelihood = -99.373602  
+Iteration 1:   log likelihood = -98.895369  
+Iteration 2:   log likelihood = -98.886741  
+Iteration 3:   log likelihood = -98.886738  
+
+Fitting full model
+
+Iteration 0:   log likelihood =  6385.1409  
+Iteration 1:   log likelihood =  6385.1519  
+Iteration 2:   log likelihood =  6385.3596  (not concave)
+Iteration 3:   log likelihood =  6385.3644  
+Iteration 4:   log likelihood =  6385.4058  
+Iteration 5:   log likelihood =  6385.5083  (not concave)
+Iteration 6:   log likelihood =  6385.5144  
+Iteration 7:   log likelihood =  6385.5397  
+Iteration 8:   log likelihood =   6385.568  
+Iteration 9:   log likelihood =  6385.5701  
+Iteration 10:  log likelihood =  6385.5707  
+Iteration 11:  log likelihood =  6385.5707  
+
+Probit model with endogenous regressors           Number of obs   =       2940
+                                                  Wald chi2(1)    =       3.32
+Log likelihood =  6385.5707                       Prob > chi2     =     0.0682
+
+------------------------------------------------------------------------------
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cit92        |
+       kfrac |   26.95199   14.78143     1.82   0.068    -2.019076    55.92306
+       _cons |  -2.513018   .6420594    -3.91   0.000    -3.771431   -1.254604
+-------------+----------------------------------------------------------------
+kfrac        |
+          bd |  -.0608862   .0109071    -5.58   0.000    -.0822637   -.0395088
+       _cons |   .0244313   .0006009    40.66   0.000     .0232537     .025609
+-------------+----------------------------------------------------------------
+     /athrho |  -.8085322   .7674832    -1.05   0.292    -2.312772    .6957072
+    /lnsigma |   -3.62439    .013041  -277.92   0.000     -3.64995    -3.59883
+-------------+----------------------------------------------------------------
+         rho |  -.6687797   .4242138                     -.9805935    .6016359
+       sigma |   .0266654   .0003477                      .0259924    .0273557
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+------------------------------------------------------------------------------
+Wald test of exogeneity (/athrho = 0): chi2(1) =     1.11 Prob > chi2 = 0.2921
+
+. estimates store m1, title("Endogenous Probit Model")
+
+. ivprobit cit92 isfield qual dep_qual dmean (kfrac = bd), first
+note: isfield != 0 predicts failure perfectly
+      isfield dropped and 95 obs not used
+
+
+Fitting exogenous probit model
+
+Iteration 0:   log likelihood = -98.846598  
+Iteration 1:   log likelihood = -96.272284  
+Iteration 2:   log likelihood = -96.140956  
+Iteration 3:   log likelihood =  -96.14059  
+Iteration 4:   log likelihood =  -96.14059  
+
+Fitting full model
+
+Iteration 0:   log likelihood =  6533.4036  
+Iteration 1:   log likelihood =  6533.4347  
+Iteration 2:   log likelihood =  6533.5296  
+Iteration 3:   log likelihood =  6533.5519  
+Iteration 4:   log likelihood =  6533.6246  (not concave)
+Iteration 5:   log likelihood =  6533.6385  
+Iteration 6:   log likelihood =  6533.6665  
+Iteration 7:   log likelihood =  6533.7175  
+Iteration 8:   log likelihood =  6533.7677  
+Iteration 9:   log likelihood =  6533.7899  
+Iteration 10:  log likelihood =  6533.8085  
+Iteration 11:  log likelihood =  6533.8112  
+Iteration 12:  log likelihood =  6533.8122  
+Iteration 13:  log likelihood =  6533.8122  
+Iteration 14:  log likelihood =  6533.8122  
+
+Probit model with endogenous regressors           Number of obs   =       2845
+                                                  Wald chi2(4)    =     100.92
+Log likelihood =  6533.8122                       Prob > chi2     =     0.0000
+
+------------------------------------------------------------------------------
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cit92        |
+       kfrac |   37.60397   10.77048     3.49   0.000     16.49422    58.71372
+     isfield |          0  (omitted)
+        qual |   .0009416   .0016602     0.57   0.571    -.0023124    .0041956
+    dep_qual |  -.0481828   .0219551    -2.19   0.028     -.091214   -.0051516
+       dmean |   1.995508   2.156171     0.93   0.355    -2.230509    6.221525
+       _cons |  -1.011664   1.566636    -0.65   0.518    -4.082213    2.058886
+-------------+----------------------------------------------------------------
+kfrac        |
+     isfield |          0  (omitted)
+        qual |  -.0000105    .000019    -0.55   0.582    -.0000478    .0000268
+    dep_qual |   .0014176   .0000531    26.68   0.000     .0013135    .0015218
+       dmean |  -.0048636   .0141366    -0.34   0.731    -.0325708    .0228436
+          bd |    -.02305   .0099679    -2.31   0.021    -.0425866   -.0035134
+       _cons |  -.0094163   .0013163    -7.15   0.000    -.0119963   -.0068364
+-------------+----------------------------------------------------------------
+     /athrho |  -1.403711   1.168022    -1.20   0.229    -3.692992    .8855704
+    /lnsigma |  -3.749202    .013257  -282.81   0.000    -3.775186   -3.723219
+-------------+----------------------------------------------------------------
+         rho |  -.8861511   .2508166                      -.998761     .709199
+       sigma |   .0235365    .000312                      .0229328    .0241561
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   qual dep_qual dmean bd
+------------------------------------------------------------------------------
+Wald test of exogeneity (/athrho = 0): chi2(1) =     1.44 Prob > chi2 = 0.2294
+
+. estimates store m2, title("Endogenous Probit Model")
+
+. 
+. tab cit92
+
+      cit92 |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      2,924       99.46       99.46
+          1 |         16        0.54      100.00
+------------+-----------------------------------
+      Total |      2,940      100.00
+
+. 
+. clear 
+
+. insheet using "aut_pan.csv"
+(18 vars, 84571 obs)
+
+. 
+. drop if dep == "OTHER"
+(7250 observations deleted)
+
+. g cit92_plus = 0
+
+. replace cit92_plus = 1 if cit_times > 1991 & cit_times < 1994
+(610 real changes made)
+
+. drop if cit_times < 1992
+(1396 observations deleted)
+
+. 
+. keep if date == 1991
+(72985 observations deleted)
+
+. 
+. ivprobit cit92_plus (kfrac = bd), first
+
+Fitting exogenous probit model
+
+Iteration 0:   log likelihood = -144.07563  
+Iteration 1:   log likelihood = -144.02475  
+Iteration 2:   log likelihood = -144.02469  
+Iteration 3:   log likelihood = -144.02469  
+
+Fitting full model
+
+Iteration 0:   log likelihood =  6340.0029  
+Iteration 1:   log likelihood =  6340.0098  
+Iteration 2:   log likelihood =  6340.3853  (not concave)
+Iteration 3:   log likelihood =  6340.3889  
+Iteration 4:   log likelihood =  6340.4889  
+Iteration 5:   log likelihood =  6340.6603  
+Iteration 6:   log likelihood =    6340.68  
+Iteration 7:   log likelihood =  6340.7436  
+Iteration 8:   log likelihood =  6340.7437  
+Iteration 9:   log likelihood =  6340.7437  
+
+Probit model with endogenous regressors           Number of obs   =       2940
+                                                  Wald chi2(1)    =       5.10
+Log likelihood =  6340.7437                       Prob > chi2     =     0.0240
+
+------------------------------------------------------------------------------
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cit92_plus   |
+       kfrac |   26.36205   11.67757     2.26   0.024     3.474437    49.24966
+       _cons |  -2.319037   .4675822    -4.96   0.000    -3.235481   -1.402593
+-------------+----------------------------------------------------------------
+kfrac        |
+          bd |  -.0608868    .010907    -5.58   0.000     -.082264   -.0395095
+       _cons |   .0244314   .0006009    40.66   0.000     .0232537     .025609
+-------------+----------------------------------------------------------------
+     /athrho |  -.8561133   .6113317    -1.40   0.161    -2.054302    .3420748
+    /lnsigma |   -3.62439    .013041  -277.92   0.000     -3.64995    -3.59883
+-------------+----------------------------------------------------------------
+         rho |  -.6942497   .3166804                     -.9676698    .3293285
+       sigma |   .0266654   .0003477                      .0259924    .0273557
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   bd
+------------------------------------------------------------------------------
+Wald test of exogeneity (/athrho = 0): chi2(1) =     1.96 Prob > chi2 = 0.1614
+
+. estimates store m3, title("Endogenous Probit Model")
+
+. ivprobit cit92_plus  isfield qual dep_qual dmean (kfrac = bd), first
+
+Fitting exogenous probit model
+
+Iteration 0:   log likelihood = -144.07563  
+Iteration 1:   log likelihood = -142.54393  
+Iteration 2:   log likelihood = -142.50504  
+Iteration 3:   log likelihood =   -142.505  
+Iteration 4:   log likelihood =   -142.505  
+
+Fitting full model
+
+Iteration 0:   log likelihood =  6719.1026  
+Iteration 1:   log likelihood =  6719.1321  
+Iteration 2:   log likelihood =   6719.246  (not concave)
+Iteration 3:   log likelihood =  6719.2656  
+Iteration 4:   log likelihood =  6719.2947  
+Iteration 5:   log likelihood =  6719.4176  (not concave)
+Iteration 6:   log likelihood =  6719.4434  (not concave)
+Iteration 7:   log likelihood =  6719.4447  
+Iteration 8:   log likelihood =  6719.4915  
+Iteration 9:   log likelihood =  6719.6231  
+Iteration 10:  log likelihood =  6719.6307  
+Iteration 11:  log likelihood =   6719.752  
+Iteration 12:  log likelihood =  6719.7682  
+Iteration 13:  log likelihood =  6719.7831  
+Iteration 14:  log likelihood =  6719.7837  
+Iteration 15:  log likelihood =  6719.7837  
+Iteration 16:  log likelihood =  6719.7837  
+
+Probit model with endogenous regressors           Number of obs   =       2940
+                                                  Wald chi2(5)    =      86.58
+Log likelihood =  6719.7837                       Prob > chi2     =     0.0000
+
+------------------------------------------------------------------------------
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cit92_plus   |
+       kfrac |    38.0337   7.460313     5.10   0.000     23.41175    52.65564
+     isfield |   .0232051   .1921604     0.12   0.904    -.3534223    .3998325
+        qual |   .0009212   .0014071     0.65   0.513    -.0018367     .003679
+    dep_qual |  -.0520092    .013667    -3.81   0.000    -.0787961   -.0252223
+       dmean |   1.366382   1.312651     1.04   0.298    -1.206367    3.939131
+       _cons |  -.7348907   1.002486    -0.73   0.464    -2.699728    1.229946
+-------------+----------------------------------------------------------------
+kfrac        |
+     isfield |  -.0007615   .0024878    -0.31   0.760    -.0056375    .0041146
+        qual |  -.0000119   .0000187    -0.64   0.525    -.0000485    .0000247
+    dep_qual |   .0014265   .0000519    27.48   0.000     .0013247    .0015282
+       dmean |   -.005447   .0136106    -0.40   0.689    -.0321234    .0212293
+          bd |  -.0231654   .0097267    -2.38   0.017    -.0422293   -.0041015
+       _cons |  -.0095685   .0012947    -7.39   0.000    -.0121061    -.007031
+-------------+----------------------------------------------------------------
+     /athrho |  -1.503276   .8966882    -1.68   0.094    -3.260753    .2542003
+    /lnsigma |  -3.752819    .013041  -287.77   0.000    -3.778379   -3.727259
+-------------+----------------------------------------------------------------
+         rho |  -.9057385    .161079                     -.9970614    .2488629
+       sigma |   .0234516   .0003058                      .0228597    .0240587
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   isfield qual dep_qual dmean bd
+------------------------------------------------------------------------------
+Wald test of exogeneity (/athrho = 0): chi2(1) =     2.81 Prob > chi2 = 0.0936
+
+. estimates store m4, title("Endogenous Probit Model")
+
+. estout m1 m2 m3 m4 using ivprob_tab.txt, cells(b(star fmt(3)) se(par fmt(2)))  starlevels(* 0
+> .10 ** 0.05 *** 0.01) style(tex) replace
+(output written to ivprob_tab.txt)
+
+. 
+. tab cit92_plus
+
+ cit92_plus |      Freq.     Percent        Cum.
+------------+-----------------------------------
+          0 |      2,915       99.15       99.15
+          1 |         25        0.85      100.00
+------------+-----------------------------------
+      Total |      2,940      100.00
+
 . 
 . log close
       name:  <unnamed>
        log:  /gpfs/work/d/dcj138/cv_disc/ins_reg/ins_reg.log
   log type:  text
- closed on:  18 Sep 2013, 23:21:41
---------------------------------------------------------------------------------
+ closed on:  25 Sep 2013, 21:48:14
+-----------------------------------------------------------------------------------------------

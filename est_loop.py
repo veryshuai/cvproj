@@ -41,6 +41,8 @@ def prior(cit_params, big_mov_params, lp, ip):
     [alp, gam, bet] = cit_params
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
+    run_sum += norm.logpdf(lp[0],0,100)
+    run_sum += norm.logpdf(lp[1],0,100)
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -146,8 +148,8 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     lik_mid = []
     # GET INDIVIDUAL SPECIFIC NORMAL MEAN, CAN ONLY BE 1/4 STD DEV
     # AWAY FROM ZERO
-    ff_mean = first_ff['dmean'].apply(lambda x: 0.5 * lp_u[2] *
-                                norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25)
+    ff_mean = first_ff['dmean'].apply(lambda x: (0.5  *
+                                norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25) * lp_u[2])
     
     # QUADRATURE POINTS AND WEIGHTS 
     # QUADRATURE POINTS 
