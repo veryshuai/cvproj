@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  /gpfs/work/d/dcj138/cv_disc/ins_reg/ins_reg.log
   log type:  text
- opened on:  25 Sep 2013, 21:48:00
+ opened on:  26 Sep 2013, 10:47:04
 
 . 
 . set more off
@@ -1219,7 +1219,7 @@ _IdepXdat_103 |  -.4857142   .3691505    -1.32   0.189    -1.211399    .2399707
 . clear 
 
 . insheet using "aut_pan.csv"
-(18 vars, 84571 obs)
+(20 vars, 84571 obs)
 
 . 
 . *drop if dep == "OTHER"
@@ -1589,7 +1589,7 @@ Instruments:   isfield qual dep_qual bd
 . clear 
 
 . insheet using "aut_pan.csv"
-(18 vars, 84571 obs)
+(20 vars, 84571 obs)
 
 . 
 . drop if dep == "OTHER"
@@ -1727,6 +1727,82 @@ Wald test of exogeneity (/athrho = 0): chi2(1) =     1.44 Prob > chi2 = 0.2294
 
 . estimates store m2, title("Endogenous Probit Model")
 
+. ivprobit cit92 isfield qual dep_qual dmean isstate (kfrac = bd), first
+note: isfield != 0 predicts failure perfectly
+      isfield dropped and 95 obs not used
+
+
+Fitting exogenous probit model
+
+Iteration 0:   log likelihood = -98.846598  
+Iteration 1:   log likelihood = -96.139272  
+Iteration 2:   log likelihood = -95.973061  
+Iteration 3:   log likelihood = -95.972438  
+Iteration 4:   log likelihood = -95.972438  
+
+Fitting full model
+
+Iteration 0:   log likelihood =  6534.1049  
+Iteration 1:   log likelihood =  6534.1119  (backed up)
+Iteration 2:   log likelihood =  6534.1844  
+Iteration 3:   log likelihood =  6534.1892  
+Iteration 4:   log likelihood =  6534.2011  
+Iteration 5:   log likelihood =  6534.2095  
+Iteration 6:   log likelihood =  6534.2284  
+Iteration 7:   log likelihood =  6534.2413  
+Iteration 8:   log likelihood =  6534.2576  
+Iteration 9:   log likelihood =  6534.2731  
+Iteration 10:  log likelihood =  6534.2898  
+Iteration 11:  log likelihood =   6534.311  
+Iteration 12:  log likelihood =  6534.3172  
+Iteration 13:  log likelihood =  6534.3412  (not concave)
+Iteration 14:  log likelihood =  6534.3437  
+Iteration 15:  log likelihood =   6534.347  
+Iteration 16:  log likelihood =  6534.3524  
+Iteration 17:  log likelihood =  6534.3542  
+Iteration 18:  log likelihood =  6534.3558  
+Iteration 19:  log likelihood =  6534.3563  
+Iteration 20:  log likelihood =  6534.3564  
+Iteration 21:  log likelihood =  6534.3564  
+
+Probit model with endogenous regressors           Number of obs   =       2845
+                                                  Wald chi2(5)    =     436.50
+Log likelihood =  6534.3564                       Prob > chi2     =     0.0000
+
+------------------------------------------------------------------------------
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cit92        |
+       kfrac |   40.75258   6.377963     6.39   0.000       28.252    53.25316
+     isfield |          0  (omitted)
+        qual |   .0007639   .0012736     0.60   0.549    -.0017324    .0032602
+    dep_qual |  -.0534851   .0142097    -3.76   0.000    -.0813356   -.0256345
+       dmean |   1.274776   2.086096     0.61   0.541    -2.813898     5.36345
+     isstate |   .0604183   .0999188     0.60   0.545    -.1354189    .2562555
+       _cons |  -.4906399   1.515483    -0.32   0.746    -3.460931    2.479652
+-------------+----------------------------------------------------------------
+kfrac        |
+     isfield |          0  (omitted)
+        qual |  -.0000106    .000019    -0.56   0.578    -.0000479    .0000267
+    dep_qual |   .0013904   .0000592    23.49   0.000     .0012744    .0015064
+       dmean |   -.004251   .0141461    -0.30   0.764    -.0319769    .0234749
+     isstate |  -.0013849   .0013288    -1.04   0.297    -.0039893    .0012195
+          bd |  -.0136908   .0134139    -1.02   0.307    -.0399815    .0125999
+       _cons |  -.0083625   .0016596    -5.04   0.000    -.0116153   -.0051097
+-------------+----------------------------------------------------------------
+     /athrho |  -1.941657   1.862061    -1.04   0.297     -5.59123    1.707916
+    /lnsigma |  -3.749393    .013257  -282.82   0.000    -3.775376    -3.72341
+-------------+----------------------------------------------------------------
+         rho |  -.9596652   .1471824                     -.9999722    .9363913
+       sigma |    .023532    .000312                      .0229285    .0241515
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   qual dep_qual dmean isstate bd
+------------------------------------------------------------------------------
+Wald test of exogeneity (/athrho = 0): chi2(1) =     1.09 Prob > chi2 = 0.2971
+
+. estimates store m3, title("Endogenous Probit Model")
+
 . 
 . tab cit92
 
@@ -1741,7 +1817,7 @@ Wald test of exogeneity (/athrho = 0): chi2(1) =     1.44 Prob > chi2 = 0.2294
 . clear 
 
 . insheet using "aut_pan.csv"
-(18 vars, 84571 obs)
+(20 vars, 84571 obs)
 
 . 
 . drop if dep == "OTHER"
@@ -1808,7 +1884,7 @@ Instruments:   bd
 ------------------------------------------------------------------------------
 Wald test of exogeneity (/athrho = 0): chi2(1) =     1.96 Prob > chi2 = 0.1614
 
-. estimates store m3, title("Endogenous Probit Model")
+. estimates store m4, title("Endogenous Probit Model")
 
 . ivprobit cit92_plus  isfield qual dep_qual dmean (kfrac = bd), first
 
@@ -1874,10 +1950,90 @@ Instruments:   isfield qual dep_qual dmean bd
 ------------------------------------------------------------------------------
 Wald test of exogeneity (/athrho = 0): chi2(1) =     2.81 Prob > chi2 = 0.0936
 
-. estimates store m4, title("Endogenous Probit Model")
+. estimates store m5, title("Endogenous Probit Model")
 
-. estout m1 m2 m3 m4 using ivprob_tab.txt, cells(b(star fmt(3)) se(par fmt(2)))  starlevels(* 0
-> .10 ** 0.05 *** 0.01) style(tex) replace
+. ivprobit cit92_plus  isfield qual dep_qual dmean isstate dep_size (kfrac = bd), first
+
+Fitting exogenous probit model
+
+Iteration 0:   log likelihood = -144.07563  
+Iteration 1:   log likelihood = -142.13237  
+Iteration 2:   log likelihood = -142.05849  
+Iteration 3:   log likelihood = -142.05836  
+Iteration 4:   log likelihood = -142.05836  
+
+Fitting full model
+
+Iteration 0:   log likelihood =  6748.7055  
+Iteration 1:   log likelihood =  6748.7117  (backed up)
+Iteration 2:   log likelihood =  6748.7157  
+Iteration 3:   log likelihood =  6748.7311  (not concave)
+Iteration 4:   log likelihood =  6748.7312  
+Iteration 5:   log likelihood =  6748.7313  
+Iteration 6:   log likelihood =  6748.7504  (not concave)
+Iteration 7:   log likelihood =  6748.7514  (not concave)
+Iteration 8:   log likelihood =  6748.7515  
+Iteration 9:   log likelihood =  6748.7584  
+Iteration 10:  log likelihood =   6748.762  
+Iteration 11:  log likelihood =   6748.784  (not concave)
+Iteration 12:  log likelihood =  6748.7847  
+Iteration 13:  log likelihood =  6748.7946  
+Iteration 14:  log likelihood =  6748.8131  
+Iteration 15:  log likelihood =  6748.8442  
+Iteration 16:  log likelihood =  6748.8641  
+Iteration 17:  log likelihood =  6748.8852  
+Iteration 18:  log likelihood =  6748.9021  
+Iteration 19:  log likelihood =  6748.9189  
+Iteration 20:  log likelihood =  6748.9368  
+Iteration 21:  log likelihood =   6748.947  
+Iteration 22:  log likelihood =  6748.9521  
+Iteration 23:  log likelihood =  6748.9542  
+Iteration 24:  log likelihood =  6748.9558  
+Iteration 25:  log likelihood =   6748.956  
+Iteration 26:  log likelihood =   6748.956  
+
+Probit model with endogenous regressors           Number of obs   =       2940
+                                                  Wald chi2(7)    =     338.55
+Log likelihood =   6748.956                       Prob > chi2     =     0.0000
+
+------------------------------------------------------------------------------
+             |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+cit92_plus   |
+       kfrac |   41.23775    5.84362     7.06   0.000     29.78447    52.69103
+     isfield |   .0288242   .1444316     0.20   0.842    -.2542565    .3119049
+        qual |   .0008214   .0011313     0.73   0.468    -.0013959    .0030387
+    dep_qual |  -.0702726   .0120291    -5.84   0.000    -.0938493   -.0466959
+       dmean |     1.1513   1.344146     0.86   0.392    -1.483176    3.785777
+     isstate |  -.0103684   .0941253    -0.11   0.912    -.1948507    .1741138
+    dep_size |   .0059004   .0013547     4.36   0.000     .0032451    .0085556
+       _cons |  -.2765491   1.179617    -0.23   0.815    -2.588556    2.035457
+-------------+----------------------------------------------------------------
+kfrac        |
+     isfield |  -.0007684   .0024633    -0.31   0.755    -.0055963    .0040596
+        qual |   -.000013   .0000185    -0.70   0.484    -.0000492    .0000233
+    dep_qual |   .0017286   .0000714    24.20   0.000     .0015886    .0018686
+       dmean |  -.0107598   .0135031    -0.80   0.426    -.0372253    .0157057
+     isstate |  -7.93e-06   .0012998    -0.01   0.995    -.0025555    .0025397
+    dep_size |  -.0001412   .0000185    -7.62   0.000    -.0001775   -.0001048
+          bd |  -.0112498    .013014    -0.86   0.387    -.0367567    .0142571
+       _cons |  -.0094126    .001618    -5.82   0.000    -.0125839   -.0062413
+-------------+----------------------------------------------------------------
+     /athrho |   -2.02548   1.780327    -1.14   0.255    -5.514857    1.463896
+    /lnsigma |  -3.762736    .013041  -288.53   0.000    -3.788296   -3.737176
+-------------+----------------------------------------------------------------
+         rho |  -.9657843   .1197462                     -.9999676    .8984067
+       sigma |   .0232201   .0003028                      .0226341    .0238213
+------------------------------------------------------------------------------
+Instrumented:  kfrac
+Instruments:   isfield qual dep_qual dmean isstate dep_size bd
+------------------------------------------------------------------------------
+Wald test of exogeneity (/athrho = 0): chi2(1) =     1.29 Prob > chi2 = 0.2552
+
+. estimates store m6, title("Endogenous Probit Model")
+
+. estout m1 m2 m3 m4 m5 m6 using ivprob_tab.txt, cells(b(star fmt(3)) se(par fmt(2)))  starleve
+> ls(* 0.10 ** 0.05 *** 0.01) style(tex) replace
 (output written to ivprob_tab.txt)
 
 . 
@@ -1895,5 +2051,5 @@ Wald test of exogeneity (/athrho = 0): chi2(1) =     2.81 Prob > chi2 = 0.0936
       name:  <unnamed>
        log:  /gpfs/work/d/dcj138/cv_disc/ins_reg/ins_reg.log
   log type:  text
- closed on:  25 Sep 2013, 21:48:14
+ closed on:  26 Sep 2013, 10:47:25
 -----------------------------------------------------------------------------------------------

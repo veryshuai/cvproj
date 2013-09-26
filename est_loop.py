@@ -78,8 +78,7 @@ def update_movs(big_mov_params, ip, rnd):
     # get user jump size
     try:
         j = pd.read_csv('jump_size.csv').set_index('block')
-        slo1 = list(j.loc['mov_lo1'])[0]
-        slo2 = list(j.loc['mov_lo2'])[0]
+        slo1 = list(j.loc['mov_lo'])[0]
         sp = list(j.loc['mov_p'])[0]
         sq = list(j.loc['mov_q'])[0]
         sf = list(j.loc['mov_f'])[0]
@@ -87,12 +86,11 @@ def update_movs(big_mov_params, ip, rnd):
         sip = list(j.loc['mov_ip'])[0]
     except Exception as e:
         print e
-        slo1, slo2, sp, sq, sf, sl, sip\
-                = 1, 1, 1, 1, 1, 1, 1
+        slo1, sp, sq, sf, sl, sip\
+                = 1, 1, 1, 1, 1, 1
 
     [mov_params, lam, p] = big_mov_params
-    lam[0] = lam[0] + random.gauss(0, rnd['lo1'] * slo1)
-    lam[1] = lam[1] + random.gauss(0, rnd['lo2'] * slo2)
+    lam = lam + random.gauss(0, rnd['lo'] * slo1)
     p = 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * sp))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual']\
@@ -334,6 +332,6 @@ def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
     [movparams, lam, p] = big_mov_params
     out_writer.writerow(cit_params[0] + cit_params[1] + [cit_params[2]]
-            + list(movparams) + lam + [p] + lp + [ip])
+            + list(movparams) + [lam] + [p] + lp + [ip])
     out_file.flush()
     return 0

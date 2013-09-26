@@ -180,7 +180,7 @@ def val_calc(qual, field, lat, big_mov_params,
     """calculates a single value function"""
 
     # UNPACK
-    [mov_params, lam_param, p] = big_mov_params
+    [mov_params, lam, p] = big_mov_params
     
     # QUADRATURE POINTS 
     qa = [4 * math.sqrt(3 - 2 * math.sqrt(6 / float(5))) / float(7),
@@ -190,17 +190,18 @@ def val_calc(qual, field, lat, big_mov_params,
     # CALCULATE WAGES
     wage = vd.calc_wage(mov_params, dep_stats,
                      qual, field, lat, qp)
-    lam = lam_param[0] + qual * lam_param[1]
+    dp = vd.calc_depprob(mov_params, dep_stats,
+                     qual, field, lat, qp)
     try:
         sp = init[qual][field][lat]
-        vals, trans, itrans = vd.val_loop(wage, lam, dis,
+        vals, trans, itrans = vd.val_loop(wage, dp, lam, dis,
                                   p, ip, bd, sp)
     except Exception as e:
         print 'WARNING: Value function start point error,\
                  file val_defs.py, function val_init'
         print e
         try:
-            vals, trans, itrans = vd.val_loop(wage, lam, dis,
+            vals, trans, itrans = vd.val_loop(wage, dp, lam, dis,
                                       p, ip, bd)
         except Exception as e:
             print 'WARNING: reading vals and trans from saves'

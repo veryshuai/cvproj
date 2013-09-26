@@ -13,7 +13,7 @@ def get_cov(snip, k, block_name):
         s = 2.38 ** 2 # optimal scaling factor 
         col_names = ['alpha', 'alphay', 'gam_0', 'gam_1',
                      'bet', 'field_co', 'lat_co',
-                     'qual_co', 'lo1', 'lo2', 'p',
+                     'qual_co', 'lo','p',
                      'lp1', 'lp2', 'lp3', 'ip']
         if k < 5000:
             dat = pd.read_csv('old_out.csv', header=None,
@@ -50,7 +50,7 @@ def get_cov(snip, k, block_name):
             loc_rnd = 0
         else:
             locdat = dat[['field_co', 'lat_co', 'qual_co',
-                          'lo1', 'lo2', 'p', 'ip']]
+                          'lo', 'p', 'ip']]
             locdat['p'] = locdat['p'].apply(lambda x: math.log(x - 1))
             locdat['ip'] = locdat['ip'].apply(lambda x: math.log(x))
 
@@ -66,7 +66,7 @@ def get_cov(snip, k, block_name):
                 loc_rnd = (1 - b) * mvn(np.zeros(d), loc_cov * s / float(d))\
                         + b * mvn(np.zeros(d), np.identity(d) * s / float(d))
             loc_rnd = pd.Series(loc_rnd, index=['field_co', 'lat_co', 'qual_co',
-                                                'lo1', 'lo2', 'p', 'ip'])
+                                                'lo', 'p', 'ip'])
             print loc_rnd
             cit_rnd = 0
     else:

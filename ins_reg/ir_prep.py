@@ -6,7 +6,7 @@ import pandas as pd
 dat = pd.read_pickle('mov_dat.pickle')
 bd  = pd.read_pickle('budget_def.pickle')
 bd  = pd.DataFrame(bd).reset_index()
-bd.columns = ['dep','bd']
+bd.columns = ['dep','bd','isstate']
 dat = pd.merge(dat, bd, how='left')\
         .fillna(value=0)
 
@@ -18,4 +18,3 @@ aut_pan = pd.merge(aut_pan, bd, how='left')
 aut_pan['bd'] = aut_pan['bd'].fillna(value=0)
 
 aut_pan.to_csv('aut_pan.csv')
-import pdb; pdb.set_trace()

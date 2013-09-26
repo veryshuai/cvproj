@@ -19,7 +19,7 @@ def load_dat(name, col_no, log=False, ppf=False):
         if ppf:
             new = new.apply(lambda x: norm.ppf(x))
         mid = round(new.count() / 2)
-        mid = 0
+        # mid = 0
         liks.append(new[mid:])
         mliks.append(liks[k].describe().loc['mean'])
         min_n = min(liks[k].count(), min_n)

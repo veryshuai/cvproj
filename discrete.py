@@ -49,6 +49,8 @@ def main(cit_params, big_mov_params, lp, ip):
                                       mov_dat_not91, mov_dat91)
     vd.reset(init, trans, itrans, mlik)
 
+    import pdb; pdb.set_trace()
+
     cit_liks, fc_liks, nocit_liks\
             = cm.call_parallel(cit_params, dep_year,
                                lp, citers, first_cits, nocits)
