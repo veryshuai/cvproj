@@ -75,13 +75,13 @@ def val_loop_inner(current, w, dp, lam, dis, p):
             print dif
     return new
 
-def calc_trans(current, w, lam, dis, p):
+def calc_trans(current, w, dp, lam, dis, p):
     dat = pd.DataFrame({'v1': current, 'w1': w})
     min_stat = dat.apply(lambda row: mins(row, dat, p), axis=1)
-    trans = min_stat * lam / len(current)
+    trans = min_stat * lam
     cols = trans.columns
     ind  = trans.index
-    trans_mat = trans.as_matrix();
+    trans_mat = trans.as_matrix() * dp
     np.fill_diagonal(trans_mat,0)
     np.fill_diagonal(trans_mat,1 - trans_mat.sum(1))
     trans = pd.DataFrame(trans_mat,index=ind,columns=cols)
@@ -100,7 +100,7 @@ def val_loop(w, dp, lam, dis, p, ip, bd, init='nope'):
     new = val_loop_inner(current, w, dp, lam, dis, p)
 
     # GET TRANSITIONS
-    trans = calc_trans(new, w, lam, dis, p)
+    trans = calc_trans(new, w, dp, lam, dis, p)
     # instrument transisitons
     insw = pd.DataFrame({'w': w.sort_index(),
                         'bd': bd.sort_index()},
@@ -108,7 +108,7 @@ def val_loop(w, dp, lam, dis, p, ip, bd, init='nope'):
     insw = insw.apply(lambda x: x['w'] *
                       math.exp(- ip * x['bd']), axis=1)
     insw['OTHER'] = w['OTHER']
-    ins_trans = calc_trans(new, insw, lam, dis, p) 
+    ins_trans = calc_trans(new, insw, dp, lam, dis, p) 
 
     return new, trans, ins_trans
 
