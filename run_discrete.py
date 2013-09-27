@@ -17,10 +17,10 @@ if __name__ == '__main__':
     gam = [0.034228248703075864,0.098392799712779644]
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'qual': -0.46218713564513042, 'field': -1.8773030907893029, 'lat': -0.26855264979563331})
+    mov_params = pd.Series({'qual': -0.02218713564513042, 'field': -1.8773030907893029, 'lat': -0.26855264979563331, 'wqual': 0.5})
     
     # OTHER PARAMETERS 
-    lp = [-26.251278310241567,61.02761089372683,1.0325140952129204] #latent type probability,
+    lp = [-2.251278310241567,1.02761089372683,1.0325140952129204] #latent type probability,
     # two mean parameters and a standard deviation
     lo = 0.046572481018500451  #offer arrival rate,
     # base and qual dependence

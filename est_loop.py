@@ -81,6 +81,7 @@ def update_movs(big_mov_params, ip, rnd):
         slo1 = list(j.loc['mov_lo'])[0]
         sp = list(j.loc['mov_p'])[0]
         sq = list(j.loc['mov_q'])[0]
+        swq = list(j.loc['mov_wq'])[0]
         sf = list(j.loc['mov_f'])[0]
         sl = list(j.loc['mov_l'])[0]
         sip = list(j.loc['mov_ip'])[0]
@@ -90,11 +91,13 @@ def update_movs(big_mov_params, ip, rnd):
                 = 1, 1, 1, 1, 1, 1
 
     [mov_params, lam, p] = big_mov_params
-    lam = lam + random.gauss(0, rnd['lo'] * slo1)
+    lam = math.exp(math.log(lam) + random.gauss(0, rnd['lo'] * slo1))
     p = 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * sp))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual']\
                           + random.gauss(0,rnd['qual_co'] * sq)
+    mov_params['wqual'] = mov_params['qual']\
+                          + random.gauss(0,rnd['wqual_co'] * swq)
     mov_params['field'] = mov_params['field']\
                           + random.gauss(0,rnd['field_co'] * sf)
     mov_params['lat'] =  mov_params['lat']\

@@ -136,12 +136,12 @@ def calc_wage(mp, dep, qual, field, lat, qp):
     # returns wage at each of the departments
 
     # EASY PARAMETER REFERENCE
-    q = mp['qual']
+    q = mp['wqual']
     f = mp['field']
     l = mp['lat']
 
     # CALCULATE WAGE
-    # wq = q * dep['dep_qual']
+    wq = q * dep['dep_qual']
     wq = 0
     wf = f * wd(field, dep['dmean'])
     # quadrature points 
