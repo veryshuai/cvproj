@@ -12,12 +12,12 @@ def tree():
 if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
-    alp = [-1.6912994607298211,0.00074314419443021374]
-    bet = 10.829271047737196
-    gam = [0.034228248703075864,0.098392799712779644]
+    alp = [-1.6912994607298211]
+    bet = [10.829271047737196]
+    gam = [0.034228248703075864, 0.098392799712779644]
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'qual': -0.02218713564513042, 'field': -1.8773030907893029, 'lat': -0.26855264979563331, 'wqual': 0.5})
+    mov_params = pd.Series({'qual': 2.218713564513042, 'field': 1.8773030907893029, 'lat': 0.26855264979563331})
     
     # OTHER PARAMETERS 
     lp = [-2.251278310241567,1.02761089372683,1.0325140952129204] #latent type probability,

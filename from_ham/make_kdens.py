@@ -4,9 +4,7 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 
 #READ IN DATA
-params = pd.read_csv('params.csv')
-liks = pd.read_csv('liks.csv')
-locout = pd.read_csv('locout.csv')
+params = pd.read_csv('out.csv')
 
 def mkplt(x,sp1,sp2,sp3,y_name,ytop,zero_one=False,auto=True,x_min=0,x_max=1):
     ax = plt.subplot(sp1,sp2,sp3)
@@ -44,28 +42,23 @@ def mkplt2(x,z,lab1='',lab2='',sp1=1,sp2=1,sp3=1,ytop=0,zero_one='True'):
     ax.yaxis.set_major_formatter( plt.NullFormatter() )
 
 fig1 = plt.figure(figsize=(17, 8), dpi=80)
-mkplt(params['a0']   ,3,3,1,r'$\alpha_{nf}$'      ,0,False,False,0,0.3)
-mkplt(params['b0']   ,3,3,2,r'$\beta_{nf}$'       ,0,False,False,0,100)
-mkplt(params['c0']   ,3,3,3,r'$\gamma_{nf}$'      ,0,False,False,0,0.6)
-mkplt(params['a1']   ,3,3,4,r'$\alpha_{nf,l}$'    ,0,False,False,0,0.3)
-mkplt(params['b1']   ,3,3,5,r'$\beta_{nf,l}$'     ,0,False,False,0,100)
-mkplt(params['c1']   ,3,3,6,r'$\gamma_{nf,l}$'    ,0,False,False,0,0.6)
-mkplt(params['a2']   ,3,3,7,r'$\alpha_{nf,nl}$'   ,0,False,False,0,0.3)
-mkplt(params['b2']   ,3,3,8,r'$\beta_{nf,nl}$'    ,0,False,False,0,100)
-mkplt(params['c2']   ,3,3,9,r'$\gamma_{nf,nl}$'   ,0,False,False,0,0.6)
+mkplt(params['alp']    ,3,2,1,r'$\alpha$'       ,0,False)
+mkplt(params[' alpy']  ,3,2,2,r'$\alpha_y$'       ,0,False)
+mkplt(params[' gam0']  ,3,2,3,r'$\gamma_{NF}$'      ,0,False)
+mkplt(params[' gam1']  ,3,2,4,r'$\gamma_{F}$'    ,0,False)
+mkplt(params[' bet']   ,3,2,5,r'$\beta$'     ,0,False)
 plt.savefig('params_dists_lat.png',bbox_inches=0)
 
 fig2 = plt.figure(figsize=(17, 8), dpi=80)
-mkplt(locout['movhaz']       ,5,2,1,r'movhaz'       ,0,False)
-mkplt(locout[' lat_field']   ,5,2,2,r'lat_field'    ,0,False)
-mkplt(locout[' low_cons']    ,5,2,5,r'low cons'     ,0,False,False,-1.5,1.5)
-mkplt(locout[' mid_cons']    ,5,2,7,r'mid cons'     ,0,False,False,-1.5,1.5)
-mkplt(locout[' high_cons']   ,5,2,9,r'high cons'    ,0,False,False,-1.5,1.5)
-mkplt(locout[' low_qual']    ,5,2,6,r'low qual'     ,0,False,False,-1.5,1.5)
-mkplt(locout[' mid_qual']    ,5,2,8,r'mid qual'     ,0,False,False,-1.5,1.5)
-mkplt(locout[' high_qual']   ,5,2,10,r'high qual'   ,0,False,False,-1.5,1.5)
-mkplt(locout[' latco']       ,5,2,3,r'lat coef'     ,0,False,False,-2,2)
-mkplt(locout[' fieldco']     ,5,2,4,r'field coef'   ,0,False,False,-2,2)
+mkplt(params[' field_co']   ,3,3,1,r'field'  ,0,False)
+mkplt(params[' lat_co']     ,3,3,2,r'lat'    ,0,False)
+mkplt(params[' qual_co']    ,3,3,3,r'qual'   ,0,False)
+mkplt(params[' lo']         ,3,3,4,r'lo'     ,0,False)
+mkplt(params[' p']          ,3,3,5,r'p'      ,0,False)
+mkplt(params[' lat_prob1']  ,3,3,6,r'lat1'   ,0,False)
+mkplt(params[' lat_prob2']  ,3,3,7,r'lat2'   ,0,False)
+mkplt(params[' lat_prob3']  ,3,3,8,r'lat3'   ,0,False)
+mkplt(params[' ip']         ,3,3,9,r'ip'     ,0,False)
 plt.savefig('locout_dists_lat.png',bbox_inches=0)
 # fig2 = plt.figure(
 # mkplt(et_calc['i0'],221,r'$i_0$')

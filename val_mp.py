@@ -190,18 +190,16 @@ def val_calc(qual, field, lat, big_mov_params,
     # CALCULATE WAGES
     wage = vd.calc_wage(mov_params, dep_stats,
                      qual, field, lat, qp)
-    dp = vd.calc_depprob(mov_params, dep_stats,
-                     qual, field, lat, qp)
     try:
         sp = init[qual][field][lat]
-        vals, trans, itrans = vd.val_loop(wage, dp, lam, dis,
+        vals, trans, itrans = vd.val_loop(wage, lam, dis,
                                   p, ip, bd, sp)
     except Exception as e:
         print 'WARNING: Value function start point error,\
                  file val_defs.py, function val_init'
         print e
         try:
-            vals, trans, itrans = vd.val_loop(wage, dp, lam, dis,
+            vals, trans, itrans = vd.val_loop(wage, lam, dis,
                                       p, ip, bd)
         except Exception as e:
             print 'WARNING: reading vals and trans from saves'

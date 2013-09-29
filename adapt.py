@@ -11,9 +11,9 @@ def get_cov(snip, k, block_name):
     if block_name == 'cit' or block_name == 'loc':
         b = 0.001  # small number
         s = 2.38 ** 2 # optimal scaling factor 
-        col_names = ['alpha', 'alphay', 'gam_0', 'gam_1',
+        col_names = ['alpha', 'gam_0', 'gam_1',
                      'bet', 'field_co', 'lat_co',
-                     'qual_co', 'wqual_co', 'lo','p',
+                     'qual_co', 'lo','p',
                      'lp1', 'lp2', 'lp3', 'ip']
         if k < 1:
             dat = pd.read_csv('old_out.csv', header=None,
@@ -30,7 +30,7 @@ def get_cov(snip, k, block_name):
             
         # CIT BLOCK
         if block_name == 'cit':
-            citdat = dat[['alpha', 'alphay', 'gam_0', 'gam_1', 'bet']]
+            citdat = dat[['alpha', 'gam_0', 'gam_1', 'bet']]
             citdat['gam_0'] = citdat['gam_0'].apply(lambda x: norm.ppf(x, 0, 1))
             citdat['gam_1'] = citdat['gam_1'].apply(lambda x: norm.ppf(x, 0, 1))
 
@@ -45,12 +45,11 @@ def get_cov(snip, k, block_name):
             else:
                 cit_rnd = (1 - b) * mvn(np.zeros(d), cit_cov * s / float(d))\
                         + b * mvn(np.zeros(d), np.identity(d) * s / float(d))
-            cit_rnd = pd.Series(cit_rnd, index=['alpha', 'alphay', 'gam_0', 'gam_1', 'bet'])
-            print cit_rnd
+            cit_rnd = pd.Series(cit_rnd, index=['alpha', 'gam_0', 'gam_1', 'bet'])
             loc_rnd = 0
         else:
             locdat = dat[['field_co', 'lat_co', 'qual_co',
-                          'wqual_co', 'lo', 'p', 'ip']]
+                          'lo', 'p', 'ip']]
             locdat['p'] = locdat['p'].apply(lambda x: math.log(x - 1))
             locdat['ip'] = locdat['ip'].apply(lambda x: math.log(x))
 
@@ -66,8 +65,7 @@ def get_cov(snip, k, block_name):
                 loc_rnd = (1 - b) * mvn(np.zeros(d), loc_cov * s / float(d))\
                         + b * mvn(np.zeros(d), np.identity(d) * s / float(d))
             loc_rnd = pd.Series(loc_rnd, index=['field_co', 'lat_co', 'qual_co',
-                                                'wqual_co', 'lo', 'p', 'ip'])
-            print loc_rnd
+                                                'lo', 'p', 'ip'])
             cit_rnd = 0
     else:
         print 'ERROR: Invalid block name in adapt.py script'

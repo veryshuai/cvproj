@@ -17,7 +17,7 @@ def tree():
 def val_init(big_mov_params, dep_stats, dis, ip, bd, init, lp, n9, is9):
     # initializes value function iteration
     vals, trans, itrans, mlik = vm.call_parallel(big_mov_params, dep_stats,
-                                            dis, ip, bd, init, lp, n9, is9)
+                                           dis, ip, bd, init, lp, n9, is9)
     return vals, trans, itrans, mlik
 
 def mins(v, dat, p):
@@ -35,7 +35,7 @@ def ft(dat):
     out = dat.apply(lambda x: dat['v1'], axis = 1)
     return out
 
-def calc_exp(currents, w, dp, p):
+def calc_exp(currents, w, p):
     # caculates expectation part of value function
 
     dat = pd.DataFrame({'v1': currents, 'w1': w})
@@ -43,28 +43,29 @@ def calc_exp(currents, w, dp, p):
     max_stat = dat.apply(lambda row: maxs(row, dat, p), axis=1)
     exp_mat = currents.transpose() \
             + max_stat * (1 + 1 / (float(p) - 1) * min_stat)
+    exp_mat = exp_mat / float(dat.shape[0] - 1)
     exp_mat = exp_mat.as_matrix()
-    exp_mat = exp_mat * dp
+    np.fill_diagonal(exp_mat,0)
     exp = pd.Series(exp_mat.sum(0), index=currents.index)
     return exp
 
-def val_eval(currents, w, dp, lam, dis, p):
+def val_eval(currents, w, lam, dis, p):
     # This function evaluates the value function
 
     # EXPECTATION 
-    exp = calc_exp(currents, w, dp, p)
+    exp = calc_exp(currents, w, p)
 
     # REST
-    new = dis * (1 - lam) / (1 - dis * (1 - lam)) * w\
-            + dis * lam / (1 - dis * (1 - lam)) * exp
+    new = dis * (1 - lam) / float(1 - dis * (1 - lam)) * w\
+            + dis * lam / float(1 - dis * (1 - lam)) * exp
     return new
 
-def val_loop_inner(current, w, dp, lam, dis, p):
+def val_loop_inner(current, w, lam, dis, p):
     # runs actual val loop
     dif = 1
     iters = 0
     while dif > 1e-1 and iters < 100:
-        new = val_eval(current, w, dp, lam, dis, p)
+        new = val_eval(current, w, lam, dis, p)
         dif = pow(new - current,2)
         dif = dif.sum()
         current = new.copy()
@@ -75,19 +76,19 @@ def val_loop_inner(current, w, dp, lam, dis, p):
             print dif
     return new
 
-def calc_trans(current, w, dp, lam, dis, p):
+def calc_trans(current, w, lam, dis, p):
     dat = pd.DataFrame({'v1': current, 'w1': w})
     min_stat = dat.apply(lambda row: mins(row, dat, p), axis=1)
-    trans = min_stat * lam
+    trans = min_stat * lam / float(dat.shape[0] - 1)
     cols = trans.columns
     ind  = trans.index
-    trans_mat = trans.as_matrix() * dp
+    trans_mat = trans.as_matrix()
     np.fill_diagonal(trans_mat,0)
     np.fill_diagonal(trans_mat,1 - trans_mat.sum(1))
     trans = pd.DataFrame(trans_mat,index=ind,columns=cols)
     return trans
 
-def val_loop(w, dp, lam, dis, p, ip, bd, init='nope'):
+def val_loop(w, lam, dis, p, ip, bd, init='nope'):
     # This function calls the value function loop
 
     # INITIAL GUESS
@@ -97,10 +98,10 @@ def val_loop(w, dp, lam, dis, p, ip, bd, init='nope'):
         current = w.apply(lambda x:  x)
 
     # MAIN LOOP
-    new = val_loop_inner(current, w, dp, lam, dis, p)
+    new = val_loop_inner(current, w, lam, dis, p)
 
     # GET TRANSITIONS
-    trans = calc_trans(new, w, dp, lam, dis, p)
+    trans = calc_trans(new, w, lam, dis, p)
     # instrument transisitons
     insw = pd.DataFrame({'w': w.sort_index(),
                         'bd': bd.sort_index()},
@@ -108,7 +109,7 @@ def val_loop(w, dp, lam, dis, p, ip, bd, init='nope'):
     insw = insw.apply(lambda x: x['w'] *
                       math.exp(- ip * x['bd']), axis=1)
     insw['OTHER'] = w['OTHER']
-    ins_trans = calc_trans(new, insw, dp, lam, dis, p) 
+    ins_trans = calc_trans(new, insw, lam, dis, p) 
 
     return new, trans, ins_trans
 
@@ -136,14 +137,13 @@ def calc_wage(mp, dep, qual, field, lat, qp):
     # returns wage at each of the departments
 
     # EASY PARAMETER REFERENCE
-    q = mp['wqual']
+    q = mp['qual']
     f = mp['field']
     l = mp['lat']
 
     # CALCULATE WAGE
-    wq = q * dep['dep_qual']
-    wq = 0
-    wf = f * wd(field, dep['dmean'])
+    wq = q * qual * dep['dep_qual']
+    wf = f * field * dep['dmean']
     # quadrature points 
     wl = l * dep['dmean'] * qp[lat]
     w_mid = wq + wf + wl

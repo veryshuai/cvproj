@@ -120,6 +120,6 @@ def cit_calc(cit_params, dep_year, lat, lp,
     except Exception as e:
         print 'WARNING: Error in cit_lik calc, cit_mp.py' 
         print e
-        cl_res, fc_res, nc_res = 1, 1, 1,
+        cl_res, fc_res, nc_res = 1e-200, 1e-200, 1e-200,
     return cl_res, fc_res, nc_res
 

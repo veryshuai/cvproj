@@ -16,8 +16,7 @@ def tree():
 
 def no_cit_inner(row, alp, bet, dep_year, lat, qp):
     k_lev = dep_year.at[row['dep'],row['date']-1]
-    num = alp[0] + alp[1] * (row['date'] - 1990.5)\
-            + bet * k_lev + qp[lat]
+    num = alp[0] + bet[0] * k_lev + qp[lat]
     item = 1 - math.exp(num) / (1 + math.exp(num))
     return item
 
@@ -51,8 +50,8 @@ def fc_lik(alp, bet, gam, dep_aut,
 
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
-    num = alp[0] + alp[1] * (lin1['date'] - 1990.5) + qp[lat]\
-            + bet * dep_year.at[lin1['dep'],lin1['date']-1]
+    num = alp[0] + qp[lat]\
+            + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
     item = math.exp(num) / (1 + math.exp(num))
     return item
 

@@ -41,8 +41,8 @@ def prior(cit_params, big_mov_params, lp, ip):
     [alp, gam, bet] = cit_params
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
-    run_sum += norm.logpdf(lp[0],0,100)
-    run_sum += norm.logpdf(lp[1],0,100)
+    run_sum += norm.logpdf(lp[0],0,10)
+    run_sum += norm.logpdf(lp[1],0,10)
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -52,19 +52,17 @@ def update_cits(cit_params, rnd):
     try:
         j = pd.read_csv('jump_size.csv').set_index('block')
         s_alp = list(j.loc['cit_alp'])[0]
-        s_alpy = list(j.loc['cit_alpy'])[0]
         s_bet = list(j.loc['cit_bet'])[0]
         s_gam0 = list(j.loc['cit_gam0'])[0]
         s_gam1 = list(j.loc['cit_gam1'])[0]
     except Exception as e:
         print e
-        s_alp, s_alpy, s_bet, s_gam0, s_gam1\
+        s_alp, s_bet, s_gam0, s_gam1\
                 = 1, 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
     alp[0] = alp[0] + random.gauss(0,rnd['alpha'] * s_alp)
-    alp[1] = alp[1] + random.gauss(0,rnd['alphay'] * s_alpy)
-    bet = bet + random.gauss(0,rnd['bet'] * s_bet)
+    bet[0] = bet[0] + random.gauss(0,rnd['bet'] * s_bet)
     gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
                       random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)
     gam[1] = norm.cdf(norm.ppf(gam[1], 0, 1) +
@@ -81,7 +79,6 @@ def update_movs(big_mov_params, ip, rnd):
         slo1 = list(j.loc['mov_lo'])[0]
         sp = list(j.loc['mov_p'])[0]
         sq = list(j.loc['mov_q'])[0]
-        swq = list(j.loc['mov_wq'])[0]
         sf = list(j.loc['mov_f'])[0]
         sl = list(j.loc['mov_l'])[0]
         sip = list(j.loc['mov_ip'])[0]
@@ -96,8 +93,6 @@ def update_movs(big_mov_params, ip, rnd):
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual']\
                           + random.gauss(0,rnd['qual_co'] * sq)
-    mov_params['wqual'] = mov_params['qual']\
-                          + random.gauss(0,rnd['wqual_co'] * swq)
     mov_params['field'] = mov_params['field']\
                           + random.gauss(0,rnd['field_co'] * sf)
     mov_params['lat'] =  mov_params['lat']\
@@ -334,7 +329,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
     [movparams, lam, p] = big_mov_params
-    out_writer.writerow(cit_params[0] + cit_params[1] + [cit_params[2]]
+    out_writer.writerow(cit_params[0] + cit_params[1] + cit_params[2]
             + list(movparams) + [lam] + [p] + lp + [ip])
     out_file.flush()
     return 0
