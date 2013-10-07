@@ -2,7 +2,7 @@
       name:  <unnamed>
        log:  /gpfs/work/d/dcj138/cv_disc/ins_reg/ins_reg.log
   log type:  text
- opened on:  26 Sep 2013, 10:47:04
+ opened on:   6 Oct 2013, 23:29:29
 
 . 
 . set more off
@@ -12,7 +12,7 @@
 
 . replace inmov = 1 if dep ~= last_dep
 (572 real changes made)
-
+;
 . g outmov = inmov * -1
 
 . 
@@ -1660,7 +1660,7 @@ Wald test of exogeneity (/athrho = 0): chi2(1) =     1.11 Prob > chi2 = 0.2921
 
 . estimates store m1, title("Endogenous Probit Model")
 
-. ivprobit cit92 isfield qual dep_qual dmean (kfrac = bd), first
+. ivprobit cit92 isfield qual dep_qual dmean (kfrac = bd), first vce(cl dep)
 note: isfield != 0 predicts failure perfectly
       isfield dropped and 95 obs not used
 
@@ -1675,59 +1675,61 @@ Iteration 4:   log likelihood =  -96.14059
 
 Fitting full model
 
-Iteration 0:   log likelihood =  6533.4036  
-Iteration 1:   log likelihood =  6533.4347  
-Iteration 2:   log likelihood =  6533.5296  
-Iteration 3:   log likelihood =  6533.5519  
-Iteration 4:   log likelihood =  6533.6246  (not concave)
-Iteration 5:   log likelihood =  6533.6385  
-Iteration 6:   log likelihood =  6533.6665  
-Iteration 7:   log likelihood =  6533.7175  
-Iteration 8:   log likelihood =  6533.7677  
-Iteration 9:   log likelihood =  6533.7899  
-Iteration 10:  log likelihood =  6533.8085  
-Iteration 11:  log likelihood =  6533.8112  
-Iteration 12:  log likelihood =  6533.8122  
-Iteration 13:  log likelihood =  6533.8122  
-Iteration 14:  log likelihood =  6533.8122  
+Iteration 0:   log pseudolikelihood =  6533.4036  
+Iteration 1:   log pseudolikelihood =  6533.4347  
+Iteration 2:   log pseudolikelihood =  6533.5296  
+Iteration 3:   log pseudolikelihood =  6533.5519  
+Iteration 4:   log pseudolikelihood =  6533.6246  (not concave)
+Iteration 5:   log pseudolikelihood =  6533.6385  
+Iteration 6:   log pseudolikelihood =  6533.6665  
+Iteration 7:   log pseudolikelihood =  6533.7175  
+Iteration 8:   log pseudolikelihood =  6533.7677  
+Iteration 9:   log pseudolikelihood =  6533.7899  
+Iteration 10:  log pseudolikelihood =  6533.8085  
+Iteration 11:  log pseudolikelihood =  6533.8112  
+Iteration 12:  log pseudolikelihood =  6533.8122  
+Iteration 13:  log pseudolikelihood =  6533.8122  
+Iteration 14:  log pseudolikelihood =  6533.8122  
 
 Probit model with endogenous regressors           Number of obs   =       2845
-                                                  Wald chi2(4)    =     100.92
-Log likelihood =  6533.8122                       Prob > chi2     =     0.0000
+                                                  Wald chi2(4)    =      38.26
+Log pseudolikelihood =  6533.8122                 Prob > chi2     =     0.0000
 
+                                  (Std. Err. adjusted for 103 clusters in dep)
 ------------------------------------------------------------------------------
+             |               Robust
              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
 cit92        |
-       kfrac |   37.60397   10.77048     3.49   0.000     16.49422    58.71372
+       kfrac |   37.60397   19.83769     1.90   0.058     -1.27718    76.48512
      isfield |          0  (omitted)
-        qual |   .0009416   .0016602     0.57   0.571    -.0023124    .0041956
-    dep_qual |  -.0481828   .0219551    -2.19   0.028     -.091214   -.0051516
-       dmean |   1.995508   2.156171     0.93   0.355    -2.230509    6.221525
-       _cons |  -1.011664   1.566636    -0.65   0.518    -4.082213    2.058886
+        qual |   .0009416    .001071     0.88   0.379    -.0011576    .0030408
+    dep_qual |  -.0481828   .0403276    -1.19   0.232    -.1272235    .0308579
+       dmean |   1.995508   4.209492     0.47   0.635    -6.254945    10.24596
+       _cons |  -1.011664   2.770951    -0.37   0.715    -6.442627      4.4193
 -------------+----------------------------------------------------------------
 kfrac        |
      isfield |          0  (omitted)
-        qual |  -.0000105    .000019    -0.55   0.582    -.0000478    .0000268
-    dep_qual |   .0014176   .0000531    26.68   0.000     .0013135    .0015218
-       dmean |  -.0048636   .0141366    -0.34   0.731    -.0325708    .0228436
-          bd |    -.02305   .0099679    -2.31   0.021    -.0425866   -.0035134
-       _cons |  -.0094163   .0013163    -7.15   0.000    -.0119963   -.0068364
+        qual |  -.0000105   7.41e-06    -1.42   0.157     -.000025    4.03e-06
+    dep_qual |   .0014176   .0003286     4.31   0.000     .0007736    .0020616
+       dmean |  -.0048636   .0824352    -0.06   0.953    -.1664337    .1567064
+          bd |    -.02305    .045306    -0.51   0.611    -.1118482    .0657482
+       _cons |  -.0094163   .0066364    -1.42   0.156    -.0224235    .0035909
 -------------+----------------------------------------------------------------
-     /athrho |  -1.403711   1.168022    -1.20   0.229    -3.692992    .8855704
-    /lnsigma |  -3.749202    .013257  -282.81   0.000    -3.775186   -3.723219
+     /athrho |  -1.403711   2.056352    -0.68   0.495    -5.434086    2.626665
+    /lnsigma |  -3.749202   .1032987   -36.29   0.000    -3.951664   -3.546741
 -------------+----------------------------------------------------------------
-         rho |  -.8861511   .2508166                      -.998761     .709199
-       sigma |   .0235365    .000312                      .0229328    .0241561
+         rho |  -.8861511    .441573                     -.9999619    .9895943
+       sigma |   .0235365   .0024313                      .0192227    .0288184
 ------------------------------------------------------------------------------
 Instrumented:  kfrac
 Instruments:   qual dep_qual dmean bd
 ------------------------------------------------------------------------------
-Wald test of exogeneity (/athrho = 0): chi2(1) =     1.44 Prob > chi2 = 0.2294
+Wald test of exogeneity (/athrho = 0): chi2(1) =     0.47 Prob > chi2 = 0.4948
 
 . estimates store m2, title("Endogenous Probit Model")
 
-. ivprobit cit92 isfield qual dep_qual dmean isstate (kfrac = bd), first
+. ivprobit cit92 isfield qual dep_qual dmean isstate (kfrac = bd), first vce(cl dep)
 note: isfield != 0 predicts failure perfectly
       isfield dropped and 95 obs not used
 
@@ -1742,66 +1744,328 @@ Iteration 4:   log likelihood = -95.972438
 
 Fitting full model
 
-Iteration 0:   log likelihood =  6534.1049  
-Iteration 1:   log likelihood =  6534.1119  (backed up)
-Iteration 2:   log likelihood =  6534.1844  
-Iteration 3:   log likelihood =  6534.1892  
-Iteration 4:   log likelihood =  6534.2011  
-Iteration 5:   log likelihood =  6534.2095  
-Iteration 6:   log likelihood =  6534.2284  
-Iteration 7:   log likelihood =  6534.2413  
-Iteration 8:   log likelihood =  6534.2576  
-Iteration 9:   log likelihood =  6534.2731  
-Iteration 10:  log likelihood =  6534.2898  
-Iteration 11:  log likelihood =   6534.311  
-Iteration 12:  log likelihood =  6534.3172  
-Iteration 13:  log likelihood =  6534.3412  (not concave)
-Iteration 14:  log likelihood =  6534.3437  
-Iteration 15:  log likelihood =   6534.347  
-Iteration 16:  log likelihood =  6534.3524  
-Iteration 17:  log likelihood =  6534.3542  
-Iteration 18:  log likelihood =  6534.3558  
-Iteration 19:  log likelihood =  6534.3563  
-Iteration 20:  log likelihood =  6534.3564  
-Iteration 21:  log likelihood =  6534.3564  
+Iteration 0:   log pseudolikelihood =  6534.1049  
+Iteration 1:   log pseudolikelihood =  6534.1119  (backed up)
+Iteration 2:   log pseudolikelihood =  6534.1844  
+Iteration 3:   log pseudolikelihood =  6534.1892  
+Iteration 4:   log pseudolikelihood =  6534.2011  
+Iteration 5:   log pseudolikelihood =  6534.2095  
+Iteration 6:   log pseudolikelihood =  6534.2284  
+Iteration 7:   log pseudolikelihood =  6534.2413  
+Iteration 8:   log pseudolikelihood =  6534.2576  
+Iteration 9:   log pseudolikelihood =  6534.2731  
+Iteration 10:  log pseudolikelihood =  6534.2898  
+Iteration 11:  log pseudolikelihood =   6534.311  
+Iteration 12:  log pseudolikelihood =  6534.3172  
+Iteration 13:  log pseudolikelihood =  6534.3412  (not concave)
+Iteration 14:  log pseudolikelihood =  6534.3437  
+Iteration 15:  log pseudolikelihood =   6534.347  
+Iteration 16:  log pseudolikelihood =  6534.3524  
+Iteration 17:  log pseudolikelihood =  6534.3542  
+Iteration 18:  log pseudolikelihood =  6534.3558  
+Iteration 19:  log pseudolikelihood =  6534.3563  
+Iteration 20:  log pseudolikelihood =  6534.3564  
+Iteration 21:  log pseudolikelihood =  6534.3564  
 
 Probit model with endogenous regressors           Number of obs   =       2845
-                                                  Wald chi2(5)    =     436.50
-Log likelihood =  6534.3564                       Prob > chi2     =     0.0000
+                                                  Wald chi2(5)    =      75.74
+Log pseudolikelihood =  6534.3564                 Prob > chi2     =     0.0000
 
+                                  (Std. Err. adjusted for 103 clusters in dep)
 ------------------------------------------------------------------------------
+             |               Robust
              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
 cit92        |
-       kfrac |   40.75258   6.377963     6.39   0.000       28.252    53.25316
+       kfrac |   40.75258   16.94686     2.40   0.016      7.53735     73.9678
      isfield |          0  (omitted)
-        qual |   .0007639   .0012736     0.60   0.549    -.0017324    .0032602
-    dep_qual |  -.0534851   .0142097    -3.76   0.000    -.0813356   -.0256345
-       dmean |   1.274776   2.086096     0.61   0.541    -2.813898     5.36345
-     isstate |   .0604183   .0999188     0.60   0.545    -.1354189    .2562555
-       _cons |  -.4906399   1.515483    -0.32   0.746    -3.460931    2.479652
+        qual |   .0007639   .0014567     0.52   0.600    -.0020913    .0036191
+    dep_qual |  -.0534851   .0382305    -1.40   0.162    -.1284154    .0214453
+       dmean |   1.274776     5.6412     0.23   0.821    -9.781772    12.33132
+     isstate |   .0604183    .295911     0.20   0.838    -.5195567    .6403932
+       _cons |  -.4906399   3.844234    -0.13   0.898      -8.0252     7.04392
 -------------+----------------------------------------------------------------
 kfrac        |
      isfield |          0  (omitted)
-        qual |  -.0000106    .000019    -0.56   0.578    -.0000479    .0000267
-    dep_qual |   .0013904   .0000592    23.49   0.000     .0012744    .0015064
-       dmean |   -.004251   .0141461    -0.30   0.764    -.0319769    .0234749
-     isstate |  -.0013849   .0013288    -1.04   0.297    -.0039893    .0012195
-          bd |  -.0136908   .0134139    -1.02   0.307    -.0399815    .0125999
-       _cons |  -.0083625   .0016596    -5.04   0.000    -.0116153   -.0051097
+        qual |  -.0000106   7.31e-06    -1.45   0.147    -.0000249    3.72e-06
+    dep_qual |   .0013904   .0003304     4.21   0.000     .0007428    .0020381
+       dmean |   -.004251   .0823523    -0.05   0.959    -.1656586    .1571566
+     isstate |  -.0013849   .0066283    -0.21   0.834    -.0143762    .0116064
+          bd |  -.0136908   .0616212    -0.22   0.824    -.1344662    .1070845
+       _cons |  -.0083625   .0078248    -1.07   0.285    -.0236988    .0069738
 -------------+----------------------------------------------------------------
-     /athrho |  -1.941657   1.862061    -1.04   0.297     -5.59123    1.707916
-    /lnsigma |  -3.749393    .013257  -282.82   0.000    -3.775376    -3.72341
+     /athrho |  -1.941657   4.718924    -0.41   0.681    -11.19058    7.307265
+    /lnsigma |  -3.749393   .1033127   -36.29   0.000    -3.951882   -3.546904
 -------------+----------------------------------------------------------------
-         rho |  -.9596652   .1471824                     -.9999722    .9363913
-       sigma |    .023532    .000312                      .0229285    .0241515
+         rho |  -.9596652   .3729966                            -1    .9999991
+       sigma |    .023532   .0024312                      .0192185    .0288137
 ------------------------------------------------------------------------------
 Instrumented:  kfrac
 Instruments:   qual dep_qual dmean isstate bd
 ------------------------------------------------------------------------------
-Wald test of exogeneity (/athrho = 0): chi2(1) =     1.09 Prob > chi2 = 0.2971
+Wald test of exogeneity (/athrho = 0): chi2(1) =     0.17 Prob > chi2 = 0.6807
 
 . estimates store m3, title("Endogenous Probit Model")
+
+. 
+. *1st Stage reg for weak instrument test
+. ivreg2 cit92 (kfrac = bd), ffirst
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,  2938)  P-val | AP Chi-sq(  1) P-val | AP F(  1,  2938)
+kfrac        |      31.14    0.0000 |       31.16   0.0000 |       31.14
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Anderson canon. corr. LM statistic       Chi-sq(1)=30.84    P-val=0.0000
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                      31.14
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,2938)=      0.98     P-val=0.3213
+Anderson-Rubin Wald test           Chi-sq(1)=      0.98     P-val=0.3211
+Stock-Wright LM S statistic        Chi-sq(1)=      0.98     P-val=0.3212
+
+Number of observations               N  =       2940
+Number of regressors                 K  =          2
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          2
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics consistent for homoskedasticity only
+
+                                                      Number of obs =     2940
+                                                      F(  1,  2938) =     0.96
+                                                      Prob > F      =   0.3274
+Total (centered) SS     =  15.91292517                Centered R2   =  -0.0251
+Total (uncentered) SS   =           16                Uncentered R2 =  -0.0195
+Residual SS             =  16.31199708                Root MSE      =   .07449
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |    .490327   .5004029     0.98   0.327    -.4904447    1.471099
+       _cons |  -.0055922   .0113446    -0.49   0.622    -.0278273    .0166428
+------------------------------------------------------------------------------
+Underidentification test (Anderson canon. corr. LM statistic):          30.835
+                                                   Chi-sq(1) P-val =    0.0000
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               31.141
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+------------------------------------------------------------------------------
+Sargan statistic (overidentification test of all instruments):           0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         kfrac
+Excluded instruments: bd
+------------------------------------------------------------------------------
+
+. ivreg2 cit92 isfield qual dep_qual dmean (kfrac = bd), ffirst
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,  2934)  P-val | AP Chi-sq(  1) P-val | AP F(  1,  2934)
+kfrac        |       5.66    0.0174 |        5.67   0.0172 |        5.66
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Anderson canon. corr. LM statistic       Chi-sq(1)=5.66     P-val=0.0173
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                       5.66
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,2934)=      0.83     P-val=0.3623
+Anderson-Rubin Wald test           Chi-sq(1)=      0.83     P-val=0.3617
+Stock-Wright LM S statistic        Chi-sq(1)=      0.83     P-val=0.3618
+
+Number of observations               N  =       2940
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          6
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics consistent for homoskedasticity only
+
+                                                      Number of obs =     2940
+                                                      F(  5,  2934) =     1.26
+                                                      Prob > F      =   0.2790
+Total (centered) SS     =  15.91292517                Centered R2   =  -0.1414
+Total (uncentered) SS   =           16                Uncentered R2 =  -0.1352
+Residual SS             =  18.16246741                Root MSE      =    .0786
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   1.200017   1.407287     0.85   0.394    -1.558215    3.958249
+     isfield |  -.0073508   .0084077    -0.87   0.382    -.0238295    .0091279
+        qual |   .0000363   .0000648     0.56   0.575    -.0000907    .0001634
+    dep_qual |  -.0015248   .0020392    -0.75   0.455    -.0055215    .0024719
+       dmean |   .0765842    .047007     1.63   0.103    -.0155479    .1687162
+       _cons |   .0107854   .0154583     0.70   0.485    -.0195123    .0410832
+------------------------------------------------------------------------------
+Underidentification test (Anderson canon. corr. LM statistic):           5.661
+                                                   Chi-sq(1) P-val =    0.0173
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                5.660
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+------------------------------------------------------------------------------
+Sargan statistic (overidentification test of all instruments):           0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         kfrac
+Included instruments: isfield qual dep_qual dmean
+Excluded instruments: bd
+------------------------------------------------------------------------------
+
+. ivreg2 cit92 isfield qual dep_qual dmean isstate dep_size (kfrac = bd), ffirst
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,  2932)  P-val | AP Chi-sq(  1) P-val | AP F(  1,  2932)
+kfrac        |       0.74    0.3885 |        0.75   0.3878 |        0.74
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Anderson canon. corr. LM statistic       Chi-sq(1)=0.75     P-val=0.3878
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                       0.74
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,2932)=      0.40     P-val=0.5256
+Anderson-Rubin Wald test           Chi-sq(1)=      0.40     P-val=0.5250
+Stock-Wright LM S statistic        Chi-sq(1)=      0.40     P-val=0.5250
+
+Number of observations               N  =       2940
+Number of regressors                 K  =          8
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          8
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics consistent for homoskedasticity only
+
+                                                      Number of obs =     2940
+                                                      F(  7,  2932) =     0.67
+                                                      Prob > F      =   0.6980
+Total (centered) SS     =  15.91292517                Centered R2   =  -0.5329
+Total (uncentered) SS   =           16                Uncentered R2 =  -0.5245
+Residual SS             =  24.39279842                Root MSE      =   .09109
+
+------------------------------------------------------------------------------
+       cit92 |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   2.329203    4.54203     0.51   0.608    -6.573012    11.23142
+     isfield |  -.0064752   .0102781    -0.63   0.529    -.0266198    .0136695
+        qual |   .0000523   .0000936     0.56   0.576    -.0001312    .0002358
+    dep_qual |  -.0038529   .0078173    -0.49   0.622    -.0191746    .0114688
+       dmean |   .0953413   .0740514     1.29   0.198    -.0497967    .2404794
+     isstate |  -.0002643   .0051248    -0.05   0.959    -.0103087    .0097801
+    dep_size |   .0003326    .000648     0.51   0.608    -.0009375    .0016026
+       _cons |   .0214382   .0418743     0.51   0.609    -.0606339    .1035104
+------------------------------------------------------------------------------
+Underidentification test (Anderson canon. corr. LM statistic):           0.746
+                                                   Chi-sq(1) P-val =    0.3878
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.744
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+------------------------------------------------------------------------------
+Sargan statistic (overidentification test of all instruments):           0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         kfrac
+Included instruments: isfield qual dep_qual dmean isstate dep_size
+Excluded instruments: bd
+------------------------------------------------------------------------------
 
 . 
 . tab cit92
@@ -1886,7 +2150,7 @@ Wald test of exogeneity (/athrho = 0): chi2(1) =     1.96 Prob > chi2 = 0.1614
 
 . estimates store m4, title("Endogenous Probit Model")
 
-. ivprobit cit92_plus  isfield qual dep_qual dmean (kfrac = bd), first
+. ivprobit cit92_plus  isfield qual dep_qual dmean (kfrac = bd), first vce(cl dep)
 
 Fitting exogenous probit model
 
@@ -1898,61 +2162,64 @@ Iteration 4:   log likelihood =   -142.505
 
 Fitting full model
 
-Iteration 0:   log likelihood =  6719.1026  
-Iteration 1:   log likelihood =  6719.1321  
-Iteration 2:   log likelihood =   6719.246  (not concave)
-Iteration 3:   log likelihood =  6719.2656  
-Iteration 4:   log likelihood =  6719.2947  
-Iteration 5:   log likelihood =  6719.4176  (not concave)
-Iteration 6:   log likelihood =  6719.4434  (not concave)
-Iteration 7:   log likelihood =  6719.4447  
-Iteration 8:   log likelihood =  6719.4915  
-Iteration 9:   log likelihood =  6719.6231  
-Iteration 10:  log likelihood =  6719.6307  
-Iteration 11:  log likelihood =   6719.752  
-Iteration 12:  log likelihood =  6719.7682  
-Iteration 13:  log likelihood =  6719.7831  
-Iteration 14:  log likelihood =  6719.7837  
-Iteration 15:  log likelihood =  6719.7837  
-Iteration 16:  log likelihood =  6719.7837  
+Iteration 0:   log pseudolikelihood =  6719.1026  
+Iteration 1:   log pseudolikelihood =  6719.1321  
+Iteration 2:   log pseudolikelihood =   6719.246  (not concave)
+Iteration 3:   log pseudolikelihood =  6719.2656  
+Iteration 4:   log pseudolikelihood =  6719.2947  
+Iteration 5:   log pseudolikelihood =  6719.4176  (not concave)
+Iteration 6:   log pseudolikelihood =  6719.4434  (not concave)
+Iteration 7:   log pseudolikelihood =  6719.4447  
+Iteration 8:   log pseudolikelihood =  6719.4915  
+Iteration 9:   log pseudolikelihood =  6719.6231  
+Iteration 10:  log pseudolikelihood =  6719.6307  
+Iteration 11:  log pseudolikelihood =   6719.752  
+Iteration 12:  log pseudolikelihood =  6719.7682  
+Iteration 13:  log pseudolikelihood =  6719.7831  
+Iteration 14:  log pseudolikelihood =  6719.7837  
+Iteration 15:  log pseudolikelihood =  6719.7837  
+Iteration 16:  log pseudolikelihood =  6719.7837  
 
 Probit model with endogenous regressors           Number of obs   =       2940
-                                                  Wald chi2(5)    =      86.58
-Log likelihood =  6719.7837                       Prob > chi2     =     0.0000
+                                                  Wald chi2(5)    =      26.45
+Log pseudolikelihood =  6719.7837                 Prob > chi2     =     0.0001
 
+                                  (Std. Err. adjusted for 103 clusters in dep)
 ------------------------------------------------------------------------------
+             |               Robust
              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
 cit92_plus   |
-       kfrac |    38.0337   7.460313     5.10   0.000     23.41175    52.65564
-     isfield |   .0232051   .1921604     0.12   0.904    -.3534223    .3998325
-        qual |   .0009212   .0014071     0.65   0.513    -.0018367     .003679
-    dep_qual |  -.0520092    .013667    -3.81   0.000    -.0787961   -.0252223
-       dmean |   1.366382   1.312651     1.04   0.298    -1.206367    3.939131
-       _cons |  -.7348907   1.002486    -0.73   0.464    -2.699728    1.229946
+       kfrac |    38.0337   15.96759     2.38   0.017     6.737803    69.32959
+     isfield |   .0232051   .1818706     0.13   0.898    -.3332547    .3796649
+        qual |   .0009212   .0009105     1.01   0.312    -.0008635    .0027058
+    dep_qual |  -.0520092   .0300319    -1.73   0.083    -.1108706    .0068523
+       dmean |   1.366382   3.218162     0.42   0.671    -4.941099    7.673863
+       _cons |  -.7348907    2.07882    -0.35   0.724    -4.809304    3.339522
 -------------+----------------------------------------------------------------
 kfrac        |
-     isfield |  -.0007615   .0024878    -0.31   0.760    -.0056375    .0041146
-        qual |  -.0000119   .0000187    -0.64   0.525    -.0000485    .0000247
-    dep_qual |   .0014265   .0000519    27.48   0.000     .0013247    .0015282
-       dmean |   -.005447   .0136106    -0.40   0.689    -.0321234    .0212293
-          bd |  -.0231654   .0097267    -2.38   0.017    -.0422293   -.0041015
-       _cons |  -.0095685   .0012947    -7.39   0.000    -.0121061    -.007031
+     isfield |  -.0007615   .0011315    -0.67   0.501    -.0029791    .0014562
+        qual |  -.0000119   6.88e-06    -1.72   0.085    -.0000253    1.63e-06
+    dep_qual |   .0014265   .0003178     4.49   0.000     .0008036    .0020493
+       dmean |   -.005447   .0779928    -0.07   0.944    -.1583101    .1474161
+          bd |  -.0231654   .0453156    -0.51   0.609    -.1119823    .0656515
+       _cons |  -.0095685   .0065875    -1.45   0.146    -.0224798    .0033428
 -------------+----------------------------------------------------------------
-     /athrho |  -1.503276   .8966882    -1.68   0.094    -3.260753    .2542003
-    /lnsigma |  -3.752819    .013041  -287.77   0.000    -3.778379   -3.727259
+     /athrho |  -1.503276    1.84064    -0.82   0.414    -5.110863    2.104311
+    /lnsigma |  -3.752819   .1030755   -36.41   0.000    -3.954843   -3.550794
 -------------+----------------------------------------------------------------
-         rho |  -.9057385    .161079                     -.9970614    .2488629
-       sigma |   .0234516   .0003058                      .0228597    .0240587
+         rho |  -.9057385   .3306483                     -.9999273    .9707019
+       sigma |   .0234516   .0024173                      .0191617    .0287018
 ------------------------------------------------------------------------------
 Instrumented:  kfrac
 Instruments:   isfield qual dep_qual dmean bd
 ------------------------------------------------------------------------------
-Wald test of exogeneity (/athrho = 0): chi2(1) =     2.81 Prob > chi2 = 0.0936
+Wald test of exogeneity (/athrho = 0): chi2(1) =     0.67 Prob > chi2 = 0.4141
 
 . estimates store m5, title("Endogenous Probit Model")
 
-. ivprobit cit92_plus  isfield qual dep_qual dmean isstate dep_size (kfrac = bd), first
+. ivprobit cit92_plus  isfield qual dep_qual dmean isstate dep_size (kfrac = bd), first vce(cl 
+> dep)
 
 Fitting exogenous probit model
 
@@ -1964,77 +2231,339 @@ Iteration 4:   log likelihood = -142.05836
 
 Fitting full model
 
-Iteration 0:   log likelihood =  6748.7055  
-Iteration 1:   log likelihood =  6748.7117  (backed up)
-Iteration 2:   log likelihood =  6748.7157  
-Iteration 3:   log likelihood =  6748.7311  (not concave)
-Iteration 4:   log likelihood =  6748.7312  
-Iteration 5:   log likelihood =  6748.7313  
-Iteration 6:   log likelihood =  6748.7504  (not concave)
-Iteration 7:   log likelihood =  6748.7514  (not concave)
-Iteration 8:   log likelihood =  6748.7515  
-Iteration 9:   log likelihood =  6748.7584  
-Iteration 10:  log likelihood =   6748.762  
-Iteration 11:  log likelihood =   6748.784  (not concave)
-Iteration 12:  log likelihood =  6748.7847  
-Iteration 13:  log likelihood =  6748.7946  
-Iteration 14:  log likelihood =  6748.8131  
-Iteration 15:  log likelihood =  6748.8442  
-Iteration 16:  log likelihood =  6748.8641  
-Iteration 17:  log likelihood =  6748.8852  
-Iteration 18:  log likelihood =  6748.9021  
-Iteration 19:  log likelihood =  6748.9189  
-Iteration 20:  log likelihood =  6748.9368  
-Iteration 21:  log likelihood =   6748.947  
-Iteration 22:  log likelihood =  6748.9521  
-Iteration 23:  log likelihood =  6748.9542  
-Iteration 24:  log likelihood =  6748.9558  
-Iteration 25:  log likelihood =   6748.956  
-Iteration 26:  log likelihood =   6748.956  
+Iteration 0:   log pseudolikelihood =  6748.7055  
+Iteration 1:   log pseudolikelihood =  6748.7117  (backed up)
+Iteration 2:   log pseudolikelihood =  6748.7157  
+Iteration 3:   log pseudolikelihood =  6748.7311  (not concave)
+Iteration 4:   log pseudolikelihood =  6748.7312  
+Iteration 5:   log pseudolikelihood =  6748.7313  
+Iteration 6:   log pseudolikelihood =  6748.7504  (not concave)
+Iteration 7:   log pseudolikelihood =  6748.7514  (not concave)
+Iteration 8:   log pseudolikelihood =  6748.7515  
+Iteration 9:   log pseudolikelihood =  6748.7584  
+Iteration 10:  log pseudolikelihood =   6748.762  
+Iteration 11:  log pseudolikelihood =   6748.784  (not concave)
+Iteration 12:  log pseudolikelihood =  6748.7847  
+Iteration 13:  log pseudolikelihood =  6748.7946  
+Iteration 14:  log pseudolikelihood =  6748.8131  
+Iteration 15:  log pseudolikelihood =  6748.8442  
+Iteration 16:  log pseudolikelihood =  6748.8641  
+Iteration 17:  log pseudolikelihood =  6748.8852  
+Iteration 18:  log pseudolikelihood =  6748.9021  
+Iteration 19:  log pseudolikelihood =  6748.9189  
+Iteration 20:  log pseudolikelihood =  6748.9368  
+Iteration 21:  log pseudolikelihood =   6748.947  
+Iteration 22:  log pseudolikelihood =  6748.9521  
+Iteration 23:  log pseudolikelihood =  6748.9542  
+Iteration 24:  log pseudolikelihood =  6748.9558  
+Iteration 25:  log pseudolikelihood =   6748.956  
+Iteration 26:  log pseudolikelihood =   6748.956  
 
 Probit model with endogenous regressors           Number of obs   =       2940
-                                                  Wald chi2(7)    =     338.55
-Log likelihood =   6748.956                       Prob > chi2     =     0.0000
+                                                  Wald chi2(7)    =      71.56
+Log pseudolikelihood =   6748.956                 Prob > chi2     =     0.0000
 
+                                  (Std. Err. adjusted for 103 clusters in dep)
 ------------------------------------------------------------------------------
+             |               Robust
              |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
 -------------+----------------------------------------------------------------
 cit92_plus   |
-       kfrac |   41.23775    5.84362     7.06   0.000     29.78447    52.69103
-     isfield |   .0288242   .1444316     0.20   0.842    -.2542565    .3119049
-        qual |   .0008214   .0011313     0.73   0.468    -.0013959    .0030387
-    dep_qual |  -.0702726   .0120291    -5.84   0.000    -.0938493   -.0466959
-       dmean |     1.1513   1.344146     0.86   0.392    -1.483176    3.785777
-     isstate |  -.0103684   .0941253    -0.11   0.912    -.1948507    .1741138
-    dep_size |   .0059004   .0013547     4.36   0.000     .0032451    .0085556
-       _cons |  -.2765491   1.179617    -0.23   0.815    -2.588556    2.035457
+       kfrac |   41.23775   18.75342     2.20   0.028     4.481718    77.99378
+     isfield |   .0288242    .120545     0.24   0.811    -.2074397     .265088
+        qual |   .0008214   .0014206     0.58   0.563     -.001963    .0036057
+    dep_qual |  -.0702726   .0402362    -1.75   0.081    -.1491341    .0085889
+       dmean |     1.1513   4.582828     0.25   0.802    -7.830877    10.13348
+     isstate |  -.0103684   .3184191    -0.03   0.974    -.6344584    .6137215
+    dep_size |   .0059004    .005154     1.14   0.252    -.0042013    .0160021
+       _cons |  -.2765491   3.649843    -0.08   0.940     -7.43011    6.877012
 -------------+----------------------------------------------------------------
 kfrac        |
-     isfield |  -.0007684   .0024633    -0.31   0.755    -.0055963    .0040596
-        qual |   -.000013   .0000185    -0.70   0.484    -.0000492    .0000233
-    dep_qual |   .0017286   .0000714    24.20   0.000     .0015886    .0018686
-       dmean |  -.0107598   .0135031    -0.80   0.426    -.0372253    .0157057
-     isstate |  -7.93e-06   .0012998    -0.01   0.995    -.0025555    .0025397
-    dep_size |  -.0001412   .0000185    -7.62   0.000    -.0001775   -.0001048
-          bd |  -.0112498    .013014    -0.86   0.387    -.0367567    .0142571
-       _cons |  -.0094126    .001618    -5.82   0.000    -.0125839   -.0062413
+     isfield |  -.0007684   .0011275    -0.68   0.496    -.0029783    .0014416
+        qual |   -.000013   6.86e-06    -1.89   0.059    -.0000264    4.92e-07
+    dep_qual |   .0017286   .0003469     4.98   0.000     .0010487    .0024085
+       dmean |  -.0107598   .0792031    -0.14   0.892    -.1659951    .1444755
+     isstate |  -7.93e-06   .0064105    -0.00   0.999    -.0125724    .0125565
+    dep_size |  -.0001412   .0001035    -1.36   0.173    -.0003441    .0000618
+          bd |  -.0112498   .0631684    -0.18   0.859    -.1350576     .112558
+       _cons |  -.0094126   .0073756    -1.28   0.202    -.0238685    .0050433
 -------------+----------------------------------------------------------------
-     /athrho |   -2.02548   1.780327    -1.14   0.255    -5.514857    1.463896
-    /lnsigma |  -3.762736    .013041  -288.53   0.000    -3.788296   -3.737176
+     /athrho |   -2.02548   5.494141    -0.37   0.712     -12.7938    8.742838
+    /lnsigma |  -3.762736    .102832   -36.59   0.000    -3.964283   -3.561189
 -------------+----------------------------------------------------------------
-         rho |  -.9657843   .1197462                     -.9999676    .8984067
-       sigma |   .0232201   .0003028                      .0226341    .0238213
+         rho |  -.9657843   .3695401                            -1    .9999999
+       sigma |   .0232201   .0023878                      .0189816     .028405
 ------------------------------------------------------------------------------
 Instrumented:  kfrac
 Instruments:   isfield qual dep_qual dmean isstate dep_size bd
 ------------------------------------------------------------------------------
-Wald test of exogeneity (/athrho = 0): chi2(1) =     1.29 Prob > chi2 = 0.2552
+Wald test of exogeneity (/athrho = 0): chi2(1) =     0.14 Prob > chi2 = 0.7124
 
 . estimates store m6, title("Endogenous Probit Model")
 
 . estout m1 m2 m3 m4 m5 m6 using ivprob_tab.txt, cells(b(star fmt(3)) se(par fmt(2)))  starleve
 > ls(* 0.10 ** 0.05 *** 0.01) style(tex) replace
 (output written to ivprob_tab.txt)
+
+. 
+. *1st Stage reg for weak instrument test
+. ivreg2 cit92_plus (kfrac = bd), ffirst
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,  2938)  P-val | AP Chi-sq(  1) P-val | AP F(  1,  2938)
+kfrac        |      31.14    0.0000 |       31.16   0.0000 |       31.14
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Anderson canon. corr. LM statistic       Chi-sq(1)=30.84    P-val=0.0000
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                      31.14
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,2938)=      1.40     P-val=0.2374
+Anderson-Rubin Wald test           Chi-sq(1)=      1.40     P-val=0.2371
+Stock-Wright LM S statistic        Chi-sq(1)=      1.40     P-val=0.2373
+
+Number of observations               N  =       2940
+Number of regressors                 K  =          2
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          2
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics consistent for homoskedasticity only
+
+                                                      Number of obs =     2940
+                                                      F(  1,  2938) =     1.34
+                                                      Prob > F      =   0.2474
+Total (centered) SS     =  24.78741497                Centered R2   =  -0.0427
+Total (uncentered) SS   =           25                Uncentered R2 =  -0.0339
+Residual SS             =  25.84674773                Root MSE      =   .09376
+
+------------------------------------------------------------------------------
+  cit92_plus |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   .7290396   .6298965     1.16   0.247    -.5055349    1.963614
+       _cons |   -.007903   .0142804    -0.55   0.580     -.035892     .020086
+------------------------------------------------------------------------------
+Underidentification test (Anderson canon. corr. LM statistic):          30.835
+                                                   Chi-sq(1) P-val =    0.0000
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):               31.141
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+------------------------------------------------------------------------------
+Sargan statistic (overidentification test of all instruments):           0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         kfrac
+Excluded instruments: bd
+------------------------------------------------------------------------------
+
+. ivreg2 cit92_plus isfield qual dep_qual dmean (kfrac = bd), ffirst
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,  2934)  P-val | AP Chi-sq(  1) P-val | AP F(  1,  2934)
+kfrac        |       5.66    0.0174 |        5.67   0.0172 |        5.66
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Anderson canon. corr. LM statistic       Chi-sq(1)=5.66     P-val=0.0173
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                       5.66
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,2934)=      1.39     P-val=0.2384
+Anderson-Rubin Wald test           Chi-sq(1)=      1.39     P-val=0.2379
+Stock-Wright LM S statistic        Chi-sq(1)=      1.39     P-val=0.2380
+
+Number of observations               N  =       2940
+Number of regressors                 K  =          6
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          6
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics consistent for homoskedasticity only
+
+                                                      Number of obs =     2940
+                                                      F(  5,  2934) =     0.72
+                                                      Prob > F      =   0.6069
+Total (centered) SS     =  24.78741497                Centered R2   =  -0.2490
+Total (uncentered) SS   =           25                Uncentered R2 =  -0.2384
+Residual SS             =  30.95875701                Root MSE      =    .1026
+
+------------------------------------------------------------------------------
+  cit92_plus |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   1.939083   1.837329     1.06   0.291    -1.662017    5.540182
+     isfield |   .0009328   .0109769     0.08   0.932    -.0205815    .0224471
+        qual |   .0000531   .0000846     0.63   0.530    -.0001127     .000219
+    dep_qual |  -.0026584   .0026623    -1.00   0.318    -.0078764    .0025597
+       dmean |   .0844025   .0613715     1.38   0.169    -.0358835    .2046884
+       _cons |   .0227492   .0201821     1.13   0.260     -.016807    .0623054
+------------------------------------------------------------------------------
+Underidentification test (Anderson canon. corr. LM statistic):           5.661
+                                                   Chi-sq(1) P-val =    0.0173
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                5.660
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+------------------------------------------------------------------------------
+Sargan statistic (overidentification test of all instruments):           0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         kfrac
+Included instruments: isfield qual dep_qual dmean
+Excluded instruments: bd
+------------------------------------------------------------------------------
+
+. ivreg2 cit92_plus isfield qual dep_qual dmean isstate dep_size (kfrac = bd), ffirst
+
+
+Summary results for first-stage regressions
+-------------------------------------------
+
+                                           (Underid)            (Weak id)
+Variable     | F(  1,  2932)  P-val | AP Chi-sq(  1) P-val | AP F(  1,  2932)
+kfrac        |       0.74    0.3885 |        0.75   0.3878 |        0.74
+
+Stock-Yogo weak ID test critical values for single endogenous regressor:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Underidentification test
+Ho: matrix of reduced form coefficients has rank=K1-1 (underidentified)
+Ha: matrix has rank=K1 (identified)
+Anderson canon. corr. LM statistic       Chi-sq(1)=0.75     P-val=0.3878
+
+Weak identification test
+Ho: equation is weakly identified
+Cragg-Donald Wald F statistic                                       0.74
+
+Stock-Yogo weak ID test critical values for K1=1 and L1=1:
+                                   10% maximal IV size             16.38
+                                   15% maximal IV size              8.96
+                                   20% maximal IV size              6.66
+                                   25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+
+Weak-instrument-robust inference
+Tests of joint significance of endogenous regressors B1 in main equation
+Ho: B1=0 and orthogonality conditions are valid
+Anderson-Rubin Wald test           F(1,2932)=      0.43     P-val=0.5111
+Anderson-Rubin Wald test           Chi-sq(1)=      0.43     P-val=0.5105
+Stock-Wright LM S statistic        Chi-sq(1)=      0.43     P-val=0.5105
+
+Number of observations               N  =       2940
+Number of regressors                 K  =          8
+Number of endogenous regressors      K1 =          1
+Number of instruments                L  =          8
+Number of excluded instruments       L1 =          1
+
+IV (2SLS) estimation
+--------------------
+
+Estimates efficient for homoskedasticity only
+Statistics consistent for homoskedasticity only
+
+                                                      Number of obs =     2940
+                                                      F(  7,  2932) =     0.41
+                                                      Prob > F      =   0.8937
+Total (centered) SS     =  24.78741497                Centered R2   =  -0.5866
+Total (uncentered) SS   =           25                Uncentered R2 =  -0.5731
+Residual SS             =  39.32751788                Root MSE      =    .1157
+
+------------------------------------------------------------------------------
+  cit92_plus |      Coef.   Std. Err.      z    P>|z|     [95% Conf. Interval]
+-------------+----------------------------------------------------------------
+       kfrac |   3.010886   5.767232     0.52   0.602    -8.292681    14.31445
+     isfield |   .0017671   .0130506     0.14   0.892    -.0238116    .0273457
+        qual |    .000069   .0001189     0.58   0.562     -.000164     .000302
+    dep_qual |  -.0051224    .009926    -0.52   0.606    -.0245771    .0143322
+       dmean |   .1066375   .0940266     1.13   0.257    -.0776512    .2909261
+     isstate |  -.0015729   .0065072    -0.24   0.809    -.0143268     .011181
+    dep_size |   .0004223   .0008228     0.51   0.608    -.0011903     .002035
+       _cons |   .0337536   .0531698     0.63   0.526    -.0704574    .1379645
+------------------------------------------------------------------------------
+Underidentification test (Anderson canon. corr. LM statistic):           0.746
+                                                   Chi-sq(1) P-val =    0.3878
+------------------------------------------------------------------------------
+Weak identification test (Cragg-Donald Wald F statistic):                0.744
+Stock-Yogo weak ID test critical values: 10% maximal IV size             16.38
+                                         15% maximal IV size              8.96
+                                         20% maximal IV size              6.66
+                                         25% maximal IV size              5.53
+Source: Stock-Yogo (2005).  Reproduced by permission.
+------------------------------------------------------------------------------
+Sargan statistic (overidentification test of all instruments):           0.000
+                                                 (equation exactly identified)
+------------------------------------------------------------------------------
+Instrumented:         kfrac
+Included instruments: isfield qual dep_qual dmean isstate dep_size
+Excluded instruments: bd
+------------------------------------------------------------------------------
 
 . 
 . tab cit92_plus
@@ -2051,5 +2580,5 @@ Wald test of exogeneity (/athrho = 0): chi2(1) =     1.29 Prob > chi2 = 0.2552
       name:  <unnamed>
        log:  /gpfs/work/d/dcj138/cv_disc/ins_reg/ins_reg.log
   log type:  text
- closed on:  26 Sep 2013, 10:47:25
+ closed on:   6 Oct 2013, 23:29:52
 -----------------------------------------------------------------------------------------------

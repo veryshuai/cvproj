@@ -50,7 +50,7 @@ def get_cov(snip, k, block_name):
         else:
             locdat = dat[['field_co', 'lat_co', 'qual_co',
                           'lo', 'p', 'ip']]
-            locdat['p'] = locdat['p'].apply(lambda x: math.log(x - 1))
+            # locdat['p'] = locdat['p'].apply(lambda x: math.log(x - 1))
             locdat['ip'] = locdat['ip'].apply(lambda x: math.log(x))
 
             d = locdat.shape[1] 

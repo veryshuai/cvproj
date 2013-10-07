@@ -14,12 +14,14 @@ def load_dat(name, col_no, log=False, ppf=False):
     k = 0
     for infile in glob.glob(os.path.join('', name)):
         new = pd.read_csv(infile).iloc[:, col_no]
+        new = new[pd.notnull(new)]
+        print new.describe()
         if log:
             new = new.apply(lambda x: math.log(x))
         if ppf:
             new = new.apply(lambda x: norm.ppf(x))
         mid = round(new.count() / 2)
-        mid = 0
+        # mid = 0
         liks.append(new[mid:])
         mliks.append(liks[k].describe().loc['mean'])
         min_n = min(liks[k].count(), min_n)
@@ -48,7 +50,7 @@ def make_B(mliks, min_n, max_n):
 
 def make_gels(name, col_no, params=False):
     liks, mliks, min_n, max_n = load_dat(name, col_no)
-    if col_no in [9,12] and params:
+    if col_no in [12] and params:
         liks, mliks, min_n, max_n = load_dat(name, col_no, True)
     # if col_no in [2,3,9] and params:
     #     liks, mliks, min_n, max_n = load_dat(name, col_no, False, True)
@@ -63,8 +65,8 @@ def make_gels(name, col_no, params=False):
 
 under = 0
 total = 0
-for k in range(14):
-    R = make_gels('out_2*', k, True)
+for k in range(13):
+    R = make_gels('out_2*', k, False)
     if R:
         total += 1
         if R < 1.1:

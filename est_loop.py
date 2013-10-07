@@ -43,6 +43,7 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += betad.logpdf(gam[1],0.125,2)
     run_sum += norm.logpdf(lp[0],0,10)
     run_sum += norm.logpdf(lp[1],0,10)
+    run_sum += norm.logpdf(math.log(ip),0,10)
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -58,7 +59,7 @@ def update_cits(cit_params, rnd):
     except Exception as e:
         print e
         s_alp, s_bet, s_gam0, s_gam1\
-                = 1, 1, 1, 1, 1
+                = 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
     alp[0] = alp[0] + random.gauss(0,rnd['alpha'] * s_alp)
@@ -89,7 +90,7 @@ def update_movs(big_mov_params, ip, rnd):
 
     [mov_params, lam, p] = big_mov_params
     lam = math.exp(math.log(lam) + random.gauss(0, rnd['lo'] * slo1))
-    p = 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * sp))
+    p = 0 # 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * sp))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual']\
                           + random.gauss(0,rnd['qual_co'] * sq)
@@ -144,8 +145,9 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     lik_mid = []
     # GET INDIVIDUAL SPECIFIC NORMAL MEAN, CAN ONLY BE 1/4 STD DEV
     # AWAY FROM ZERO
-    ff_mean = first_ff['dmean'].apply(lambda x: (0.5  *
-                                norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25) * lp_u[2])
+    # ff_mean = first_ff['dmean'].apply(lambda x: (0.5  *
+    #                            norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25) * lp_u[2])
+    ff_mean = first_ff['dmean'].apply(lambda x: x * lp_u[1])
     
     # QUADRATURE POINTS AND WEIGHTS 
     # QUADRATURE POINTS 
@@ -198,7 +200,7 @@ def calc_lp_lik(cit_params, big_mov_params,
 
     # UPDATE PARAMETERS
     lp_u = []
-    lp_u.append(deepcopy(lp[0]) + random.gauss(0, s0))
+    lp_u.append(0) #deepcopy(lp[0]) + random.gauss(0, s0))
     lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
     lp_u.append(2 * norm.cdf(norm.ppf(deepcopy(lp[2])
                 / float(2), 0, 1) + random.gauss(0, s2), 0, 1))
