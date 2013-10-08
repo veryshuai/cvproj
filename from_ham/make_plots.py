@@ -19,7 +19,7 @@ def mkplt(x, sp1, sp2, sp3, y_name, ytop=0, log=False, ppf=False):
     plt.plot(x, '-b', linewidth=0.5)
     plt.title(y_name, fontsize=10)
     ax.xaxis.set_major_formatter( plt.NullFormatter() )
-    ax.yaxis.set_major_formatter( plt.NullFormatter() )
+    #ax.yaxis.set_major_formatter( plt.NullFormatter() )
     if ytop != 0:
         plt.ylim([ytop[0],ytop[1]])
     return ax

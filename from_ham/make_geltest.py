@@ -15,7 +15,6 @@ def load_dat(name, col_no, log=False, ppf=False):
     for infile in glob.glob(os.path.join('', name)):
         new = pd.read_csv(infile).iloc[:, col_no]
         new = new[pd.notnull(new)]
-        print new.describe()
         if log:
             new = new.apply(lambda x: math.log(x))
         if ppf:
@@ -66,7 +65,7 @@ def make_gels(name, col_no, params=False):
 under = 0
 total = 0
 for k in range(13):
-    R = make_gels('out_2*', k, False)
+    R = make_gels('out_2*', k, True)
     if R:
         total += 1
         if R < 1.1:
