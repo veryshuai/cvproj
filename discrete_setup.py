@@ -100,7 +100,6 @@ aut_pan.to_pickle('aut_pan.pickle')
 aut_pan  = pd.read_pickle('aut_pan.pickle').reset_index()
 combined = pd.read_pickle('combined.pickle')
 
-
 # GET AUTHOR FIELDS (currently for Jensen)
 fields          = pd.read_csv('collapsed.csv')
 ecm             = fields.ix[list(fields[' NEP-CTA ']) == 1 or list(fields[' NEP-BEC '] == 1)]
@@ -155,14 +154,19 @@ aut_pan      = field_frac(aut_pan,'dep','dmean')
 # GET KNOW FRACTIONS
 def know_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
-    transformed    = autpan.groupby([location,'date'])['isCiter']\
-            .transform(lambda x: sum(x*1) / max(float(len(x*1)) - 1,float(1)))
+    transformed    = autpan.groupby(['date',location])['isCiter']\
+            .transform(lambda x: sum(x) / max(float(len(x)) - 1,float(1)))
     autpan[newvar] = transformed
+    print transformed
+    print autpan[newvar]
     return autpan
-aut_pan      = know_frac(aut_pan,'dep','kfrac')
+aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
+aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
+aut_pan      = know_frac(aut_pan,'shift_dep','kfrac')
 
 # PIVOT KNOW FRACTIONS
-dep_years = aut_pan[['dep','date','kfrac']].drop_duplicates()
+dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
+dep_years.columns = ['dep','date','kfrac']
 dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
 dep_years.to_pickle('dep_years.pickle')
 

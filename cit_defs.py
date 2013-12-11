@@ -47,7 +47,6 @@ def cit_lik_cit(alp, bet, gam, dep_aut,
 def fc_lik(alp, bet, gam, dep_aut,
            dep_year, lat, qp):
     # calculates first cite likelihoods
-
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
     num = alp[0] + qp[lat]\
