@@ -44,8 +44,6 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += norm.logpdf(lp[0],0,10)
     run_sum += norm.logpdf(lp[1],0,10)
     run_sum += norm.logpdf(math.log(ip),0,10)
-    if bet[0] < 0 or bet[1] < 0:
-        run_sum += -1e6
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -57,19 +55,17 @@ def update_cits(cit_params, rnd):
         s_alp = list(j.loc['cit_alp'])[0]
         s_bet0 = list(j.loc['cit_bet0'])[0]
         s_bet1 = list(j.loc['cit_bet1'])[0]
-        s_bet2 = list(j.loc['cit_bet2'])[0]
         s_gam0 = list(j.loc['cit_gam0'])[0]
         s_gam1 = list(j.loc['cit_gam1'])[0]
     except Exception as e:
         print e
-        s_alp, s_bet0, s_bet1, s_bet2, s_gam0, s_gam1\
-                = 1, 1, 1, 1, 1, 1
+        s_alp, s_bet0, s_bet1, s_gam0, s_gam1\
+                = 1, 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
     alp[0] = alp[0] + random.gauss(0,rnd['alpha'] * s_alp)
     bet[0] = bet[0] + random.gauss(0,rnd['bet0'] * s_bet0)
     bet[1] = bet[1] + random.gauss(0,rnd['bet1'] * s_bet1)
-    bet[2] = bet[2] #+ random.gauss(0,rnd['bet2'] * s_bet2)
     gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
                       random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)
     gam[1] = norm.cdf(norm.ppf(gam[1], 0, 1) +
@@ -112,7 +108,7 @@ def update_movs(big_mov_params, ip, rnd):
 
 def calc_cit_lik(cit_params, big_mov_params, citers,
                                  nocits, first_cits, lp, lik_pieces,
-                                 dep_year, dep_reg, dep_nat, init, first_ff, ip, cit_rnd):
+                                 dep_year, init, first_ff, ip, cit_rnd):
     # Updates cits and recalculates likelihood
 
     cit_params_u = update_cits(deepcopy(cit_params), cit_rnd)
@@ -122,7 +118,7 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
     init_u = deepcopy(init)
     
     cit_liks, fc_liks, nocit_liks\
-            = cm.call_parallel(cit_params_u, dep_year, dep_reg, dep_nat,
+            = cm.call_parallel(cit_params_u, dep_year,
                                lp_u, citers, first_cits, nocits)
 
     lik_pieces_u = deepcopy(lik_pieces)
@@ -184,7 +180,7 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
 def calc_lp_lik(cit_params, big_mov_params,
                 lp, lik_pieces, init, first_ff,
                 ip, citers, nocits, first_cits,
-                dep_year, dep_reg, dep_nat, dep_stats, mov_dat91,
+                dep_year, dep_stats, mov_dat91,
                 mov_dat_not91, bd):
     # updates lp and recalcs lik
 
@@ -206,7 +202,7 @@ def calc_lp_lik(cit_params, big_mov_params,
 
     # UPDATE PARAMETERS
     lp_u = []
-    lp_u.append(0)# deepcopy(lp[0]) + random.gauss(0, s0))
+    lp_u.append(0) #deepcopy(lp[0]) + random.gauss(0, s0))
     lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
     lp_u.append(2 * norm.cdf(norm.ppf(deepcopy(lp[2])
                 / float(2), 0, 1) + random.gauss(0, s2), 0, 1))
@@ -219,7 +215,7 @@ def calc_lp_lik(cit_params, big_mov_params,
 
     # UPDATE CIT LIKS 
     cit_liks, fc_liks, nocit_liks\
-            = cm.call_parallel(cit_params_u, dep_year, dep_reg, dep_nat,
+            = cm.call_parallel(cit_params_u, dep_year,
                                lp_u, citers, first_cits, nocits)
 
     lik_pieces_u = deepcopy(lik_pieces)
@@ -261,7 +257,7 @@ def calc_mov_lik(cit_params, big_mov_params,
 
 def est_loop(lik, lik_pieces, big_mov_params, cit_params,
         lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
-        first_cits, citers, nocits, dep_year, dep_reg, dep_nat,
+        first_cits, citers, nocits, dep_year,
         out_file, out_writer, first_ff, ip, bd, timestr):
     """called by discrete.py, this is the boss of the
     estimation loop"""
@@ -284,8 +280,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                     lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_cit_lik(cit_params, big_mov_params, citers,
                                    nocits, first_cits, lp, lik_pieces,
-                                   dep_year, dep_reg, dep_nat, init, 
-                                   first_ff, ip, cit_rnd)
+                                   dep_year, init, first_ff, ip, cit_rnd)
 
         # NEW LIPS
         if k % 7 == 0:
@@ -296,8 +291,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                     = calc_lp_lik(cit_params, big_mov_params,
                                   lp, lik_pieces, init,
                                   first_ff, ip, citers, nocits,
-                                  first_cits, dep_year, dep_reg, 
-                                  dep_nat, dep_stats,
+                                  first_cits, dep_year, dep_stats,
                                   mov_dat91, mov_dat_not91, bd)
 
         # NEW MOPS

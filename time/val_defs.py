@@ -82,7 +82,7 @@ def val_loop_inner(current, w, lam, dis, p):
     # runs actual val loop
     dif = 1
     iters = 0
-    while dif > 1e-3 and iters < 100:
+    while dif > 1e-2 and iters < 100:
         new = val_eval(current, w, lam, dis, p)
         dif = pow(new - current,2)
         dif = dif.sum()

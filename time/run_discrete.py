@@ -13,7 +13,7 @@ if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
     alp = [-1.6912994607298211]
-    bet = [5, 80, 0]
+    bet = [10.829271047737196, 1]
     gam = [0.034228248703075864, 0.098392799712779644]
     
     # INITIAL MOV PARAMETERS 

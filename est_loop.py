@@ -14,6 +14,7 @@ from time import clock, time
 from copy import copy, deepcopy
 from scipy.stats import norm
 from scipy.stats import beta as betad
+from scipy.stats import expon
 import adapt
 import numpy as np
 
@@ -43,7 +44,8 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += betad.logpdf(gam[1],0.125,2)
     run_sum += norm.logpdf(lp[0],0,10)
     run_sum += norm.logpdf(lp[1],0,10)
-    run_sum += norm.logpdf(math.log(ip),0,10)
+    run_sum += norm.logpdf(math.log(ip),0,10) 
+    run_sum += expon.logpdf(bet,300) 
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -147,7 +149,7 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # AWAY FROM ZERO
     # ff_mean = first_ff['dmean'].apply(lambda x: (0.5  *
     #                            norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25) * lp_u[2])
-    ff_mean = first_ff['dmean'].apply(lambda x: x * lp_u[1])
+    ff_mean = first_ff[['dmean', 'dep_qual']].apply(lambda row: row[0] * lp_u[1] + row[1] * lp_u[0], axis=1)
     
     # QUADRATURE POINTS AND WEIGHTS 
     # QUADRATURE POINTS 
@@ -200,7 +202,7 @@ def calc_lp_lik(cit_params, big_mov_params,
 
     # UPDATE PARAMETERS
     lp_u = []
-    lp_u.append(0) #deepcopy(lp[0]) + random.gauss(0, s0))
+    lp_u.append(deepcopy(lp[0]) + random.gauss(0, s0))
     lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
     lp_u.append(2 * norm.cdf(norm.ppf(deepcopy(lp[2])
                 / float(2), 0, 1) + random.gauss(0, s2), 0, 1))

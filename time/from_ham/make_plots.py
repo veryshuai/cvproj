@@ -9,8 +9,6 @@ p = pd.read_csv('out.csv')
 # EASIER TO DO LOGGING HERE
 # p[' p'] = p[' p'].apply(lambda x: math.log(x))
 p[' ip'] = p[' ip'].apply(lambda x: math.log(x))
-#p[' bet0'] = p[' bet0'].apply(lambda x: math.exp(x))
-#p[' bet1'] = p[' bet1'].apply(lambda x: math.exp(x))
 
 def mkplt(x, sp1, sp2, sp3, y_name, ytop=0, log=False, ppf=False):
     if log:
@@ -29,9 +27,8 @@ fig1 = plt.figure(figsize=(17,  8),  dpi=80)
 mkplt(p[' bet0'],  3, 2, 1, 'bet0', 0)
 mkplt(p['alp'],    3, 2, 2, 'alp', 0)
 mkplt(p[' bet1'],  3, 2, 3, 'bet1', 0)
-mkplt(p[' bet2'],  3, 2, 4, 'bet2', 0)
-mkplt(p[' gam0'],  3, 2, 5, 'gam0', 0)
-mkplt(p[' gam1'],  3, 2, 6, 'gam1', 0)
+mkplt(p[' gam0'],  3, 2, 4, 'gam0', 0)
+mkplt(p[' gam1'],  3, 2, 5, 'gam1', 0)
 plt.savefig('params1_plots_lat2.png', bbox_inches=0)
 
 fig2 = plt.figure(figsize=(17,  8),  dpi=80)

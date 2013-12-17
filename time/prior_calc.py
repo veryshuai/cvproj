@@ -1,7 +1,4 @@
-###########################################################################
-# latent_setup.py
-# This program sets up the data for MCMC estimation
-###########################################################################
+# This script runs some data cuts which give information for the prior I use
 
 import datetime as dt
 import pandas as pd
@@ -20,7 +17,7 @@ def tree():
     return collections.defaultdict(tree)
 
 first_yr = 1986
-last_yr = 1994
+last_yr = 2012
 
 # LOAD FIRST CITATION TIMES AND TOTAL CITES
 cit_times_df = pd.read_csv('cit_times.csv')
@@ -73,12 +70,6 @@ combined['start_times'][pd.notnull(combined['cit_times'])] = combined_nonulls['s
 combined['end_times'][pd.notnull(combined['cit_times'])] = combined_nonulls['end_times']
 combined['isCiter']     = pd.notnull(combined['cit_times'])*1
 
-combined.to_pickle('combined.pickle')
-aut_pan.to_pickle('aut_pan.pickle')
-
-aut_pan  = pd.read_pickle('aut_pan.pickle')
-combined = pd.read_pickle('combined.pickle')
-
 # APPEND ONTO AUT_PAN
 aut_pan  = aut_pan.reset_index().append(combined.reset_index()).sort_index(by = ['au','date'])
 aut_pan  = aut_pan[['au','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
@@ -93,13 +84,6 @@ aut_pan  = aut_pan.reset_index().drop_duplicates(cols = ['au','date'],take_last 
 aut_pan['isCiter'][aut_pan['cit_times'] <= aut_pan['date']] = 1
 aut_pan['isCiter'][aut_pan['cit_times'] > aut_pan['date']] = 0
 aut_pan  = aut_pan.set_index(['au','date'])
-
-combined.to_pickle('combined.pickle')
-aut_pan.to_pickle('aut_pan.pickle')
-
-aut_pan  = pd.read_pickle('aut_pan.pickle').reset_index()
-combined = pd.read_pickle('combined.pickle')
-
 
 # GET AUTHOR FIELDS (currently for Jensen)
 fields          = pd.read_csv('collapsed.csv')
@@ -124,22 +108,20 @@ def on_the_list(x):
         print 'WARNING: non-string in on_the_list function'
         return 0
 
+aut_pan = aut_pan.reset_index()
 aut_pan['au']       = aut_pan['au'].str.upper()
 isField             = pd.DataFrame(aut_pan.groupby('au').first().reset_index())
 isField['isField']  = aut_pan.groupby('au').first().reset_index()['au'].apply(lambda x: on_the_list(x))
 aut_pan             = aut_pan.set_index('au').join(isField.drop('dep',axis=1).set_index('au'),how='outer',rsuffix='_r')
 print aut_pan.reset_index().groupby('au').first()['isField'].value_counts()
 
-aut_pan.to_pickle('aut_pan.pickle')
-
-aut_pan      = pd.read_pickle('aut_pan.pickle')
 aut_pan      = aut_pan[(pd.notnull(aut_pan.date)) & (aut_pan.date >= first_yr) & (aut_pan.date <= last_yr)]
 
 # DISCRETIZE AND MATCH QUALITY TO AUTHOR PANEL
 qual_list           = pd.read_csv('stata_usonly_qual_bar.csv',delimiter = '|').set_index('au')
-quant               = pd.qcut(qual_list['qual'], [0, 0.5, 1])
+quant               = pd.qcut(qual_list['qual'], [0, 0.33, 0.66, 1])
 junk, quant_id      = np.unique(quant, return_inverse = True)
-qual_list['qual']   = - (quant_id - 1)
+qual_list['qual']   = - (quant_id - 2)
 aut_pan             = aut_pan.join(qual_list).reset_index()
 aut_pan['dep_qual'] = aut_pan.groupby('dep')['qual'].transform(lambda x: x.mean())
 aut_pan             = aut_pan.set_index('au')
@@ -155,90 +137,40 @@ aut_pan      = field_frac(aut_pan,'dep','dmean')
 # GET KNOW FRACTIONS
 def know_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
-    transformed    = autpan.groupby(['date',location])['isCiter']\
-            .transform(lambda x: sum(x) / max(float(len(x)) - 1,float(1)))
+    transformed    = autpan.groupby([location,'date'])['isCiter']\
+            .transform(lambda x: sum(x*1) / max(float(len(x*1)) - 1,float(1)))
     autpan[newvar] = transformed
-    print transformed
-    print autpan[newvar]
     return autpan
-aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
-aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
-aut_pan      = know_frac(aut_pan,'shift_dep','kfrac')
+aut_pan      = know_frac(aut_pan,'dep','kfrac')
 
 # PIVOT KNOW FRACTIONS
-dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
-dep_years.columns = ['dep','date','kfrac']
+dep_years = aut_pan[['dep','date','kfrac']].drop_duplicates()
 dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
-dep_years.to_pickle('dep_years.pickle')
-
-# CREATE DEPARTMENT LIST
-dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
-dep_list.to_pickle('dep_list.pickle')
-dep_list.to_csv('dep_list.csv')
 
 # CLEAN UP AUTPAN
-aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',
-                             'qual', 'dep_qual', 'kfrac', 'isField',
+aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean', 'qual', 'dep_qual', 'kfrac', 'isField',
                              'start_times', 'end_times', 'cit_times',
                              'tot_cits', 'isCiter']].reset_index()
 aut_pan['isMove'] = False
 
-# SAVE INITIAL MATRIX
-aut_pan.to_pickle('initial_panel.pickle')
-
 # SAVE CIT LIK STUFF
 aut_pan = aut_pan[(aut_pan['date'] > first_yr) & (aut_pan['date'] <= last_yr)]
+aut_pan = aut_pan[(aut_pan['start_times'] < 1995) & (aut_pan['end_times'] > 1986)]
 first_deps = aut_pan.sort_index(by='date')\
             .groupby('au').first().reset_index()
-first_ff = first_deps.set_index('au')[['dmean', 'isField', 'dep_qual']]
+first_ff = first_deps.set_index('au')[['dmean', 'isField']]
 first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
              .groupby('au').first().reset_index()
-aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
-        .transform(lambda x: max(x))
-citers = aut_pan[(aut_pan['ever_cit'] == 1) & (aut_pan['isCiter'] == 0)]
-nocits = aut_pan[aut_pan['ever_cit'] == 0]
-first_cits.to_pickle('first_cits.pickle')
-citers.to_pickle('citers.pickle')
-nocits.to_pickle('nocits.pickle')
-first_ff.to_pickle('first_ff.pickle')
-import pdb; pdb.set_trace()
+ever_cit = aut_pan[aut_pan['isField'] == 1].groupby('au')['isCiter']\
+        .apply(lambda x: max(x)).value_counts()
+print ever_cit
+ever_cit = aut_pan[aut_pan['isField'] == 0].groupby('au')['isCiter']\
+        .apply(lambda x: max(x)).value_counts()
+print ever_cit
 
-# SAVE MOVLIK STUFF
-aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)
-mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
-mov_dat = mov_dat[['au','dep','last_dep','qual','isField','date']]
-mov_dat.to_pickle('mov_dat.pickle')
-
-# FOR INSTRUMENT VERSION
-mov_dat91 = mov_dat[mov_dat['date'] == 1991]
-mov_dat91.to_pickle('mov_dat91.pickle')
-mov_dat_not91 = mov_dat[mov_dat['date'] != 1991]
-mov_dat_not91.to_pickle('mov_dat_not91.pickle')
-
-# MULTBY
-mult_by = mov_dat.drop_duplicates(cols='au').set_index('au')
-mult_by['mult_by'] = 1
-mult_by['mult_by'][mult_by['isField'] == 1] = 0
-mult_by = mult_by['mult_by']
-mult_by.to_pickle('mult_by.pickle')
-
-# CREATE DEPARTMENT 1991 INSTRUMENT EFFECTS
-bd = pd.read_csv('top_depts_bd.csv', delimiter='|')
-bd = bd.drop_duplicates(cols='name').set_index('name')
-bd = bd['budget_def'].fillna(value=0)
-bd = bd.apply(lambda x: float(x) * 0.01)
-bd.to_pickle('budget_def.pickle')
-
-# GENERATE SUMMARY STATISTICS
-aut_sum = aut_pan.groupby('au').first()
-print aut_sum
-print aut_sum.qual.describe()
-print mov_dat[mov_dat['last_dep'] != mov_dat['dep']]
-dep_sum = aut_pan[aut_pan['date'] == 1987].groupby(['dep','date'])['au'].count()
-print dep_sum.describe()
-dep_sum = aut_pan[aut_pan['date'] == 1994].groupby(['dep','date'])['au'].count()
-print dep_sum.describe()
-dep_sum = aut_pan[aut_pan['date'] == 1987].groupby(['dep','date'])['isField'].mean()
-print dep_sum.describe()
-dep_sum = aut_pan[aut_pan['date'] == 1987].groupby(['dep','date'])['qual'].mean()
-print dep_sum.describe()
+# Field Jensen ever citers, around before 1994
+#0    112
+#1     45
+# Not Field Jensen ever citers, around before 1994
+#0    3866
+#1     240
