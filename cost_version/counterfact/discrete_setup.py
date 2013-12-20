@@ -162,6 +162,16 @@ def field_frac(autpan,location,newvar):
     return autpan
 aut_pan      = field_frac(aut_pan,'dep','dmean')
 
+# ADD DEPARTMENT REGIONS
+reg = pd.read_csv('top_depts_regions.csv', delimiter='|')
+reg = reg[['name','region']]
+reg.columns = ['dep','reg']
+aut_pan = pd.merge(aut_pan,reg,how='left')
+aut_pan.reg[pd.isnull(aut_pan.reg)] = 'E'
+
+# ADD COUNTRY
+aut_pan['nat'] = 'USA'
+
 # GET KNOW FRACTIONS
 def know_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
@@ -171,9 +181,17 @@ def know_frac(autpan,location,newvar):
     print transformed
     print autpan[newvar]
     return autpan
+
 aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
 aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
 aut_pan      = know_frac(aut_pan,'shift_dep','kfrac')
+aut_pan['shift_reg'] = aut_pan.groupby('au')['reg'].shift(-1)
+aut_pan['shift_reg'][pd.isnull(aut_pan['shift_reg'])] = aut_pan['reg'][pd.isnull(aut_pan['shift_reg'])]
+aut_pan      = know_frac(aut_pan,'shift_reg','rfrac')
+aut_pan['shift_nat'] = aut_pan.groupby('au')['nat'].shift(-1)
+aut_pan['shift_nat'][pd.isnull(aut_pan['shift_nat'])] = aut_pan['nat'][pd.isnull(aut_pan['shift_nat'])]
+aut_pan = aut_pan.drop('level_0',1)
+aut_pan      = know_frac(aut_pan,'shift_nat','tfrac')
 
 # PIVOT KNOW FRACTIONS
 dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
@@ -181,16 +199,27 @@ dep_years.columns = ['dep','date','kfrac']
 dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
 dep_years.to_pickle('dep_years.pickle')
 
+# PIVOT KNOW FRACTIONS
+dep_reg = aut_pan[['shift_reg','date','rfrac']].drop_duplicates(cols=['shift_reg','date'])
+dep_reg.columns = ['reg','date','rfrac']
+dep_reg = dep_reg[pd.notnull(dep_reg['reg'])]
+dep_reg = dep_reg.pivot(index='reg',columns='date',values='rfrac').fillna(value=0)
+dep_reg.to_pickle('dep_reg.pickle')
+
+# PIVOT KNOW FRACTIONS
+dep_reg = aut_pan[['shift_nat','date','tfrac']].drop_duplicates(cols=['shift_nat','date'])
+dep_reg.columns = ['nat','date','tfrac']
+dep_reg = dep_reg[pd.notnull(dep_reg['nat'])]
+dep_reg = dep_reg.pivot(index='nat',columns='date',values='tfrac').fillna(value=0)
+dep_reg.to_pickle('dep_nat.pickle')
+
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
 dep_list.to_pickle('dep_list.pickle')
 dep_list.to_csv('dep_list.csv')
 
 # CLEAN UP AUTPAN
-aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',
-                             'qual', 'dep_qual', 'kfrac', 'isField',
-                             'start_times', 'end_times', 'cit_times',
-                             'tot_cits', 'isCiter']].reset_index()
+aut_pan           = aut_pan[['au', 'date', 'dep', 'reg', 'nat', 'dmean', 'qual', 'dep_qual', 'kfrac', 'rfrac', 'tfrac', 'isField', 'start_times', 'end_times', 'cit_times', 'tot_cits', 'isCiter']].reset_index()
 aut_pan['isMove'] = False
 
 # SAVE INITIAL MATRIX

@@ -40,10 +40,12 @@ class Consumer(multiprocessing.Process):
 
 
 class Task(object):
-    def __init__(self, cp, dy, l, lp,
+    def __init__(self, cp, dy, dr, dn, l, lp,
              c, fc, nc):
         self.cp = cp
         self.dy = dy 
+        self.dr = dr 
+        self.dn = dn 
         self.l = l
         self.lp = lp 
         self.c = c 
@@ -51,15 +53,15 @@ class Task(object):
         self.nc = nc 
     def __call__(self):
         cl_res, fc_res, nc_res =\
-                cit_calc(self.cp, self.dy, self.l,
-                         self.lp, self.c, self.fc,
+                cit_calc(self.cp, self.dy, self.dr, self.dn,
+                         self.l, self.lp, self.c, self.fc,
                          self.nc)
         return self.l, cl_res, fc_res, nc_res
     def __str__(self):
         return 'l %s ' % (self.l)
 
 
-def call_parallel(cit_params, dep_year, lp,
+def call_parallel(cit_params, dep_year, dep_reg, dep_nat, lp,
              citers, first_cits, nocits):
     """Calls parallel loop for calculating value function"""
 
@@ -76,7 +78,7 @@ def call_parallel(cit_params, dep_year, lp,
     
     # Enqueue jobs
     for l in range(4):
-        tasks.put(Task(cit_params, dep_year, l, lp,
+        tasks.put(Task(cit_params, dep_year, dep_reg, dep_nat, l, lp,
              citers, first_cits, nocits))
     
     # Add a poison pill for each consumer
@@ -99,7 +101,7 @@ def call_parallel(cit_params, dep_year, lp,
         
     return cit_liks, fc_liks, nocit_liks
 
-def cit_calc(cit_params, dep_year, lat, lp,
+def cit_calc(cit_params, dep_year, dep_reg, dep_nat, lat, lp,
              citers, first_cits, nocits):
     """calculates a single lat type cit likelihood"""
 
@@ -114,13 +116,13 @@ def cit_calc(cit_params, dep_year, lat, lp,
     try: 
         cl_res = citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(alp,
-                           bet, gam, x, dep_year, lat, qp))
+                           bet, gam, x, dep_year, dep_reg, dep_nat, lat, qp))
         fc_res = first_cits.groupby('au')\
                     .apply(lambda x: cd.fc_lik(alp,
-                           bet, gam,  x, dep_year, lat, qp))
+                           bet, gam,  x, dep_year, dep_reg, dep_nat, lat, qp))
         nc_res = nocits.groupby('au')\
                     .apply(lambda x: cd.cit_lik_no_cit(alp,
-                           bet, gam, x, dep_year, lat, qp))
+                           bet, gam, x, dep_year, dep_reg, dep_nat, lat, qp))
     except Exception as e:
         print 'WARNING: Error in cit_lik calc, cit_mp.py' 
         print e

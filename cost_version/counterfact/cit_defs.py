@@ -14,9 +14,17 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def no_cit_inner(row, alp, bet, dep_year, lat, qp):
+def no_cit_inner(row, alp, bet, dep_year, dep_reg, dep_nat, lat, qp):
+
+    #get levels
     k_lev = dep_year.at[row['dep'],row['date']-1]
-    num = alp[0] + bet[0] * k_lev + qp[lat]
+    r_lev = dep_reg.at[row['reg'],row['date']-1]
+    n_lev = dep_nat.at[row['nat'],row['date']-1]
+
+    #get differences
+    k_dif = k_lev - n_lev
+    num = alp[0] + bet[0] * k_dif\
+            + bet[1] * n_lev + qp[lat]
     try:
         item = math.exp(-num) / (1 + math.exp(-num))
     except Exception as e:
@@ -25,37 +33,47 @@ def no_cit_inner(row, alp, bet, dep_year, lat, qp):
     return item
 
 def cit_lik_no_cit(alp, bet, gam, dep_aut,
-                   dep_year, lat, qp):
+                   dep_year, dep_reg, dep_nat, lat, qp):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                                   bet, dep_year,
-                                                   lat, qp), axis=1)
+                                                   bet, dep_year, dep_reg,
+                                                   dep_nat, lat, qp), axis=1)
     arg = (1 - pgam + pgam * liks.prod())
     return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut,
-                dep_year, lat, qp):
+                dep_year, dep_reg, dep_nat, lat, qp):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                               bet, dep_year,
-                                               lat, qp), axis=1)
+                                               bet, dep_year, dep_reg,
+                                               dep_nat, lat, qp), axis=1)
     arg = (pgam * liks.prod())
     return arg
 
 def fc_lik(alp, bet, gam, dep_aut,
-           dep_year, lat, qp):
+           dep_year, dep_reg, dep_nat, lat, qp):
     # calculates first cite likelihoods
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
-    num = alp[0] + qp[lat]\
-            + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
-    item = 1 / (1 + math.exp(-num))
+
+    #get levels
+    k_lev = dep_year.at[lin1['dep'],lin1['date']-1]
+    r_lev = dep_reg.at[lin1['reg'],lin1['date']-1]
+    n_lev = dep_nat.at[lin1['nat'],lin1['date']-1]
+
+    #get differences
+    k_dif = k_lev - n_lev
+    r_dif = r_lev - n_lev
+
+    num = alp[0] + bet[0] * k_lev\
+            + bet[1] * n_lev + qp[lat]
+    item = 1 - (math.exp(-num) / (1 + math.exp(-num)))
     return item
 
 def trans_prob(row, t):
