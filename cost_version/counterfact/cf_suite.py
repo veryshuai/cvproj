@@ -18,18 +18,18 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def make_lat(dmean, dep_qual, lp, qp): 
+def make_lat(row, lp, qp): 
     """ stochastically assigns latent type """
 
     # ACTUAL LATENT TYPE
-    true_lat = random.gauss(lp[0] * dep_qual 
-            + lp[1] * dmean, lp[2])
+    true_lat = random.gauss(lp[0] * row['dep_qual'] 
+            + lp[1] * row['dmean'], lp[2])
 
     # APPROXIMATE TYPE FOR MOVING DECISION
     difarray = np.array((true_lat - qp) ** 2)
     close_lat = np.argmin(difarray)
 
-    return [true_lat, close_lat]
+    return pd.Series([true_lat, close_lat])
 
 def make_int(field, cp): 
     """ stochastically assigns interest """
@@ -66,11 +66,9 @@ def u_cit(r, kf, nf, cp, yr, qp):
     nat = r['nat'][r['year'] == yr].iat[0]
     try:
         pkf = kf.loc[dep]
-        pnf = nf.loc[dep]
+        pnf = nf.loc[nat]
     except Exception as e:
         print e
-        print kf
-        print nf
         pkf = 0
         pnf = 0
 
@@ -78,9 +76,10 @@ def u_cit(r, kf, nf, cp, yr, qp):
     alp = cp[0][0]
     bet0 = cp[2][0]
     bet1 = cp[3][0]
-    arg = math.exp(-(alp + bet0 * pkf 
-        + bet1 * pnf + qp[r['closelat'].iat[0]])
-    prob = 1 / (1 + arg)
+    quad = int(r['closelat'].iat[0])
+    arg = math.exp(-(alp + bet0 * pkf
+            + bet1 * pnf + qp[quad]))
+    prob = (1 / (1 + arg))
 
     # U CITE BRO?
     if random.random() < prob:
@@ -97,16 +96,16 @@ def offer_cf(lo_cf, cit_params, big_mov_params,
     # INSERT COUNTERFACTUAL OFFER PROBABILITY
     print 'BEGIN WITH VALS'
     big_mov_params = [big_mov_params[0], lo_cf, big_mov_params[2]]
-    init, trans, itrans, mlik = vd.val_init(big_mov_params, dep_stats,
-                                      0.9, ip, bd, init, lp, n9, is9)
+    init, trans, itrans, mlik, flag = vd.val_init(big_mov_params, dep_stats,
+                                      0.95, ip, bd, init, lp, n9, is9)
     vd.reset(init, trans, itrans, mlik)
 
     # ASSIGN LATENT TYPE AND INTEREST TO 1986 AUTHORS
     aut_pan = aut_pan[aut_pan['date'] == 1987]
-    aut_pan['latcomb'] = aut_pan['dmean']\
-            .apply(lambda x: make_lat(x, lp, qp))
-    aut_pan['truelat'] = aut_pan['latcomb'].apply(lambda x: x[0])
-    aut_pan['closelat'] = aut_pan['latcomb'].apply(lambda x: x[1])
+    latcomb = aut_pan.apply(lambda row: make_lat(row, lp, qp), 
+                             axis=1)
+    aut_pan['truelat'] = latcomb[0]
+    aut_pan['closelat'] = latcomb[1]
     aut_pan['isInt'] = aut_pan['isField']\
             .apply(lambda x: make_int(x, cit_params))
 
@@ -131,9 +130,10 @@ def offer_cf(lo_cf, cit_params, big_mov_params,
     for year in range(int(cit_evol['year'].min()+1), int(cit_evol['year'].max()+1)):
         #knowledge fractions
         kf = cit_evol[cit_evol['year'] == year- 1].groupby('dep')['citer'].mean() 
+        nf = cit_evol[cit_evol['year'] == year- 1].groupby('nat')['citer'].mean() 
         # get new cites
         cit_list = cit_evol.groupby('au')\
-                            .apply(lambda r: u_cit(r, kf, cit_params, year, qp))
+                            .apply(lambda r: u_cit(r, kf, nf, cit_params, year, qp))
         cit_evol = pd.merge(cit_evol, pd.DataFrame(cit_list).reset_index(), on='au')
         cit_evol['citer'] = cit_evol[0]
         cit_evol = cit_evol.drop(0, axis=1)
@@ -212,20 +212,21 @@ def run_cf():
         # RUN COUNTERFACTUALS
         lo = big_mov_params[1]
         for lo_cf in [0.5 * lo, lo, 2 * lo]:
-            [cit_fracs, dep_fracs, dep_sds, dep_cfv] = offer_cf(lo_cf, cit_params,
+            print lo_cf
+            [cit_fracs, dep_fracs, dep_sds, dep_cfv, nat_fracs] = offer_cf(lo_cf, cit_params,
                                                         big_mov_params,
                                                         lp, init, ip,
                                                         dep_stats, bd,
                                                         aut_pan, mov_dat91,
                                                         mov_dat_not91, qp)
             if lo_cf == 0.5 * lo:
-                sp0_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
+                sp0_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv + nat_fracs)
                 sp0_file.flush()
             if lo_cf == lo:
-                sp05_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
+                sp05_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv + nat_fracs)
                 sp05_file.flush()
             if lo_cf == 2 * lo:
-                sp10_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
+                sp10_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv + nat_fracs)
                 sp10_file.flush()
         print k
 
