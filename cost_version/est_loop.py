@@ -44,12 +44,19 @@ def prior(cit_params, big_mov_params, lp, ip):
     # calculates the prior probability
     run_sum = 0
     [alp, gam, bet] = cit_params
+    [mov_params, lam, p] = big_mov_params
+    run_sum += norm.logpdf(alp[0],0,10)
+    run_sum += expon.logpdf(bet, 0, 300) 
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
+    run_sum += norm.logpdf(mov_params['qual'],0,10)
+    run_sum += norm.logpdf(mov_params['field'],0,10)
+    run_sum += norm.logpdf(mov_params['lat'],0,10)
+    run_sum += expon.logpdf(lam,0,300)
     run_sum += norm.logpdf(lp[0],0,10)
     run_sum += norm.logpdf(lp[1],0,10)
-    run_sum += norm.logpdf(math.log(ip),0,10) 
-    run_sum += expon.logpdf(bet, 0, 300) 
+    run_sum += expon.logpdf(lp[2], 0, 300) 
+    run_sum += expon.logpdf(ip,0,300) 
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -105,8 +112,7 @@ def update_movs(big_mov_params, ip, rnd):
     mov_params['lat'] =  mov_params['lat']\
                           + random.gauss(0,rnd['lat_co'] * sl)
     big_mov_params_u = [mov_params, lam, p]
-    ip_u = math.exp(math.log(ip)
-                    + random.gauss(0,rnd['ip'] * sip))
+    ip_u = ip + random.gauss(0,rnd['ip'] * sip)
 
     return big_mov_params_u, ip_u
 

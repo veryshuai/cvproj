@@ -33,6 +33,7 @@ def make_lat(row, lp, qp):
 
 def make_int(field, cp): 
     """ stochastically assigns interest """
+
     if random.random() < cp[1][field]:
         return 1
     else:
@@ -43,7 +44,7 @@ def make_moves(r, trans):
     year_list = [r['date'].iat[0]]
     t = trans[r['qual'].iat[0]][r['isField'].iat[0]][r['closelat']\
             .iat[0]]
-    while year_list[-1] < 1994:
+    while year_list[-1] < 2000:
         tr = t.loc[dep_list[-1]].cumsum()
         rnd = random.random()
         truth = tr > rnd
@@ -75,7 +76,7 @@ def u_cit(r, kf, nf, cp, yr, qp):
     # GET CIT PROB
     alp = cp[0][0]
     bet0 = cp[2][0]
-    bet1 = cp[3][0]
+    bet1 = 0 #cp[3][0]
     quad = int(r['closelat'].iat[0])
     arg = math.exp(-(alp + bet0 * pkf
             + bet1 * pnf + qp[quad]))
@@ -118,6 +119,13 @@ def offer_cf(lo_cf, cit_params, big_mov_params,
     moves = moves[['au', 'level_1','dep_x', 'nat','isField','truelat','closelat','isInt']]
     moves.columns = ['au', 'year', 'dep', 'nat', 'isField', 'truelat','closelat','isInt']
 
+    # CALCULATE TRUE MOVE PERCENTAGE
+    moves['next_dep'] = moves.groupby('au')['dep'].apply(lambda x: x.shift(-1))
+    non_moves = moves[moves['next_dep'] == moves['dep']]['next_dep'].count()
+    tot_moves = moves['next_dep'].count()
+    movfrac = 1 - non_moves / float(tot_moves)
+    print 'Fraction of move years: %.2f' % (movfrac)
+
     # SIMULATE SPREAD OF KNOWLEDGE THROUGH DEPARTMENTS
     print 'NOW ON CITS'
     cit_evol = moves
@@ -139,13 +147,12 @@ def offer_cf(lo_cf, cit_params, big_mov_params,
         cit_evol = cit_evol.drop(0, axis=1)
         cit_fracs.append(cit_evol.groupby('au')['citer'].max().describe()['mean'])
         dep_fracs.append(cit_evol[cit_evol['year'] == year].groupby('dep')['citer'].max().describe()['mean'])
-        nat_fracs.append(cit_evol[cit_evol['year'] == year].groupby('nat')['citer'].max().describe()['mean'])
         sd = cit_evol[cit_evol['year'] == year].groupby('dep')['citer'].mean().describe()['std']
         mean = cit_evol[cit_evol['year'] == year].groupby('dep')['citer'].mean().describe()['mean']
         dep_sds.append(sd)
         dep_cfv.append(sd/mean)
 
-    return [cit_fracs, dep_fracs, dep_sds, dep_cfv, nat_fracs]
+    return [cit_fracs, dep_fracs, dep_sds, dep_cfv]
 
 def new_rand_params(d, ds):
     """ takes converged posterior and draws a random parameter vector"""
@@ -154,7 +161,7 @@ def new_rand_params(d, ds):
     ch = d.iloc[random.randrange(ds)]
     cit_params = [[ch['alp']], 
                   [ch[' gam0'], ch[' gam1']],
-                  [ch[' bet0']], [ch[' bet1']]]
+                  [ch[' bet']]]
     mov_params = pd.Series({'field':ch[' field_co'],
                             'lat': ch[' lat_co'],
                             'qual': ch[' qual_co']})
@@ -211,22 +218,22 @@ def run_cf():
             
         # RUN COUNTERFACTUALS
         lo = big_mov_params[1]
-        for lo_cf in [0.5 * lo, lo, 2 * lo]:
-            print lo_cf
-            [cit_fracs, dep_fracs, dep_sds, dep_cfv, nat_fracs] = offer_cf(lo_cf, cit_params,
+        for lo_cf in [1.5 * lo, lo, 0.5 * lo]:
+            print 'Current cost: %.2f' % (lo_cf)
+            [cit_fracs, dep_fracs, dep_sds, dep_cfv] = offer_cf(lo_cf, cit_params,
                                                         big_mov_params,
                                                         lp, init, ip,
                                                         dep_stats, bd,
                                                         aut_pan, mov_dat91,
                                                         mov_dat_not91, qp)
             if lo_cf == 0.5 * lo:
-                sp0_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv + nat_fracs)
+                sp0_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
                 sp0_file.flush()
             if lo_cf == lo:
-                sp05_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv + nat_fracs)
+                sp05_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
                 sp05_file.flush()
-            if lo_cf == 2 * lo:
-                sp10_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv + nat_fracs)
+            if lo_cf == 1.5 * lo:
+                sp10_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
                 sp10_file.flush()
         print k
 
