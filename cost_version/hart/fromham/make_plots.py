@@ -8,7 +8,7 @@ p = pd.read_csv('out.csv')
 
 # EASIER TO DO LOGGING HERE
 # p[' p'] = p[' p'].apply(lambda x: math.log(x))
-p[' ip'] = p[' ip'].apply(lambda x: math.log(x))
+#p[' ip'] = p[' ip'].apply(lambda x: math.log(x))
 
 def mkplt(x, sp1, sp2, sp3, y_name, ytop=0, log=False, ppf=False):
     if log:
@@ -34,8 +34,9 @@ mkplt(p[' qual_co'],            3, 4, 6, 'qual_co'   , 0)
 mkplt(p[' lat_co'],             3, 4, 7, 'lat_co'    , 0)
 mkplt(p[' lo'],                 3, 4, 8, 'lo1'       , 0)
 mkplt(p[' ip'],                 3, 4, 9, 'ip'        , 0)
-mkplt(p[' lat_prob2'][::8],     3, 4, 10, 'lat_prob2' , 0)
-mkplt(p[' lat_prob3'][::8],     3, 4, 11, 'lat_prob3' , 0)
+mkplt(p[' lat_prob1'][::8],     3, 4, 10, 'lat_prob1' , 0)
+mkplt(p[' lat_prob2'][::8],     3, 4, 11, 'lat_prob2' , 0)
+mkplt(p[' lat_prob3'][::8],     3, 4, 12, 'lat_prob3' , 0)
 plt.savefig('params_plots_big.png', bbox_inches=0)
 
 plt.show()

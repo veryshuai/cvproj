@@ -17,14 +17,14 @@ if __name__ == '__main__':
     gam = [0.034228248703075864, 0.098392799712779644]
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'qual': 2.218713564513042, 'field': 1.8773030907893029, 'lat': 0.26855264979563331})
+    mov_params = pd.Series({'qual': 0.118713564513042, 'field': 1.1773030907893029, 'lat': -1.16855264979563331})
     
     # OTHER PARAMETERS 
-    lp = [0,1.02761089372683,1.0325140952129204] #latent type probability,
+    lp = [-0.8,-0.82761089372683,0.325140952129204] #latent type probability,
     # two mean parameters and a standard deviation
-    lo = 0.046572481018500451  #offer arrival rate,
+    lo = 8.3 #offer arrival rate,
     # base and qual dependence
-    p = 0# 1.282008407975466 #signing bonus distribution parameter
+    p = 0 # 1.282008407975466 #signing bonus distribution parameter
     ip = 4.044689899777988 #instrument parameter (affects 1991 wages)
     
     # PUT PARAMS INTO BOXES FOR EASY MOVING

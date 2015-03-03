@@ -8,6 +8,10 @@ import collections
 import pickle
 import numpy as np
 import math
+import logging
+
+#BASIC DEBUG LOG CONFIGURATION
+logging.basicConfig(level=logging.DEBUG)
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -120,6 +124,7 @@ def cit_calc(cit_params, dep_year, lat, lp,
     except Exception as e:
         print 'WARNING: Error in cit_lik calc, cit_mp.py' 
         print e
+        logging.exception("Something awful happened!")
         cl_res, fc_res, nc_res = 1e-200, 1e-200, 1e-200,
     return cl_res, fc_res, nc_res
 

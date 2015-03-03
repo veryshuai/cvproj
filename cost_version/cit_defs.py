@@ -55,7 +55,8 @@ def fc_lik(alp, bet, gam, dep_aut,
     pgam = gam[lin1['isField']]
     num = alp[0] + qp[lat]\
             + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
-    item = 1 / (1 + math.exp(-num))
+    item = 1 - (math.exp(-num) / (1 + math.exp(-num)))
+ 
     return item
 
 def trans_prob(row, t):

@@ -88,6 +88,40 @@ def u_cit(r, kf, nf, cp, yr, qp):
     else:
         return 0
 
+def erg_iter(t):
+    """Finds erg distribution from a trans matrix"""
+
+    dif = 1 
+    dist = pd.Series(np.ones(t.shape[0]),index=t.index)
+    dist = dist / dist.count()
+    while dif > 1e-4:
+        old = deepcopy(dist)
+        dist = np.dot(dist.T,t)
+        dif = np.linalg.norm(dist - old)
+    return dist
+
+
+def find_erg(trans):
+    """This function finds the long run distributions for a particular
+    set of transition matrices"""
+    
+    erg = tree()
+    for qual in range(2): 
+        for field in range(2):
+            for lt in range(4):
+                erg[qual][field][lt] = erg_iter(trans[qual][field][lt]) 
+
+    return erg
+
+def make_init(r, erg):
+    e = erg[r['qual'].iat[0]][r['isField'].iat[0]][r['closelat']\
+            .iat[0]]
+    tr = e.cumsum()
+    rnd = random.random()
+    truth = tr > rnd
+    init_dep = tr[truth].index[0]
+    return init_dep
+
 def offer_cf(lo_cf, cit_params, big_mov_params,
              lp, init, ip, dep_stats, bd, aut_pan,
              n9, is9, qp):
@@ -101,6 +135,12 @@ def offer_cf(lo_cf, cit_params, big_mov_params,
                                       0.95, ip, bd, init, lp, n9, is9)
     vd.reset(init, trans, itrans, mlik)
 
+    # FIND LONG-RUN DISTRIBUTIONS
+    erg = find_erg(trans)
+
+    # ASSIGN DEPARTMENTS
+        
+
     # ASSIGN LATENT TYPE AND INTEREST TO 1986 AUTHORS
     aut_pan = aut_pan[aut_pan['date'] == 1987]
     latcomb = aut_pan.apply(lambda row: make_lat(row, lp, qp), 
@@ -109,6 +149,12 @@ def offer_cf(lo_cf, cit_params, big_mov_params,
     aut_pan['closelat'] = latcomb[1]
     aut_pan['isInt'] = aut_pan['isField']\
             .apply(lambda x: make_int(x, cit_params))
+    initdep = aut_pan.groupby('au').apply(lambda x:
+                                          make_init(x, erg))
+    aut_pan = aut_pan.set_index('au')
+    aut_pan['dep'] = initdep
+    aut_pan = aut_pan.reset_index()
+    aut_pan['nat'] = 'USA'
 
     # SIMULATE MOVES BETWEEN DEPARTMENTS
     print 'WORKING ON MOVES'
@@ -209,6 +255,8 @@ def run_cf():
     sp05_writer = csv.writer(sp05_file)
     sp10_file = open('results/sp10_' + timestr + '.csv','wb')
     sp10_writer = csv.writer(sp10_file)
+    sp15_file = open('results/sp15_' + timestr + '.csv','wb')
+    sp15_writer = csv.writer(sp15_file)
 
     # REPEATEDLY PERFORM EXERCISE
     for k in range(2000):
@@ -218,7 +266,7 @@ def run_cf():
             
         # RUN COUNTERFACTUALS
         lo = big_mov_params[1]
-        for lo_cf in [1.5 * lo, lo, 0.5 * lo]:
+        for lo_cf in [lo, 0.7 * lo, 0.5 * lo, 0.0 * lo]:
             print 'Current cost: %.2f' % (lo_cf)
             [cit_fracs, dep_fracs, dep_sds, dep_cfv] = offer_cf(lo_cf, cit_params,
                                                         big_mov_params,
@@ -226,15 +274,18 @@ def run_cf():
                                                         dep_stats, bd,
                                                         aut_pan, mov_dat91,
                                                         mov_dat_not91, qp)
-            if lo_cf == 0.5 * lo:
+            if lo_cf == lo:
                 sp0_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
                 sp0_file.flush()
-            if lo_cf == lo:
+            if lo_cf == 0.7 * lo:
                 sp05_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
                 sp05_file.flush()
-            if lo_cf == 1.5 * lo:
+            if lo_cf == 0.5 * lo:
                 sp10_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
                 sp10_file.flush()
+            if lo_cf == 0.0 * lo:
+                sp15_writer.writerow(cit_fracs + dep_fracs + dep_sds + dep_cfv)
+                sp15_file.flush()
         print k
 
 run_cf()

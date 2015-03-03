@@ -56,7 +56,7 @@ if __name__ == '__main__':
     # GET MEDIAN TYPE
     ff = pd.read_pickle('first_ff.pickle')
         
-    fig = plt.figure() 
+    fig = plt.figure(figsize=(17,  8),  dpi=80) 
     grid = np.linspace(-5,5,20)
     y = []
     for k in range(20):

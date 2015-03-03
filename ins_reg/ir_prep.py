@@ -12,6 +12,11 @@ dat = pd.merge(dat, bd, how='left')\
 
 dat.to_csv('mov_dat.csv')
 
+# CALCULATE CORRELATION BETWEEN BUDGET DEFICIT AND DEPT FIELD
+dat['dmean'] = dat.groupby('dep')['isField'].transform(lambda x: x.mean())
+minidat = dat[['dmean','bd','isstate']]
+print minidat.corr()
+
 # FOR CIT REGRESSION
 aut_pan = pd.read_pickle('initial_panel.pickle')
 aut_pan = pd.merge(aut_pan, bd, how='left')

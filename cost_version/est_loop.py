@@ -112,7 +112,8 @@ def update_movs(big_mov_params, ip, rnd):
     mov_params['lat'] =  mov_params['lat']\
                           + random.gauss(0,rnd['lat_co'] * sl)
     big_mov_params_u = [mov_params, lam, p]
-    ip_u = ip + random.gauss(0,rnd['ip'] * sip)
+    ip_u = math.exp(math.log(ip)
+                    + random.gauss(0,rnd['ip'] * sip))
 
     return big_mov_params_u, ip_u
 
