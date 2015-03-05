@@ -173,10 +173,13 @@ def mlik_part(mov_dat_not91, mov_dat91,
 
 def from_pickle(arg=0):
     """reads in vals and trans from pickle"""
-    vals = pd.read_pickle('val_init.pickle')
-    trans = pd.read_pickle('trans.pickle')
-    itrans = pd.read_pickle('itrans.pickle')
-    mlik = pd.read_pickle('mlik.pickle')
+    f = file('val_init.pickle','rb'); vals = pickle.load(f)
+    f.close()
+    f = file('trans.pickle','rb'); trans = pickle.load(f)
+    f.close()
+    f = file('itrans.pickle','rb'); itrans = pickle.load(f)
+    f.close()
+    f = file('mlik.pickle','rb'); mlik = pickle.load(f)
     if arg == 0:
         return vals, trans, trans
     if arg == 1:

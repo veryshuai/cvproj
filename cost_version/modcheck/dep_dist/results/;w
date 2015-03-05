@@ -1,0 +1,23 @@
+# This script generates a plot for invarient distribution comparison
+
+import pandas as pd
+import matplotlib.pyplot as plt
+
+pdat = pd.read_csv('plot_csv.csv')
+pdat = pdat[pdat['dep'] != 'OTHER']
+pdat = pdat.set_index('dep')
+pdat_scat = pdat[['dat','sim']]
+pdat_scat.columns = ['data', 'simulation']
+
+pdat_scat.hist(figsize=(11,7))
+plt.savefig('mov_hist.png')
+
+fig2 = plt.figure(figsize=(11,7))
+plt.scatter(pdat_scat['data'],pdat_scat['simulation'])
+plt.xlabel('data')
+plt.ylabel('simulation means')
+
+fig3 = plt.figure(figsize=(11,7))
+plt.show()
+
+

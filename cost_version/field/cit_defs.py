@@ -16,7 +16,7 @@ def tree():
 
 def no_cit_inner(row, alp, bet, dep_year, lat, qp):
     k_lev = dep_year.at[row['dep'],row['date']-1]
-    num = alp[0] + bet[0] * k_lev + qp[lat]
+    num = alp[row['isField']] + bet[row['isField']] * k_lev + qp[lat]
     try:
         item = math.exp(-num) / (1 + math.exp(-num))
     except Exception as e:
@@ -53,10 +53,9 @@ def fc_lik(alp, bet, gam, dep_aut,
     # calculates first cite likelihoods
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
-    num = alp[0] + qp[lat]\
-            + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
-    item = 1 - (math.exp(-num) / (1 + math.exp(-num)))
- 
+    num = alp[lin1['isField']] + qp[lat]\
+            + bet[lin1['isField']] * dep_year.at[lin1['dep'],lin1['date']-1]
+    item = 1 / (1 + math.exp(-num))
     return item
 
 def trans_prob(row, t):
@@ -70,10 +69,13 @@ def mov_lik(trans, group, lat):
 
     lin1 = group.iloc[0]
     t = trans[lin1['qual']][lin1['isField']][lat]
-    lin2 = group.iloc[-1]
-    if lin1['last_dep'] == lin2['dep']:
-        out = pow(trans_prob(lin1, t),group.shape[0])
-        return max(float(out), 1e-12) #avoid zeros
+    if not t:
+        return 0
     else:
-        lik = group.apply(lambda row: trans_prob(row, t), axis=1)
-        return max(lik.prod(), 1e-12)  #avoid zeros
+        lin2 = group.iloc[-1]
+        if lin1['last_dep'] == lin2['dep']:
+            out = pow(trans_prob(lin1, t),group.shape[0])
+            return max(float(out), 1e-12) #avoid zeros
+        else:
+            lik = group.apply(lambda row: trans_prob(row, t), axis=1)
+            return max(lik.prod(), 1e-12)  #avoid zeros

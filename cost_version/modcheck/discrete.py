@@ -26,13 +26,16 @@ def main(cit_params, big_mov_params, lp, ip):
 
     # READ IN OTHER DATA
     dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-    init = pd.read_pickle('val_init.pickle')
+    f = file('val_init.pickle','rb')
+    init = pickle.load(f)
     mov_dat91 = pd.read_pickle('mov_dat91.pickle')
     mov_dat_not91 = pd.read_pickle('mov_dat_not91.pickle')
     first_cits = pd.read_pickle('first_cits.pickle')
     citers = pd.read_pickle('citers.pickle')
     nocits = pd.read_pickle('nocits.pickle')
     dep_year = pd.read_pickle('dep_years.pickle')
+    dep_reg = pd.read_pickle('dep_reg.pickle')
+    dep_nat = pd.read_pickle('dep_nat.pickle')
     first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
@@ -46,11 +49,12 @@ def main(cit_params, big_mov_params, lp, ip):
     init, trans, itrans, mlik, flag = vd.val_init(big_mov_params, dep_stats,
                                       0.95, ip, bd, init, lp,
                                       mov_dat_not91, mov_dat91)
+    trans[1][1][1].to_csv('test.csv')
     vd.reset(init, trans, itrans, mlik)
 
     cit_liks, fc_liks, nocit_liks\
-            = cm.call_parallel(cit_params, dep_year,
-                               lp, citers, first_cits, nocits)
+            = cm.call_parallel(cit_params, dep_year, dep_reg,
+                               dep_nat, lp, citers, first_cits, nocits)
 
     # CALCULATE 
     lik_pieces = []
@@ -71,6 +75,6 @@ def main(cit_params, big_mov_params, lp, ip):
     # CALL ESTIMATION LOOP
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
-            first_cits, citers, nocits, dep_year,
-            out_file, out_writer, first_ff, ip, bd, timestr)
+            first_cits, citers, nocits, dep_year, dep_reg,
+            dep_nat, out_file, out_writer, first_ff, ip, bd, timestr)
 

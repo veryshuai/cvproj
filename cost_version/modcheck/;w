@@ -1,0 +1,134 @@
+# This file contains definitions for functions related to running counterfactuals
+
+import val_defs as vd
+import random
+from scipy.stats import norm
+import collections
+import pandas as pd
+from copy import copy, deepcopy
+import random
+import pickle
+import math
+
+#From stefan at stack overflow:
+#http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
+def tree():
+    return collections.defaultdict(tree)
+
+def make_lat(dmean, lp): 
+    """ stochastically assigns latent type """
+    if random.random() < norm.cdf(lp[0] + lp[1] * dmean):
+        return 1
+    else:
+        return 0
+
+def make_int(field, cp): 
+    """ stochastically assigns interest """
+    if field == 0:
+        if random.random() < cp[2]:
+            return 1
+        else:
+            return 0
+    else:
+        if random.random() < cp[3]:
+            return 1
+        else:
+            return 0
+
+def make_moves(r, trans):
+    dep_list = [r['dep'].iat[0]]
+    year_list = [r['date'].iat[0]]
+    t = trans[r['qual'].iat[0]][r['isField'].iat[0]][r['isLatent'].iat[0]]
+    while year_list[-1] < 1994:
+        tr = t.loc[dep_list[-1]].transpose().cumsum().reset_index()
+        rnd = random.random()
+        tr['truth'] = tr[0] > rnd
+        try:
+            next_dep = tr['index'][tr['truth']].iat[0]
+        except:
+            next_dep = tr['dep'][tr['truth']].iat[0]
+        dep_list.append(next_dep)
+        year_list.append(year_list[-1] + 1)
+    return pd.DataFrame({'dep': dep_list, 'yr': year_list})
+
+def u_cit(r, kf, cp, yr):
+    """Randomly decides whether each author cited teh paper"""
+    
+    # CHECK FOR INTEREST AND PREVIOUS CITE
+    if r['isInt'].iat[0] == 0:
+        return 0
+    if r['citer'].iat[0] == 1:
+        return 1
+
+    # GET CITS
+    df = r['dep'][r['year'] == yr].iat[0]
+    print df
+    if r['isField'].iat[0] == 0:
+        if r['isLatent'].iat[0] == 1:
+            
+    
+
+def offer_cf(lo_cf, cit_params, big_mov_params,
+             lp, init, ip, dep_stats, bd, aut_pan):
+    # Simulates the evolution of knowledge
+    # spread with different offer frequency
+
+    # INSERT COUNTERFACTUAL OFFER PROBABILITY
+    big_mov_params = [big_mov_params[0], lo_cf, big_mov_params[2]]
+    init, trans, itrans = vd.val_init(big_mov_params, dep_stats,
+                                      0.9, ip, bd, init)
+
+    # ASSIGN LATENT TYPE AND INTEREST TO 1987 AUTHORS
+    aut_pan = aut_pan[aut_pan['date'] == 1987]
+    aut_pan['isLatent'] = aut_pan['dmean']\
+            .apply(lambda x: make_lat(x, lp))
+    aut_pan['isInt'] = aut_pan['isField']\
+            .apply(lambda x: make_lat(x, cit_params))
+
+    # SIMULATE MOVES BETWEEN DEPARTMENTS
+    moves = aut_pan.groupby('au').apply(lambda x:
+                                          make_moves(x, trans))\
+                                 .reset_index()
+    moves = pd.merge(moves, aut_pan, on='au')
+    moves = moves[['au', 'level_1','dep_x','isField','isLatent','isInt']]
+    moves.columns = ['au', 'year', 'dep', 'isField', 'isLatent', 'isInt']
+
+    # SIMULATE SPREAD OF KNOWLEDGE THROUGH DEPARTMENTS
+    cit_evol = moves
+    cit_evol['citer'] = 0
+    for year in range(int(cit_evol['year'].min()+1), int(cit_evol['year'].max()+1)):
+        kf = cit_evol[cit_evol['year'] == year- 1].groupby('dep')['citer'].mean()
+        import pdb; pdb.set_trace()
+        cit_evol['citer'] = cit_evol.groupby('au')\
+                            .apply(lambda r: u_cite(r, kf, cit_params))
+
+def run_cf():
+    """ reads from a results file, and calls
+        counterfactual generation program """
+
+    lo_cf = 0.1
+    
+    # LOAD PARAMETERS
+    d = pd.read_csv('out.csv')
+    ds = d.shape[0]
+    choose = d.iloc[random.randrange(ds)]
+    cit_params = [d['alp_q0_f0_l0'].iat[0], d[' alp_q0_f1_l0'].iat[0],
+                  d[' gam_q0_f0_l0'].iat[0], d[' gam_q0_f1_l0'].iat[0],
+                  d[' bet_q0_f0_l0'].iat[0], d[' bet_q0_f1_l0'].iat[0]]
+    mov_params = pd.Series({'field':d[' field_co'].iat[0],
+                            'lat': d[' lat_co'].iat[0], 'qual': d[' qual_co'].iat[0]})
+    big_mov_params = [mov_params, d[' lo'].iat[0], d[' p'].iat[0]]
+    lp = [d[' lat_prob1'].iat[0], d[' lat_prob2'].iat[0]]
+    ip = d[' ip'].iat[0]
+
+    # LOAD DATA
+    f = file('val_init.pickle','rb')
+    init = pickle.load(f)
+    dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
+    aut_pan = pd.read_pickle('initial_panel.pickle')
+    bd = pd.read_pickle('budget_def.pickle')
+
+    offer_cf(lo_cf, cit_params, big_mov_params,
+             lp, init, ip, dep_stats, bd, aut_pan)
+
+run_cf()

@@ -9,10 +9,6 @@ import collections
 import pickle
 import math
 import pandas as pd
-import logging
-
-#BASIC DEBUG LOG CONFIGURATION
-logging.basicConfig(level=logging.DEBUG)
 
 #From stefan at stack overflow:
 #http://stackoverflow.com/questions/3009935/looking-for-a-good-python-tree-data-structure
@@ -54,11 +50,11 @@ class Task(object):
         self.bd = bd
         self.lp = lp
     def __call__(self):
-        val, trans, itrans, flag = val_calc(self.q, self.f, 
-                              self.l, self.bmp, self.ds, 
-                              self.d, self.ip, self.bd,
+        val, trans, itrans = val_calc(self.q, self.f, self.l,
+                              self.bmp, self.ds, self.d,
+                              self.ip, self.bd,
                               self.init, self.lp)
-        return [self.q, self.f, self.l, val, trans, itrans, flag]
+        return [self.q, self.f, self.l, val, trans, itrans]
     def __str__(self):
         return 'q %s, f %s, l %s ' % (self.q, self.f, self.l)
 
@@ -70,10 +66,10 @@ class Task_mlik(object):
         self.itrans = itrans 
         self.lat = lat 
     def __call__(self):
-        together, flag = mlik_calc(self.n9, self.is9,
+        together = mlik_calc(self.n9, self.is9,
                               self.trans, self.itrans,
                               self.lat)
-        return [self.lat, together, flag]
+        return [self.lat, together]
     def __str__(self):
         return 'l %s ' % (self.lat)
 
@@ -114,22 +110,18 @@ def call_parallel(big_mov_params, dep_stats, dis,
     vals = tree()
     trans = tree()
     itrans = tree()
-    flag = 0 #error flag
     num_jobs = 16
     while num_jobs:
         r = results.get()
         vals[r[0]][r[1]][r[2]]   = r[3]
         trans[r[0]][r[1]][r[2]]  = r[4]
         itrans[r[0]][r[1]][r[2]] = r[5]
-        flag = max(flag,r[6]) #look for error flag
         num_jobs -= 1
 
-    mlik, mflag = mlik_part(mov_dat_not91, mov_dat91,
+    mlik = mlik_part(mov_dat_not91, mov_dat91,
               trans, itrans)
 
-    flag = max(flag, mflag) #check for error in mlik calc
-
-    return vals, trans, itrans, mlik, flag
+    return vals, trans, itrans, mlik
 
 
 def mlik_part(mov_dat_not91, mov_dat91,
@@ -162,21 +154,22 @@ def mlik_part(mov_dat_not91, mov_dat91,
     # Start printing results
     mlik = [0,0,0,0]
     num_jobs = 4
-    flag = 0 #Error flag
     while num_jobs:
         r = results.get()
         mlik[r[0]]   = r[1] 
-        flag         = max(flag,r[2])
         num_jobs -= 1
 
-    return mlik, flag
+    return mlik
 
 def from_pickle(arg=0):
     """reads in vals and trans from pickle"""
-    vals = pd.read_pickle('val_init.pickle')
-    trans = pd.read_pickle('trans.pickle')
-    itrans = pd.read_pickle('itrans.pickle')
-    mlik = pd.read_pickle('mlik.pickle')
+    f = file('val_init.pickle','rb'); vals = pickle.load(f)
+    f.close()
+    f = file('trans.pickle','rb'); trans = pickle.load(f)
+    f.close()
+    f = file('itrans.pickle','rb'); itrans = pickle.load(f)
+    f.close()
+    f = file('mlik.pickle','rb'); mlik = pickle.load(f)
     if arg == 0:
         return vals, trans, trans
     if arg == 1:
@@ -185,9 +178,6 @@ def from_pickle(arg=0):
 def val_calc(qual, field, lat, big_mov_params,
              dep_stats, dis, ip, bd, init, lp):
     """calculates a single value function"""
-
-    # ERROR FLAG RESET
-    flag = 0
 
     # UNPACK
     [mov_params, lam, p] = big_mov_params
@@ -208,24 +198,16 @@ def val_calc(qual, field, lat, big_mov_params,
         print 'WARNING: Value function start point error,\
                  file val_defs.py, function val_init'
         print e
-        logging.exception("Something awful happened!")
         try:
             vals, trans, itrans = vd.val_loop(wage, lam, dis,
                                       p, ip, bd)
-            for tb in traceback.format_tb(sys.exc_info()[2]):
-                print tb
         except Exception as e:
-            print 'WARNING: reading vals from saves, equal trans'
+            print 'WARNING: reading vals and trans from saves'
             print e
             vals, trans, itrans = from_pickle(0)
-            flag = 1
-    return vals, trans, itrans, flag
+    return vals, trans, itrans
 
 def mlik_calc(mov_dat_not91, mov_dat91, trans, itrans, lat):
-
-    #Set Error Flag
-    flag = 0
-
     try:
         not91 = mov_dat_not91.groupby('au').apply(lambda x:
                 cd.mov_lik(trans, x, lat))
@@ -235,13 +217,10 @@ def mlik_calc(mov_dat_not91, mov_dat91, trans, itrans, lat):
             'is91': is91}, index=not91.index)
         together = together.fillna(value=1)
         together = together.prod(1)
-        return together, flag
+        return together
     except Exception as e:
         print e
         print 'WARNING: reading mlik from save'
         mlik = from_pickle(1)
-        mlik[0] = mlik[0] + -1e20
-        flag = 1
-        return mlik[0], flag
-
+        return mlik[0]
 

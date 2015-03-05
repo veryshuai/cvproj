@@ -1,0 +1,18 @@
+# This script submits the MCMC process 
+#
+#PBS -l nodes=8
+#PBS -l walltime=24:00:00
+#PBS -l pmem=1gb
+#PBS -j oe 
+
+#execute in submit directory
+cd $PBS_O_WORKDIR
+
+echo " "
+echo " "
+echo "Job started on `hostname` at `date`"
+python run_discrete.py
+echo " "
+echo "Job Ended at `date`"
+echo " "
+
