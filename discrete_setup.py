@@ -79,14 +79,25 @@ aut_pan.to_pickle('aut_pan.pickle')
 aut_pan  = pd.read_pickle('aut_pan.pickle')
 combined = pd.read_pickle('combined.pickle')
 
+# # APPEND ONTO AUT_PAN
+# aut_pan  = aut_pan.reset_index().append(combined.reset_index()).sort_index(by = ['au','date'])
+# aut_pan  = aut_pan[['au','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
+# fillcols = aut_pan.reset_index().sort_index(by = 'date').groupby('au').fillna(method = 'pad')
+# aut_pan  = fillcols.set_index('au')
+# aut_pan['isCiter'] = aut_pan['isCiter'].fillna(value=0)
+# fillcols = aut_pan.reset_index().groupby('au').fillna(method = 'bfill')
+# aut_pan  = fillcols.set_index(['au'])
+# aut_pan  = aut_pan.reset_index().drop_duplicates(cols = ['au','date'],take_last = False)
+
 # APPEND ONTO AUT_PAN
 aut_pan  = aut_pan.reset_index().append(combined.reset_index()).sort_index(by = ['au','date'])
 aut_pan  = aut_pan[['au','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
-fillcols = aut_pan.reset_index().sort_index(by = 'date').groupby('au').fillna(method = 'pad')
+aut_pan_by_date = aut_pan.reset_index().sort_index(by = 'date') #sort by date
+fillcols = aut_pan_by_date.groupby('au').fillna(method = 'pad') #fill down missing data
+fillcols['au'] = aut_pan_by_date['au'] #read author to fillcols
 aut_pan  = fillcols.set_index('au')
 aut_pan['isCiter'] = aut_pan['isCiter'].fillna(value=0)
-fillcols = aut_pan.reset_index().groupby('au').fillna(method = 'bfill')
-aut_pan  = fillcols.set_index(['au'])
+aut_pan = aut_pan.groupby(level=0).transform(lambda x: x.fillna(method = 'bfill')) #backfill year of first citation
 aut_pan  = aut_pan.reset_index().drop_duplicates(cols = ['au','date'],take_last = False)
 
 # FIX ISCITER
@@ -201,7 +212,6 @@ first_cits.to_pickle('first_cits.pickle')
 citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
 first_ff.to_pickle('first_ff.pickle')
-import pdb; pdb.set_trace()
 
 # SAVE MOVLIK STUFF
 aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)

@@ -206,8 +206,7 @@ def run_cf():
     qp =  [-qa[1], -qa[0], qa[0], qa[1]]
 
     # LOAD DATA
-    f = file('val_init.pickle','rb')
-    init = pickle.load(f)
+    init = pd.read_pickle('val_init.pickle')
     dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
     aut_pan = pd.read_pickle('initial_panel.pickle')
     mov_dat91 = pd.read_pickle('mov_dat91.pickle')

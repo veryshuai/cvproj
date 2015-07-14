@@ -26,8 +26,7 @@ def main(cit_params, big_mov_params, lp, ip):
 
     # READ IN OTHER DATA
     dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-    f = file('val_init.pickle','rb')
-    init = pickle.load(f)
+    init = pd.read_pickle('val_init.pickle')
     mov_dat91 = pd.read_pickle('mov_dat91.pickle')
     mov_dat_not91 = pd.read_pickle('mov_dat_not91.pickle')
     first_cits = pd.read_pickle('first_cits.pickle')
