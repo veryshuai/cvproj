@@ -108,7 +108,6 @@ def cit_calc(cit_params, dep_year, lat, lp,
     qp =  [-qa[1], -qa[0], qa[0], qa[1]]
 
     try: 
-        print 'made it1' 
         cl_res = citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(alp,
                            bet, gam, x, dep_year, lat, qp))
