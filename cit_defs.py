@@ -65,6 +65,8 @@ def mov_lik(trans, group, lat):
 
     lin1 = group.iloc[0]
     t = trans[lin1['qual']][lin1['isField']][lat]
+    print t
+    print lat
     if not t:
         return 0
     else:

@@ -211,6 +211,7 @@ def val_calc(qual, field, lat, big_mov_params,
 
 def mlik_calc(mov_dat_not91, mov_dat91, trans, itrans, lat):
     try:
+
         not91 = mov_dat_not91.groupby('au').apply(lambda x:
                 cd.mov_lik(trans, x, lat))
         is91  = mov_dat91.groupby('au').apply(lambda x:
