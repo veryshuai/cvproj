@@ -14,13 +14,8 @@ from time import clock, time
 from copy import copy, deepcopy
 from scipy.stats import norm
 from scipy.stats import beta as betad
-from scipy.stats import expon
 import adapt
 import numpy as np
-import logging
-
-#BASIC DEBUG LOG CONFIGURATION
-logging.basicConfig(level=logging.DEBUG)
 
 # COLOR TEXT PRINTING
 # http://stackoverflow.com/questions/287871/print-in-terminal-with-colors-using-python
@@ -44,19 +39,11 @@ def prior(cit_params, big_mov_params, lp, ip):
     # calculates the prior probability
     run_sum = 0
     [alp, gam, bet] = cit_params
-    [mov_params, lam, p] = big_mov_params
-    run_sum += norm.logpdf(alp[0],0,10)
-    run_sum += expon.logpdf(bet, 0, 300) 
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
-    run_sum += norm.logpdf(mov_params['qual'],0,10)
-    run_sum += norm.logpdf(mov_params['field'],0,10)
-    run_sum += norm.logpdf(mov_params['lat'],0,10)
-    run_sum += expon.logpdf(lam,0,300)
     run_sum += norm.logpdf(lp[0],0,10)
     run_sum += norm.logpdf(lp[1],0,10)
-    run_sum += expon.logpdf(lp[2], 0, 300) 
-    run_sum += expon.logpdf(ip,0,300) 
+    run_sum += norm.logpdf(math.log(ip),0,10)
     return run_sum
 
 def update_cits(cit_params, rnd):
@@ -102,7 +89,7 @@ def update_movs(big_mov_params, ip, rnd):
                 = 1, 1, 1, 1, 1, 1
 
     [mov_params, lam, p] = big_mov_params
-    lam = lam + random.gauss(0, rnd['lo'] * slo1)
+    lam = math.exp(math.log(lam) + random.gauss(0, rnd['lo'] * slo1))
     p = 0 # 1 + math.exp(math.log(p - 1) + random.gauss(0,rnd['p'] * sp))
     mov_params = mov_params.astype('float64')
     mov_params['qual'] = mov_params['qual']\
@@ -112,7 +99,8 @@ def update_movs(big_mov_params, ip, rnd):
     mov_params['lat'] =  mov_params['lat']\
                           + random.gauss(0,rnd['lat_co'] * sl)
     big_mov_params_u = [mov_params, lam, p]
-    ip_u = ip + random.gauss(0,rnd['ip'] * sip)
+    ip_u = math.exp(math.log(ip)
+                    + random.gauss(0,rnd['ip'] * sip))
 
     return big_mov_params_u, ip_u
 
@@ -159,7 +147,7 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     # AWAY FROM ZERO
     # ff_mean = first_ff['dmean'].apply(lambda x: (0.5  *
     #                            norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25) * lp_u[2])
-    ff_mean = first_ff[['dmean', 'dep_qual']].apply(lambda row: row[0] * lp_u[1] + row[1] * lp_u[0], axis=1)
+    ff_mean = first_ff['dmean'].apply(lambda x: x * lp_u[1])
     
     # QUADRATURE POINTS AND WEIGHTS 
     # QUADRATURE POINTS 
@@ -184,8 +172,6 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
         print "WARNING: Error in lik calculation,\
                 file est_loop.py, function recalc_lik"
         print e
-        print lik_big.min()
-        logging.exception("Something awful happened!")
         lik_u = -1e10
     return lik_u
 
@@ -214,15 +200,15 @@ def calc_lp_lik(cit_params, big_mov_params,
 
     # UPDATE PARAMETERS
     lp_u = []
-    lp_u.append(deepcopy(lp[0]) + random.gauss(0, s0))
+    lp_u.append(0) #deepcopy(lp[0]) + random.gauss(0, s0))
     lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
     lp_u.append(2 * norm.cdf(norm.ppf(deepcopy(lp[2])
                 / float(2), 0, 1) + random.gauss(0, s2), 0, 1))
 
     # UPDATE MOVE LIKS
-    init_u, trans_u, itrans_u, mlik, flag\
+    init_u, trans_u, itrans_u, mlik\
             = vd.val_init(big_mov_params_u, dep_stats,
-                  0.95, ip_u, bd, deepcopy(init), lp_u,
+                  0.9, ip_u, bd, deepcopy(init), lp_u,
                   mov_dat_not91, mov_dat91)
 
     # UPDATE CIT LIKS 
@@ -238,10 +224,6 @@ def calc_lp_lik(cit_params, big_mov_params,
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
-
-    if flag == 1:
-        lik_u = -1e10
-
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u, ip_u
 
@@ -258,9 +240,9 @@ def calc_mov_lik(cit_params, big_mov_params,
     lik_pieces_u = deepcopy(lik_pieces)
     
     # NEW VAL AND TRANSITIONS
-    init_u, trans_u, itrans_u, mlik, flag\
+    init_u, trans_u, itrans_u, mlik\
             = vd.val_init(big_mov_params_u, dep_stats,
-                      0.95, ip_u, bd, deepcopy(init),
+                      0.9, ip_u, bd, deepcopy(init),
                       lp_u, mov_dat_not91, mov_dat91)
 
     # NEW LIKELIHOOD CALCUATION
@@ -268,11 +250,6 @@ def calc_mov_lik(cit_params, big_mov_params,
         lik_pieces_u[lat]['mlik'] = mlik[lat]
     lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
-
-    # CHECK FOR ERROR
-    if flag == 1:
-        lik_u = -1e10
-
     return lik_u, cit_params_u, big_mov_params_u,\
             lp_u, lik_pieces_u, init_u, ip_u
 

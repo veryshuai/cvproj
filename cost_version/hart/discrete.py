@@ -44,8 +44,8 @@ def main(cit_params, big_mov_params, lp, ip):
     out_writer = csv.writer(out_file)
 
     # GET INITIAL LIKELIHOOD
-    init, trans, itrans, mlik, flag = vd.val_init(big_mov_params, dep_stats,
-                                      0.95, ip, bd, init, lp,
+    init, trans, itrans, mlik = vd.val_init(big_mov_params, dep_stats,
+                                      0.9, ip, bd, init, lp,
                                       mov_dat_not91, mov_dat91)
     vd.reset(init, trans, itrans, mlik)
 
@@ -63,10 +63,6 @@ def main(cit_params, big_mov_params, lp, ip):
         lik_pieces.append(lik_dat)
     lik = el.prior(cit_params, big_mov_params, lp, ip)
     lik += el.recalc_lik(lik_pieces, first_ff, lp)
-
-    # CHECK FOR ERROR
-    if flag == 1:
-        lik = -1e10
 
     # pr.dump_stats('profile.out')
     # CALL ESTIMATION LOOP

@@ -55,8 +55,7 @@ def fc_lik(alp, bet, gam, dep_aut,
     pgam = gam[lin1['isField']]
     num = alp[0] + qp[lat]\
             + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
-    item = 1 - (math.exp(-num) / (1 + math.exp(-num)))
- 
+    item = 1 / (1 + math.exp(-num))
     return item
 
 def trans_prob(row, t):
@@ -70,10 +69,13 @@ def mov_lik(trans, group, lat):
 
     lin1 = group.iloc[0]
     t = trans[lin1['qual']][lin1['isField']][lat]
-    lin2 = group.iloc[-1]
-    if lin1['last_dep'] == lin2['dep']:
-        out = pow(trans_prob(lin1, t),group.shape[0])
-        return max(float(out), 1e-12) #avoid zeros
+    if not t:
+        return 0
     else:
-        lik = group.apply(lambda row: trans_prob(row, t), axis=1)
-        return max(lik.prod(), 1e-12)  #avoid zeros
+        lin2 = group.iloc[-1]
+        if lin1['last_dep'] == lin2['dep']:
+            out = pow(trans_prob(lin1, t),group.shape[0])
+            return max(float(out), 1e-12) #avoid zeros
+        else:
+            lik = group.apply(lambda row: trans_prob(row, t), axis=1)
+            return max(lik.prod(), 1e-12)  #avoid zeros

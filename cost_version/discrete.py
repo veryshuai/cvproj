@@ -26,7 +26,8 @@ def main(cit_params, big_mov_params, lp, ip):
 
     # READ IN OTHER DATA
     dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-    init = pd.read_pickle('val_init.pickle')
+    f = file('val_init.pickle','rb')
+    init = pickle.load(f)
     mov_dat91 = pd.read_pickle('mov_dat91.pickle')
     mov_dat_not91 = pd.read_pickle('mov_dat_not91.pickle')
     first_cits = pd.read_pickle('first_cits.pickle')
@@ -46,6 +47,7 @@ def main(cit_params, big_mov_params, lp, ip):
     init, trans, itrans, mlik, flag = vd.val_init(big_mov_params, dep_stats,
                                       0.95, ip, bd, init, lp,
                                       mov_dat_not91, mov_dat91)
+    trans[1][1][1].to_csv('test.csv')
     vd.reset(init, trans, itrans, mlik)
 
     cit_liks, fc_liks, nocit_liks\

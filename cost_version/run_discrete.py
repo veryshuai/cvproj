@@ -13,14 +13,14 @@ if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
     alp = [-1.6912994607298211]
-    bet = [10.329271047737196]
+    bet = [10.829271047737196]
     gam = [0.034228248703075864, 0.098392799712779644]
     
     # INITIAL MOV PARAMETERS 
     mov_params = pd.Series({'qual': 0.118713564513042, 'field': 1.1773030907893029, 'lat': -1.16855264979563331})
     
     # OTHER PARAMETERS 
-    lp = [-0.1,-5.82761089372683,0.525140952129204] #latent type probability,
+    lp = [-0.8,-0.82761089372683,0.325140952129204] #latent type probability,
     # two mean parameters and a standard deviation
     lo = 8.3 #offer arrival rate,
     # base and qual dependence

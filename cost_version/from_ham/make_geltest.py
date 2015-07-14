@@ -64,7 +64,7 @@ def make_gels(name, col_no, params=False):
 
 under = 0
 total = 0
-for k in range(15):
+for k in range(13):
     R = make_gels('out_2*', k, True)
     if R:
         total += 1

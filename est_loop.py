@@ -45,7 +45,8 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += norm.logpdf(lp[0],0,10)
     run_sum += norm.logpdf(lp[1],0,10)
     run_sum += norm.logpdf(math.log(ip),0,10) 
-    run_sum += expon.logpdf(bet,300) 
+    run_sum += expon.logpdf(bet,10) 
+    
     return run_sum
 
 def update_cits(cit_params, rnd):

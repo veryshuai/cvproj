@@ -56,9 +56,9 @@ def main(cit_params, big_mov_params, lp, ip):
     lik_pieces = []
     for k in range(4):
         lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
-        lik_dat['cit_liks'] = cit_liks[k]
-        lik_dat['fc_liks'] = fc_liks[k]
-        lik_dat['nocit_liks'] = nocit_liks[k]
+        lik_dat.loc[:,'cit_liks'] = cit_liks[k]
+        lik_dat.loc[:,'fc_liks'] = fc_liks[k]
+        lik_dat.loc[:,'nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
     lik = el.prior(cit_params, big_mov_params, lp, ip)
     lik += el.recalc_lik(lik_pieces, first_ff, lp)

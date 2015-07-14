@@ -9,5 +9,5 @@ do
   HALF=$(( LINENO / 2 ))
   echo $HALF
   tail --lines=$HALF "$f" >> out.csv
-  #tail --lines=1000 "$f" >> out.csv
+  # tail --lines=100 "$f" >> out.csv
 done

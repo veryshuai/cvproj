@@ -31,8 +31,8 @@ def get_cov(snip, k, block_name):
         # CIT BLOCK
         if block_name == 'cit':
             citdat = dat[['alpha', 'gam_0', 'gam_1', 'bet']]
-            citdat.loc[:,'gam_0'] = citdat['gam_0'].apply(lambda x: norm.ppf(x, 0, 1))
-            citdat.loc[:,'gam_1'] = citdat['gam_1'].apply(lambda x: norm.ppf(x, 0, 1))
+            citdat['gam_0'] = citdat['gam_0'].apply(lambda x: norm.ppf(x, 0, 1))
+            citdat['gam_1'] = citdat['gam_1'].apply(lambda x: norm.ppf(x, 0, 1))
 
             d = citdat.shape[1]
             if k % 4 + 1 < d:
@@ -51,7 +51,7 @@ def get_cov(snip, k, block_name):
             locdat = dat[['field_co', 'lat_co', 'qual_co',
                           'lo', 'p', 'ip']]
             # locdat['p'] = locdat['p'].apply(lambda x: math.log(x - 1))
-            locdat.loc[:,'ip'] = locdat['ip'].apply(lambda x: math.log(x))
+            locdat['ip'] = locdat['ip'].apply(lambda x: math.log(x))
 
             d = locdat.shape[1] 
             if k % 4 + 1 < d:

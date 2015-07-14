@@ -54,7 +54,7 @@ combined_nonulls              = combined[pd.notnull(combined['cit_times'])]
 extend_me = combined_nonulls['end_times'] < combined_nonulls['cit_times']
 combined_extend_me = combined_nonulls.ix[extend_me]
 combined_extend_me['end_times']                 = combined_extend_me['cit_times'].apply(lambda x: int(x))
-combined_nonulls['end_times'][extend_me]     = combined_extend_me['end_times']
+combined_nonulls['end_times'].ix[extend_me]     = combined_extend_me['end_times']
 
 # extend start_time if there is an earlier cite
 extend_me              = combined_nonulls['start_times'] > combined_nonulls['cit_times']
@@ -141,20 +141,8 @@ quant               = pd.qcut(qual_list['qual'], [0, 0.5, 1])
 junk, quant_id      = np.unique(quant, return_inverse = True)
 qual_list['qual']   = - (quant_id - 1)
 aut_pan             = aut_pan.join(qual_list).reset_index()
-#aut_pan['dep_qual'] = aut_pan.groupby('dep')['qual'].transform(lambda x: x.mean())
-#aut_pan             = aut_pan.set_index('au')
-
-import pdb; pdb.set_trace()
-
-# ALTERNATIVE RANK BASED QUALITY
-dep_rank = pd.read_csv('top_depts_bd.csv', delimiter='|')
-dep_rank = dep_rank.drop_duplicates(cols='name').reset_index()
-dep_rank['rank'] = dep_rank.index
-dep_rank['dep_qual'] = (float(dep_rank['rank'].size) - dep_rank['rank']+ 1) / (float(dep_rank['rank'].size) + 1)
-merge_me = dep_rank[['name', 'dep_qual']]
-merge_me.columns = [['dep', 'dep_qual']]
-aut_pan = pd.merge(aut_pan, merge_me, how='left').set_index('au')
-aut_pan['dep_qual'] = aut_pan['dep_qual'].fillna(0) # ASSIGN OTHER QUALITY 0
+aut_pan['dep_qual'] = aut_pan.groupby('dep')['qual'].transform(lambda x: x.mean())
+aut_pan             = aut_pan.set_index('au')
 
 # GET FIELD FRACTIONS
 def field_frac(autpan,location,newvar):
@@ -167,19 +155,14 @@ aut_pan      = field_frac(aut_pan,'dep','dmean')
 # GET KNOW FRACTIONS
 def know_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
-    transformed    = autpan.groupby(['date',location])['isCiter']\
-            .transform(lambda x: sum(x) / max(float(len(x)) - 1,float(1)))
+    transformed    = autpan.groupby([location,'date'])['isCiter']\
+            .transform(lambda x: sum(x*1) / max(float(len(x*1)) - 1,float(1)))
     autpan[newvar] = transformed
-    print transformed
-    print autpan[newvar]
     return autpan
-aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
-aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
-aut_pan      = know_frac(aut_pan,'shift_dep','kfrac')
+aut_pan      = know_frac(aut_pan,'dep','kfrac')
 
 # PIVOT KNOW FRACTIONS
-dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
-dep_years.columns = ['dep','date','kfrac']
+dep_years = aut_pan[['dep','date','kfrac']].drop_duplicates()
 dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
 dep_years.to_pickle('dep_years.pickle')
 
@@ -202,7 +185,7 @@ aut_pan.to_pickle('initial_panel.pickle')
 aut_pan = aut_pan[(aut_pan['date'] > first_yr) & (aut_pan['date'] <= last_yr)]
 first_deps = aut_pan.sort_index(by='date')\
             .groupby('au').first().reset_index()
-first_ff = first_deps.set_index('au')[['dmean', 'isField', 'dep_qual']]
+first_ff = first_deps.set_index('au')[['dmean', 'isField']]
 first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
              .groupby('au').first().reset_index()
 aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
@@ -213,17 +196,13 @@ first_cits.to_pickle('first_cits.pickle')
 citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
 first_ff.to_pickle('first_ff.pickle')
+import pdb; pdb.set_trace()
 
 # SAVE MOVLIK STUFF
 aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)
 mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
 mov_dat = mov_dat[['au','dep','last_dep','qual','isField','date']]
 mov_dat.to_pickle('mov_dat.pickle')
-
-# DONT COUNT MOVES TO AND FROM 'OTHER'
-# mov_dat = mov_dat[(mov_dat['dep'] != 'OTHER')
-#         & (mov_dat['last_dep'] != 'OTHER')]
-mov_dat[mov_dat['dep'] != mov_dat['last_dep']].to_csv('test.csv')
 
 # FOR INSTRUMENT VERSION
 mov_dat91 = mov_dat[mov_dat['date'] == 1991]
