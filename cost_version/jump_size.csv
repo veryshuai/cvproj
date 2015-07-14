@@ -1,0 +1,14 @@
+block, jump
+cit_alp, 100
+cit_bet, 1000
+cit_gam0, 20
+cit_gam1, 40
+lp0, 0.01
+lp1, 0.01
+lp2, 0.002
+mov_p, 0.1
+mov_q, 0.1
+mov_l, 0.1
+mov_f, 0.1
+mov_ip, 0.1
+mov_lo, 0.01
