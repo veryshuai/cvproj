@@ -60,6 +60,7 @@ def calc_exp(currents, w, p):
     # caculates expectation part of value function
 
     dat = pd.DataFrame({'v1': currents, 'w1': w})
+    print dat
     exp_mat = dat.apply(lambda row: exp_sum(row, dat), axis=1)
     exp_mat = exp_mat / float(dat.shape[0] - 1)
     exp_mat = exp_mat.as_matrix()
