@@ -71,7 +71,7 @@ def mov_lik(trans, group, lat):
     lin2 = group.iloc[-1]
     if lin1['last_dep'] == lin2['dep']:
         out = pow(trans_prob(lin1, t),group.shape[0])
-        return max(float(out), 1e-12) #avoit zeros
+        return max(float(out), 1e-12) #avoid zeros
     else:
         lik = group.apply(lambda row: trans_prob(row, t), axis=1)
         return max(lik.prod(), 1e-12)  #avoid zeros

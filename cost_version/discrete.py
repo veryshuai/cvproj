@@ -26,8 +26,7 @@ def main(cit_params, big_mov_params, lp, ip):
 
     # READ IN OTHER DATA
     dep_stats = pd.read_pickle('dep_list.pickle').set_index('dep')
-    f = file('val_init.pickle','rb')
-    init = pickle.load(f)
+    init = pd.read_pickle('val_init.pickle')
     mov_dat91 = pd.read_pickle('mov_dat91.pickle')
     mov_dat_not91 = pd.read_pickle('mov_dat_not91.pickle')
     first_cits = pd.read_pickle('first_cits.pickle')
@@ -58,9 +57,9 @@ def main(cit_params, big_mov_params, lp, ip):
     lik_pieces = []
     for k in range(4):
         lik_dat = pd.DataFrame(mlik[k], columns=['mlik'])
-        lik_dat['cit_liks'] = cit_liks[k]
-        lik_dat['fc_liks'] = fc_liks[k]
-        lik_dat['nocit_liks'] = nocit_liks[k]
+        lik_dat.loc[:,'cit_liks'] = cit_liks[k]
+        lik_dat.loc[:,'fc_liks'] = fc_liks[k]
+        lik_dat.loc[:,'nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
     lik = el.prior(cit_params, big_mov_params, lp, ip)
     lik += el.recalc_lik(lik_pieces, first_ff, lp)
