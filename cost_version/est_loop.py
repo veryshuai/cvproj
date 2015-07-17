@@ -327,6 +327,11 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                             init, mov_dat91, mov_dat_not91,
                             first_ff, ip, bd, loc_rnd)
 
+        # LAST ERROR CHECK, FOR INF
+        if lik_u > 1e12:
+            print 'WARNING: New likelihood is inf'
+            lik_u = -1e10
+
         print bcolors.BLUE + str(lik) + ', ' + str(lik_u) + bcolors.ENDC
 
         if math.log(random.random()) < (lik_u - lik):
