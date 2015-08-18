@@ -87,13 +87,13 @@ def mov_lik(trans, group, lat):
 
     lin1 = group.iloc[0]
     t = trans[lin1['qual']][lin1['isField']][lat]
-    if not t:
-        return 0
+    # if not t: #I'm not sure what this check was for...
+    #     return 0
+    # else:
+    lin2 = group.iloc[-1]
+    if lin1['last_dep'] == lin2['dep']:
+        out = pow(trans_prob(lin1, t),group.shape[0])
+        return max(float(out), 1e-12) #avoid zeros
     else:
-        lin2 = group.iloc[-1]
-        if lin1['last_dep'] == lin2['dep']:
-            out = pow(trans_prob(lin1, t),group.shape[0])
-            return max(float(out), 1e-12) #avoid zeros
-        else:
-            lik = group.apply(lambda row: trans_prob(row, t), axis=1)
-            return max(lik.prod(), 1e-12)  #avoid zeros
+        lik = group.apply(lambda row: trans_prob(row, t), axis=1)
+        return max(lik.prod(), 1e-12)  #avoid zeros

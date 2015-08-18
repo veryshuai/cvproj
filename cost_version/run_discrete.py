@@ -9,7 +9,6 @@ import pandas as pd
 def tree():
     return collections.defaultdict(tree)
 
-
 if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
@@ -18,13 +17,13 @@ if __name__ == '__main__':
     bet = [17.960785941454546]
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'field': 0.93208506111690093, 'qual': 1.9, 'lat': 2.5})
+    mov_params = pd.Series({'field': -1.7995155486991625, 'qual': 1.9170889488351979, 'lat': 2.3190487281868641})
     
     # OTHER PARAMETERS 
-    lo = 8.5 #offer arrival rate,
-    ip = 3.5 #instrument parameter (affects 1991 wages)
+    lo = 12.164206478197812 #offer arrival rate,
+    ip = 0.18491156401697689 #instrument parameter (affects 1991 wages)
     # two mean parameters and a standard deviation
-    lp = [-1,-8,0.5] #latent type probability,
+    lp = [-1.3273956579724473,-7.5836621981938714,0.49420258156356101] #latent type probability,
     # base and qual dependence
     p = 0 # 1.282008407975466 #signing bonus distribution parameter
     

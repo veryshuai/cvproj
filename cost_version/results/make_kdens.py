@@ -21,7 +21,7 @@ def mkplt(x,sp1,sp2,sp3,y_name,ytop,zero_one=False,auto=True,x_min=0,x_max=1):
     density = stats.kde.gaussian_kde(x)
     density.covariance_factor=lambda : 0.35
     density._compute_covariance()
-    plt.hist(x, bins=20, normed=True, histtype='stepfilled', alpha=0.05)
+    plt.hist(x, bins=20, normed=True, histtype='stepfilled', alpha=0.15)
     plt.plot(xgrid, density(xgrid), '-r', linewidth=2)
     if ytop != 0:
         plt.ylim([0,ytop])

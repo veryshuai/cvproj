@@ -35,7 +35,7 @@ def get_cov(snip, k, block_name):
             citdat['gam_1'] = citdat['gam_1'].apply(lambda x: norm.ppf(x, 0, 1))
 
             d = citdat.shape[1]
-            if k % 4 + 1 < d * 10:
+            if k % 4 + 1 < d:
                 flag = True
             else:
                 flag = False
@@ -53,8 +53,8 @@ def get_cov(snip, k, block_name):
             # locdat['p'] = locdat['p'].apply(lambda x: math.log(x - 1))
             locdat['ip'] = locdat['ip'].apply(lambda x: math.log(x))
 
-            d = locdat.shape[1]
-            if k % 4 + 1 < d * 10:
+            d = locdat.shape[1] 
+            if k % 4 + 1 < d:
                 flag = True
             else:
                 flag = False
