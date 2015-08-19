@@ -41,6 +41,12 @@ def main(cit_params, big_mov_params, lp, ip):
     out_file = open('results/out_' + timestr + '.csv','wb')
     out_writer = csv.writer(out_file)
 
+    # ALL ONES INITIAL VALUES
+    for j in range(2):
+        for k in range(2):
+            for l in range(4):
+                init[j][k][l] = init[j][k][l].apply(lambda x: x ** 0)
+
     # GET INITIAL LIKELIHOOD
     init, trans, itrans, mlik, flag = vd.val_init(big_mov_params, dep_stats,
                                       0.95, ip, bd, init, lp,

@@ -40,10 +40,9 @@ class Consumer(multiprocessing.Process):
 
 
 class Task(object):
-    def __init__(self, cp, dy, l, lp,
+    def __init__(self, cp, l, lp,
              c, fc, nc):
         self.cp = cp
-        self.dy = dy 
         self.l = l
         self.lp = lp 
         self.c = c 
@@ -51,7 +50,7 @@ class Task(object):
         self.nc = nc 
     def __call__(self):
         cl_res, fc_res, nc_res =\
-                cit_calc(self.cp, self.dy, self.l,
+                cit_calc(self.cp,  self.l,
                          self.lp, self.c, self.fc,
                          self.nc)
         return self.l, cl_res, fc_res, nc_res
@@ -76,7 +75,7 @@ def call_parallel(cit_params,  lp,
     
     # Enqueue jobs
     for l in range(4):
-        tasks.put(Task(cit_params,  l, lp,
+        tasks.put(Task(cit_params, l, lp,
              citers, first_cits, nocits))
     
     # Add a poison pill for each consumer

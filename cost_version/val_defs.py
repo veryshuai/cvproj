@@ -64,6 +64,7 @@ def calc_exp(currents, w, p, lam):
 
     #DATAFRAME WITH VALS AND PAYOFFS
     dat = pd.DataFrame({'v1': currents, 'w1': w})
+
     no_cost_sums = dat.apply(lambda row: math.exp(row[0] + row[1]), axis=1)
     cost_sums = dat.apply(lambda row: math.exp(row[0] + row[1] - lam), axis=1)
 
@@ -90,12 +91,11 @@ def val_loop_inner(current, w, lam, dis, p):
     iters = 0
     while dif > 1e-3 and iters < 500:
         new = val_eval(current, w, lam, dis, p)
-        new = current
         dif = pow(new - current,2)
         dif = dif.sum()
-        current = new.copy()
+        current = 0.5 * current.copy() + 0.5 * new.copy()
         iters += 1
-        if iters == 500:
+        if iters == 5000:
             print 'WARNING: Value function\
                    did not converge!'
             print dif
@@ -132,7 +132,7 @@ def val_loop(w, lam, dis, p, ip, bd, init='nope'):
     if type(init) != str:
         current = init
     else:
-        current = w.apply(lambda x:  x)
+        current = w.copy() #set the guess 
 
     # MAIN LOOP
     new = val_loop_inner(current, w, lam, dis, p)

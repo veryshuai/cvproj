@@ -158,7 +158,7 @@ aut_pan['dep_qual'] = aut_pan['dep_qual'].fillna(0) # ASSIGN OTHER QUALITY 0
 # GET FIELD FRACTIONS
 def field_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
-    transformed    = autpan.groupby(location)['isField'].transform(lambda x: x.sum())
+    transformed    = autpan.groupby(location)['isField'].transform(lambda x: x.mean())
     autpan[newvar] = transformed
     autpan.loc[autpan.dep == 'OTHER',newvar] = 0 #kill benefit of being in "OTHER" department
     return autpan

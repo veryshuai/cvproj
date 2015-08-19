@@ -1,8 +1,9 @@
 block, jump
-cit_alp, 50 
-cit_bet, 500
-cit_gam0, 10
-cit_gam1, 20
+cit_alp0, 25 
+cit_alp1, 5 
+cit_bet, 25 
+cit_gam0, 5 
+cit_gam1, 5 
 lp0, 0.060
 lp1, 0.16
 lp2, 0.016

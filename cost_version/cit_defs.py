@@ -15,8 +15,9 @@ def tree():
     return collections.defaultdict(tree)
 
 def no_cit_inner(row, alp, bet, lat, qp):
-    k_lev = row['lag_tot_exp']
-    num = alp[0] + bet[0] * k_lev + qp[lat]
+    k_lev = row['lag_total_exp']
+    adj_yr = row['date']-1986
+    num = alp[0] + bet[0] * k_lev + alp[1] * adj_yr + qp[lat]
     try:
         item = math.exp(-num) / (1 + math.exp(-num))
     except Exception as e:
@@ -54,7 +55,8 @@ def fc_lik(alp, bet, gam, dep_aut,
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
     num = alp[0] + qp[lat]\
-            + bet[0] * row['lag_tot_exp']
+            + bet[0] * dep_aut['lag_total_exp']\
+            + alp[1] * (dep_aut['date'] - 1986)
     item = 1 / (1 + math.exp(-num))
     return item
 

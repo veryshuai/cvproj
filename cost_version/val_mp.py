@@ -183,7 +183,7 @@ def from_pickle(arg=0):
     # f.close()
     # f = file('mlik.pickle','rb'); mlik = pickle.load(f)
     if arg == 0:
-        return vals, trans, trans
+        return vals, trans, itrans
     if arg == 1:
         return mlik
 
@@ -206,24 +206,26 @@ def val_calc(qual, field, lat, big_mov_params,
     wage = vd.calc_wage(mov_params, dep_stats,
                      qual, field, lat, qp)
     try:
-        sp = init[qual][field][lat]
+        #sp = init[qual][field][lat]
+        sp = init[0][0][0]
         vals, trans, itrans = vd.val_loop(wage, lam, dis,
                                   p, ip, bd, sp)
     except Exception as e:
-        print 'WARNING: Value function start point error,\
-                 file val_defs.py, function val_init'
+        # print 'WARNING: Value function start point error,\
+        #          file val_defs.py, function val_init'
+        # print e
+        # logging.exception("Something awful happened!")
+        # try:
+        #     vals, trans, itrans = vd.val_loop(wage, lam, dis,
+        #                               p, ip, bd)
+        #     for tb in traceback.format_tb(sys.exc_info()[2]):
+        #         print tb
+        # except Exception as e:
+        print 'WARNING: reading vals from saves, equal trans'
         print e
-        logging.exception("Something awful happened!")
-        try:
-            vals, trans, itrans = vd.val_loop(wage, lam, dis,
-                                      p, ip, bd)
-            for tb in traceback.format_tb(sys.exc_info()[2]):
-                print tb
-        except Exception as e:
-            print 'WARNING: reading vals from saves, equal trans'
-            print e
-            vals, trans, itrans = from_pickle(0)
-            flag = 1
+        
+        vals, trans, itrans = from_pickle(0)
+        flag = 1
     return vals, trans, itrans, flag
 
 def mlik_calc(mov_dat_not91, mov_dat91, trans, itrans, lat):

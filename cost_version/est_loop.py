@@ -46,6 +46,7 @@ def prior(cit_params, big_mov_params, lp, ip):
     [alp, gam, bet] = cit_params
     [mov_params, lam, p] = big_mov_params
     run_sum += norm.logpdf(alp[0],0,10)
+    run_sum += norm.logpdf(alp[1],0,10)
     run_sum += expon.logpdf(bet, 0, 300) 
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
@@ -65,17 +66,19 @@ def update_cits(cit_params, rnd):
     # get user jump size
     try:
         j = pd.read_csv('jump_size.csv').set_index('block')
-        s_alp = list(j.loc['cit_alp'])[0]
+        s_alp0 = list(j.loc['cit_alp0'])[0]
+        s_alp1 = list(j.loc['cit_alp1'])[0]
         s_bet = list(j.loc['cit_bet'])[0]
         s_gam0 = list(j.loc['cit_gam0'])[0]
         s_gam1 = list(j.loc['cit_gam1'])[0]
     except Exception as e:
         print e
-        s_alp, s_bet, s_gam0, s_gam1\
-                = 1, 1, 1, 1
+        s_alp0, s_alp1, s_bet, s_gam0, s_gam1\
+                = 1, 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
-    alp[0] = alp[0] + random.gauss(0,rnd['alpha'] * s_alp)
+    alp[0] = alp[0] + random.gauss(0,rnd['alpha_0'] * s_alp0)
+    alp[1] = alp[1] + random.gauss(0,rnd['alpha_1'] * s_alp1)
     bet[0] = bet[0] + random.gauss(0,rnd['bet'] * s_bet)
     gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
                       random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)
@@ -359,7 +362,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
     [movparams, lam, p] = big_mov_params
-    out_writer.writerow(cit_params[0] + cit_params[1] + cit_params[2]
+    out_writer.writerow(cit_params[0] + cit_params[1] + cit_params[2] +
             + list(movparams) + [lam] + [p] + lp + [ip])
     out_file.flush()
     return 0
