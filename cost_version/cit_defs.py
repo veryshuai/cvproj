@@ -14,8 +14,7 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def no_cit_inner(row, alp, bet, dep_year, lat, qp):
-    k_lev = dep_year.at[row['dep'],row['date']-1]
+def no_cit_inner(row, alp, bet, lat, qp):
     k_lev = row['lag_tot_exp']
     num = alp[0] + bet[0] * k_lev + qp[lat]
     try:
@@ -26,36 +25,36 @@ def no_cit_inner(row, alp, bet, dep_year, lat, qp):
     return item
 
 def cit_lik_no_cit(alp, bet, gam, dep_aut,
-                   dep_year, lat, qp):
+                    lat, qp):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                                   bet, dep_year,
+                                                   bet, 
                                                    lat, qp), axis=1)
     arg = (1 - pgam + pgam * liks.prod())
     return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut,
-                dep_year, lat, qp):
+                 lat, qp):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                               bet, dep_year,
+                                               bet, 
                                                lat, qp), axis=1)
     arg = (pgam * liks.prod())
     return arg
 
 def fc_lik(alp, bet, gam, dep_aut,
-           dep_year, lat, qp):
+            lat, qp):
     # calculates first cite likelihoods
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
     num = alp[0] + qp[lat]\
-            + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
+            + bet[0] * row['lag_tot_exp']
     item = 1 / (1 + math.exp(-num))
     return item
 

@@ -59,7 +59,7 @@ class Task(object):
         return 'l %s ' % (self.l)
 
 
-def call_parallel(cit_params, dep_year, lp,
+def call_parallel(cit_params,  lp,
              citers, first_cits, nocits):
     """Calls parallel loop for calculating value function"""
 
@@ -76,7 +76,7 @@ def call_parallel(cit_params, dep_year, lp,
     
     # Enqueue jobs
     for l in range(4):
-        tasks.put(Task(cit_params, dep_year, l, lp,
+        tasks.put(Task(cit_params,  l, lp,
              citers, first_cits, nocits))
     
     # Add a poison pill for each consumer
@@ -99,7 +99,7 @@ def call_parallel(cit_params, dep_year, lp,
         
     return cit_liks, fc_liks, nocit_liks
 
-def cit_calc(cit_params, dep_year, lat, lp,
+def cit_calc(cit_params,  lat, lp,
              citers, first_cits, nocits):
     """calculates a single lat type cit likelihood"""
 
@@ -114,13 +114,13 @@ def cit_calc(cit_params, dep_year, lat, lp,
     try: 
         cl_res = citers.groupby('au')\
                     .apply(lambda x: cd.cit_lik_cit(alp,
-                           bet, gam, x, dep_year, lat, qp))
+                           bet, gam, x,  lat, qp))
         fc_res = first_cits.groupby('au')\
                     .apply(lambda x: cd.fc_lik(alp,
-                           bet, gam,  x, dep_year, lat, qp))
+                           bet, gam,  x,  lat, qp))
         nc_res = nocits.groupby('au')\
                     .apply(lambda x: cd.cit_lik_no_cit(alp,
-                           bet, gam, x, dep_year, lat, qp))
+                           bet, gam, x,  lat, qp))
     except Exception as e:
         print 'WARNING: Error in cit_lik calc, cit_mp.py' 
         print e

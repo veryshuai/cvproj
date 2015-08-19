@@ -32,7 +32,6 @@ def main(cit_params, big_mov_params, lp, ip):
     first_cits = pd.read_pickle('first_cits.pickle')
     citers = pd.read_pickle('citers.pickle')
     nocits = pd.read_pickle('nocits.pickle')
-    #dep_year = pd.read_pickle('dep_years.pickle')
     first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
@@ -72,6 +71,6 @@ def main(cit_params, big_mov_params, lp, ip):
     # CALL ESTIMATION LOOP
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
-            first_cits, citers, nocits, dep_year,
+            first_cits, citers, nocits,
             out_file, out_writer, first_ff, ip, bd, timestr)
 
