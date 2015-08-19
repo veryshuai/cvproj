@@ -158,29 +158,37 @@ aut_pan['dep_qual'] = aut_pan['dep_qual'].fillna(0) # ASSIGN OTHER QUALITY 0
 # GET FIELD FRACTIONS
 def field_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
-    transformed    = autpan.groupby(location)['isField'].transform(lambda x: x.mean())
+    transformed    = autpan.groupby(location)['isField'].transform(lambda x: x.sum())
     autpan[newvar] = transformed
+    autpan.loc[autpan.dep == 'OTHER',newvar] = 0 #kill benefit of being in "OTHER" department
     return autpan
 aut_pan      = field_frac(aut_pan,'dep','dmean')
 
-# GET KNOW FRACTIONS
-def know_frac(autpan,location,newvar):
+# GET KNOW SUMS 
+def know_sums(autpan,location,newvar):
     autpan         = autpan.reset_index()
     transformed    = autpan.groupby(['date',location])['isCiter']\
-            .transform(lambda x: sum(x) / max(float(len(x)) - 1,float(1)))
-    autpan[newvar] = transformed
+            .transform(lambda x: sum(x)) #sum the citers in each date and location
+    autpan[newvar] = transformed - autpan['isCiter'] #take off own citing behavior
     print transformed
     print autpan[newvar]
     return autpan
-aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
-aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
-aut_pan      = know_frac(aut_pan,'shift_dep','kfrac')
+#aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
+#aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
+#aut_pan      = know_sums(aut_pan,'shift_dep','kfrac')
+aut_pan      = know_sums(aut_pan,'dep','kfrac')
+
+# GET TOTAL EXPOSURE BY AUTHOR
+aut_pan['total_exp'] = aut_pan.groupby('au')['kfrac'].cumsum()
+
+# LAGGED VARIABLES
+aut_pan['lag_total_exp'] = aut_pan.groupby('au').shift(1).total_exp.fillna(0) #shifts total_exp and fills produced NaNs with zero
 
 # PIVOT KNOW FRACTIONS
-dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
-dep_years.columns = ['dep','date','kfrac']
-dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
-dep_years.to_pickle('dep_years.pickle')
+# dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
+# dep_years.columns = ['dep','date','kfrac']
+# dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
+# dep_years.to_pickle('dep_years.pickle')
 
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
@@ -191,7 +199,7 @@ dep_list.to_csv('dep_list.csv')
 aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',
                              'qual', 'dep_qual', 'kfrac', 'isField',
                              'start_times', 'end_times', 'cit_times',
-                             'tot_cits', 'isCiter']].reset_index()
+                             'tot_cits', 'isCiter','lag_total_exp']].reset_index()
 aut_pan['isMove'] = False
 
 # SAVE INITIAL MATRIX

@@ -32,7 +32,7 @@ def main(cit_params, big_mov_params, lp, ip):
     first_cits = pd.read_pickle('first_cits.pickle')
     citers = pd.read_pickle('citers.pickle')
     nocits = pd.read_pickle('nocits.pickle')
-    dep_year = pd.read_pickle('dep_years.pickle')
+    #dep_year = pd.read_pickle('dep_years.pickle')
     first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
@@ -50,7 +50,7 @@ def main(cit_params, big_mov_params, lp, ip):
     vd.reset(init, trans, itrans, mlik)
 
     cit_liks, fc_liks, nocit_liks\
-            = cm.call_parallel(cit_params, dep_year,
+            = cm.call_parallel(cit_params,
                                lp, citers, first_cits, nocits)
 
     # CALCULATE 

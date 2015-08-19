@@ -16,6 +16,7 @@ def tree():
 
 def no_cit_inner(row, alp, bet, dep_year, lat, qp):
     k_lev = dep_year.at[row['dep'],row['date']-1]
+    k_lev = row['lag_tot_exp']
     num = alp[0] + bet[0] * k_lev + qp[lat]
     try:
         item = math.exp(-num) / (1 + math.exp(-num))
