@@ -47,7 +47,7 @@ def prior(cit_params, big_mov_params, lp, ip):
     [mov_params, lam, p] = big_mov_params
     run_sum += norm.logpdf(alp[0],0,10)
     run_sum += norm.logpdf(alp[1],0,10)
-    run_sum += expon.logpdf(bet, 0, 300) 
+    run_sum += norm.logpdf(bet, 0.11, 300) 
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
     run_sum += norm.logpdf(mov_params['qual'],0,10)
@@ -362,7 +362,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
 def write_me(cit_params, big_mov_params, lp, ip, out_writer, out_file):
     # writes to file
     [movparams, lam, p] = big_mov_params
-    out_writer.writerow(cit_params[0] + cit_params[1] + cit_params[2] +
+    out_writer.writerow(cit_params[0] + cit_params[1] + cit_params[2]
             + list(movparams) + [lam] + [p] + lp + [ip])
     out_file.flush()
     return 0

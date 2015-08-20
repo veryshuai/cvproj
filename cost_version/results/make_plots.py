@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     #READ IN DATA
     p = pd.read_csv('out.csv')
+    import pdb; pdb.set_trace()
     
     # EASIER TO DO LOGGING HERE
     # p[' p'] = p[' p'].apply(lambda x: math.log(x))
