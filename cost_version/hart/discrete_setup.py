@@ -44,6 +44,9 @@ aut_pan['end_times']        = end_times
 aut_pan = aut_pan[(aut_pan['date'] <= last_yr)
                   & (aut_pan['date'] >= first_yr)]
 
+# REMOVE "OTHER" DEPARTMENT
+aut_pan                     = aut_pan.loc[aut_pan['dep'] != 'OTHER',:]
+
 # DEAL WITH INCONSISTENCIES IN FIRST CITE TIME AND PANEL
 combined_init                 = pd.merge(aut_pan,cit_times_df,on='au',how='left') #outer keeps the majority non-citers
 combined                      = combined_init.sort('start_times').groupby('au').first()
@@ -81,12 +84,13 @@ combined = pd.read_pickle('combined.pickle')
 
 # APPEND ONTO AUT_PAN
 aut_pan  = aut_pan.reset_index().append(combined.reset_index()).sort_index(by = ['au','date'])
-aut_pan  = aut_pan[['au','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
-fillcols = aut_pan.reset_index().sort_index(by = 'date').groupby('au').fillna(method = 'pad')
+aut_pan  = aut_pan[['au','pubs','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
+aut_pan_by_date = aut_pan.reset_index().sort_index(by = 'date') #sort by date
+fillcols = aut_pan_by_date.groupby('au').fillna(method = 'pad') #fill down missing data
+fillcols['au'] = aut_pan_by_date['au'] #read author to fillcols
 aut_pan  = fillcols.set_index('au')
 aut_pan['isCiter'] = aut_pan['isCiter'].fillna(value=0)
-fillcols = aut_pan.reset_index().groupby('au').fillna(method = 'bfill')
-aut_pan  = fillcols.set_index(['au'])
+aut_pan = aut_pan.groupby(level=0).transform(lambda x: x.fillna(method = 'bfill')) #backfill year of first citation
 aut_pan  = aut_pan.reset_index().drop_duplicates(cols = ['au','date'],take_last = False)
 
 # FIX ISCITER
@@ -141,30 +145,53 @@ quant               = pd.qcut(qual_list['qual'], [0, 0.5, 1])
 junk, quant_id      = np.unique(quant, return_inverse = True)
 qual_list['qual']   = - (quant_id - 1)
 aut_pan             = aut_pan.join(qual_list).reset_index()
-aut_pan['dep_qual'] = aut_pan.groupby('dep')['qual'].transform(lambda x: x.mean())
-aut_pan             = aut_pan.set_index('au')
+#aut_pan['dep_qual'] = aut_pan.groupby('dep')['qual'].transform(lambda x: x.mean())
+#aut_pan             = aut_pan.set_index('au')
+
+# ALTERNATIVE RANK BASED QUALITY
+dep_rank = pd.read_csv('top_depts_bd.csv', delimiter='|')
+dep_rank = dep_rank.drop_duplicates(cols='name').reset_index()
+dep_rank['rank'] = dep_rank.index
+dep_rank['dep_qual'] = (float(dep_rank['rank'].size) - dep_rank['rank']+ 1) / (float(dep_rank['rank'].size) + 1)
+merge_me = dep_rank[['name', 'dep_qual']]
+merge_me.columns = [['dep', 'dep_qual']]
+aut_pan = pd.merge(aut_pan, merge_me, how='left').set_index('au')
+aut_pan['dep_qual'] = aut_pan['dep_qual'].fillna(0) # ASSIGN OTHER QUALITY 0
 
 # GET FIELD FRACTIONS
 def field_frac(autpan,location,newvar):
     autpan         = autpan.reset_index()
     transformed    = autpan.groupby(location)['isField'].transform(lambda x: x.mean())
     autpan[newvar] = transformed
+    autpan.loc[autpan.dep == 'OTHER',newvar] = 0 #kill benefit of being in "OTHER" department
     return autpan
 aut_pan      = field_frac(aut_pan,'dep','dmean')
 
-# GET KNOW FRACTIONS
-def know_frac(autpan,location,newvar):
+# GET KNOW SUMS 
+def know_sums(autpan,location,newvar):
     autpan         = autpan.reset_index()
-    transformed    = autpan.groupby([location,'date'])['isCiter']\
-            .transform(lambda x: sum(x*1) / max(float(len(x*1)) - 1,float(1)))
-    autpan[newvar] = transformed
+    transformed    = autpan.groupby(['date',location])['isCiter']\
+            .transform(lambda x: sum(x)) #sum the citers in each date and location
+    autpan[newvar] = transformed - autpan['isCiter'] #take off own citing behavior
+    print transformed
+    print autpan[newvar]
     return autpan
-aut_pan      = know_frac(aut_pan,'dep','kfrac')
+#aut_pan['shift_dep'] = aut_pan.groupby('au')['dep'].shift(-1)
+#aut_pan['shift_dep'][pd.isnull(aut_pan['shift_dep'])] = aut_pan['dep'][pd.isnull(aut_pan['shift_dep'])]
+#aut_pan      = know_sums(aut_pan,'shift_dep','kfrac')
+aut_pan      = know_sums(aut_pan,'dep','kfrac')
+
+# GET TOTAL EXPOSURE BY AUTHOR
+aut_pan['total_exp'] = aut_pan.groupby('au')['kfrac'].cumsum()
+
+# LAGGED VARIABLES
+aut_pan['lag_total_exp'] = aut_pan.groupby('au').shift(1).total_exp.fillna(0) #shifts total_exp and fills produced NaNs with zero
 
 # PIVOT KNOW FRACTIONS
-dep_years = aut_pan[['dep','date','kfrac']].drop_duplicates()
-dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
-dep_years.to_pickle('dep_years.pickle')
+# dep_years = aut_pan[['shift_dep','date','kfrac']].drop_duplicates()
+# dep_years.columns = ['dep','date','kfrac']
+# dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
+# dep_years.to_pickle('dep_years.pickle')
 
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
@@ -175,7 +202,7 @@ dep_list.to_csv('dep_list.csv')
 aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',
                              'qual', 'dep_qual', 'kfrac', 'isField',
                              'start_times', 'end_times', 'cit_times',
-                             'tot_cits', 'isCiter']].reset_index()
+                             'tot_cits', 'isCiter','lag_total_exp','pubs']].reset_index()
 aut_pan['isMove'] = False
 
 # SAVE INITIAL MATRIX
@@ -185,7 +212,7 @@ aut_pan.to_pickle('initial_panel.pickle')
 aut_pan = aut_pan[(aut_pan['date'] > first_yr) & (aut_pan['date'] <= last_yr)]
 first_deps = aut_pan.sort_index(by='date')\
             .groupby('au').first().reset_index()
-first_ff = first_deps.set_index('au')[['dmean', 'isField']]
+first_ff = first_deps.set_index('au')[['dmean', 'isField', 'dep_qual']]
 first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
              .groupby('au').first().reset_index()
 aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
@@ -196,13 +223,17 @@ first_cits.to_pickle('first_cits.pickle')
 citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
 first_ff.to_pickle('first_ff.pickle')
-import pdb; pdb.set_trace()
 
 # SAVE MOVLIK STUFF
 aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)
 mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
 mov_dat = mov_dat[['au','dep','last_dep','qual','isField','date']]
 mov_dat.to_pickle('mov_dat.pickle')
+
+# DONT COUNT MOVES TO AND FROM 'OTHER'
+# mov_dat = mov_dat[(mov_dat['dep'] != 'OTHER')
+#         & (mov_dat['last_dep'] != 'OTHER')]
+mov_dat[mov_dat['dep'] != mov_dat['last_dep']].to_csv('test.csv')
 
 # FOR INSTRUMENT VERSION
 mov_dat91 = mov_dat[mov_dat['date'] == 1991]

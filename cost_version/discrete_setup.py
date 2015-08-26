@@ -19,7 +19,7 @@ import collections
 def tree():
     return collections.defaultdict(tree)
 
-first_yr = 1986
+first_yr = 1987
 last_yr = 1994
 
 # LOAD FIRST CITATION TIMES AND TOTAL CITES
@@ -43,6 +43,9 @@ aut_pan['start_times']      = start_times
 aut_pan['end_times']        = end_times
 aut_pan = aut_pan[(aut_pan['date'] <= last_yr)
                   & (aut_pan['date'] >= first_yr)]
+
+# REMOVE "OTHER" DEPARTMENT
+aut_pan                     = aut_pan.loc[aut_pan['dep'] != 'OTHER',:]
 
 # DEAL WITH INCONSISTENCIES IN FIRST CITE TIME AND PANEL
 combined_init                 = pd.merge(aut_pan,cit_times_df,on='au',how='left') #outer keeps the majority non-citers
@@ -81,7 +84,7 @@ combined = pd.read_pickle('combined.pickle')
 
 # APPEND ONTO AUT_PAN
 aut_pan  = aut_pan.reset_index().append(combined.reset_index()).sort_index(by = ['au','date'])
-aut_pan  = aut_pan[['au','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
+aut_pan  = aut_pan[['au','pubs','date','dep','start_times','end_times','cit_times','tot_cits','isCiter']].set_index('au')
 aut_pan_by_date = aut_pan.reset_index().sort_index(by = 'date') #sort by date
 fillcols = aut_pan_by_date.groupby('au').fillna(method = 'pad') #fill down missing data
 fillcols['au'] = aut_pan_by_date['au'] #read author to fillcols
@@ -190,6 +193,10 @@ aut_pan['lag_total_exp'] = aut_pan.groupby('au').shift(1).total_exp.fillna(0) #s
 # dep_years = dep_years.pivot(index='dep',columns='date',values='kfrac').fillna(value=0)
 # dep_years.to_pickle('dep_years.pickle')
 
+# GET DURATION BY AUTHOR
+aut_pan['ones'] = 1 # a row of ones, to cumsum
+aut_pan['duration'] = aut_pan.groupby('au')['ones'].cumsum()
+
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
 dep_list.to_pickle('dep_list.pickle')
@@ -199,7 +206,7 @@ dep_list.to_csv('dep_list.csv')
 aut_pan           = aut_pan[['au', 'date', 'dep', 'dmean',
                              'qual', 'dep_qual', 'kfrac', 'isField',
                              'start_times', 'end_times', 'cit_times',
-                             'tot_cits', 'isCiter','lag_total_exp']].reset_index()
+                             'tot_cits', 'isCiter','lag_total_exp','pubs','duration']].reset_index()
 aut_pan['isMove'] = False
 
 # SAVE INITIAL MATRIX

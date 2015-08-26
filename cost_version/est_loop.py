@@ -68,17 +68,19 @@ def update_cits(cit_params, rnd):
         j = pd.read_csv('jump_size.csv').set_index('block')
         s_alp0 = list(j.loc['cit_alp0'])[0]
         s_alp1 = list(j.loc['cit_alp1'])[0]
+        s_alp2 = list(j.loc['cit_alp2'])[0]
         s_bet = list(j.loc['cit_bet'])[0]
         s_gam0 = list(j.loc['cit_gam0'])[0]
         s_gam1 = list(j.loc['cit_gam1'])[0]
     except Exception as e:
         print e
-        s_alp0, s_alp1, s_bet, s_gam0, s_gam1\
-                = 1, 1, 1, 1, 1
+        s_alp0, s_alp1, s_alp2, s_bet, s_gam0, s_gam1\
+                = 1, 1, 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
     alp[0] = alp[0] + random.gauss(0,rnd['alpha_0'] * s_alp0)
     alp[1] = alp[1] + random.gauss(0,rnd['alpha_1'] * s_alp1)
+    alp[2] = alp[2] + random.gauss(0,rnd['alpha_2'] * s_alp2)
     bet[0] = bet[0] + random.gauss(0,rnd['bet'] * s_bet)
     gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
                       random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)

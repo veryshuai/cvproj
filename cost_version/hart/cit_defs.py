@@ -14,44 +14,51 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def no_cit_inner(row, alp, bet, dep_year, lat, qp):
-    k_lev = dep_year.at[row['dep'],row['date']-1]
-    num = alp[0] + bet[0] * k_lev + qp[lat]
-    item = 1 - math.exp(num) / (1 + math.exp(num))
+def no_cit_inner(row, alp, bet, lat, qp):
+    k_lev = row['lag_total_exp']
+    adj_yr = row['date']-1986
+    num = alp[0] + bet[0] * k_lev + alp[1] * adj_yr + alp[2] * adj_yr ** 2 + qp[lat]
+    try:
+        item = math.exp(-num) / (1 + math.exp(-num))
+    except Exception as e:
+        print 'WARNING: overflow error, assigned small lik' 
+        item = 1e-20
     return item
 
 def cit_lik_no_cit(alp, bet, gam, dep_aut,
-                   dep_year, lat, qp):
+                    lat, qp):
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                                   bet, dep_year,
+                                                   bet, 
                                                    lat, qp), axis=1)
     arg = (1 - pgam + pgam * liks.prod())
     return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut,
-                dep_year, lat, qp):
+                 lat, qp):
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
     pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                               bet, dep_year,
+                                               bet, 
                                                lat, qp), axis=1)
     arg = (pgam * liks.prod())
     return arg
 
 def fc_lik(alp, bet, gam, dep_aut,
-           dep_year, lat, qp):
+            lat, qp):
     # calculates first cite likelihoods
     lin1 = dep_aut.iloc[-1]
     pgam = gam[lin1['isField']]
     num = alp[0] + qp[lat]\
-            + bet[0] * dep_year.at[lin1['dep'],lin1['date']-1]
-    item = math.exp(num) / (1 + math.exp(num))
+            + bet[0] * dep_aut['lag_total_exp']\
+            + alp[1] * (dep_aut['date'] - 1986)\
+            + alp[2] * (dep_aut['date'] - 1986) ** 2
+    item = 1 / (1 + math.exp(-num))
     return item
 
 def trans_prob(row, t):
@@ -65,13 +72,13 @@ def mov_lik(trans, group, lat):
 
     lin1 = group.iloc[0]
     t = trans[lin1['qual']][lin1['isField']][lat]
-    if not t:
-        return 0
+    # if not t: #I'm not sure what this check was for...
+    #     return 0
+    # else:
+    lin2 = group.iloc[-1]
+    if lin1['last_dep'] == lin2['dep']:
+        out = pow(trans_prob(lin1, t),group.shape[0])
+        return max(float(out), 1e-12) #avoid zeros
     else:
-        lin2 = group.iloc[-1]
-        if lin1['last_dep'] == lin2['dep']:
-            out = pow(trans_prob(lin1, t),group.shape[0])
-            return max(float(out), 1e-12) #avoit zeros
-        else:
-            lik = group.apply(lambda row: trans_prob(row, t), axis=1)
-            return max(lik.prod(), 1e-12)  #avoid zeros
+        lik = group.apply(lambda row: trans_prob(row, t), axis=1)
+        return max(lik.prod(), 1e-12)  #avoid zeros

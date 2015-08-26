@@ -21,7 +21,6 @@ if __name__ == '__main__':
 
     #READ IN DATA
     p = pd.read_csv('out.csv')
-    import pdb; pdb.set_trace()
     
     # EASIER TO DO LOGGING HERE
     # p[' p'] = p[' p'].apply(lambda x: math.log(x))
@@ -31,16 +30,17 @@ if __name__ == '__main__':
     mkplt(p[' bet'],                7, 2, 1, 'bet', 0)
     mkplt(p['alp0'],                7, 2, 2, 'alp0', 0)
     mkplt(p[' alp1'],               7, 2, 3, 'alp1', 0)
-    mkplt(p[' gam0'],               7, 2, 4, 'gam0', 0)
-    mkplt(p[' gam1'],               7, 2, 5, 'gam1', 0)
-    mkplt(p[' field_co'],           7, 2, 6, 'field_co'  , 0)
-    mkplt(p[' qual_co'],            7, 2, 7, 'qual_co'   , 0)
-    mkplt(p[' lat_co'],             7, 2, 8, 'lat_co'    , 0)
-    mkplt(p[' lo'],                 7, 2, 9, 'lo1'       , 0)
-    mkplt(p[' ip'],                 7, 2, 10, 'ip'        , 0)
-    mkplt(p[' lat_prob1'][::8],     7, 2, 11, 'lat_prob1' , 0)
-    mkplt(p[' lat_prob2'][::8],     7, 2, 12, 'lat_prob2' , 0)
-    mkplt(p[' lat_prob3'][::8],     7, 2, 13, 'lat_prob3' , 0)
+    mkplt(p[' alp2'],               7, 2, 4, 'alp2', 0)
+    mkplt(p[' gam0'],               7, 2, 5, 'gam0', 0)
+    mkplt(p[' gam1'],               7, 2, 6, 'gam1', 0)
+    mkplt(p[' field_co'],           7, 2, 7, 'field_co'  , 0)
+    mkplt(p[' qual_co'],            7, 2, 8, 'qual_co'   , 0)
+    mkplt(p[' lat_co'],             7, 2, 9, 'lat_co'    , 0)
+    mkplt(p[' lo'],                 7, 2, 10, 'lo1'       , 0)
+    mkplt(p[' ip'],                 7, 2, 11, 'ip'        , 0)
+    mkplt(p[' lat_prob1'][::8],     7, 2, 12, 'lat_prob1' , 0)
+    mkplt(p[' lat_prob2'][::8],     7, 2, 13, 'lat_prob2' , 0)
+    mkplt(p[' lat_prob3'][::8],     7, 2, 14, 'lat_prob3' , 0)
     plt.savefig('params_plots_big.png', bbox_inches=0)
     
     plt.show()

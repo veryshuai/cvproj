@@ -12,18 +12,18 @@ def tree():
 if __name__ == '__main__':
     """reads in parameters and calls discrete.py, main estimation"""
 
-    alp = [-1.2449938399200924,0.30439991322583293]
-    gam = [0.027582629753577594,0.067002307925056154]
-    bet = [0.035266021805193302]
+    alp = [-1.452914679138346,0.384680168235423,0]
+    gam = [0.026657686859417083,0.090153910685092264]
+    bet = [0.05155450232934633]
     
     # INITIAL MOV PARAMETERS 
-    mov_params = pd.Series({'field': 0.56104025904547605, 'qual': 0.42062703573608634, 'lat': 1.2837487696003824})
+    mov_params = pd.Series({'field': 0.12716535145644681, 'qual': 0.5150051996522087, 'lat': 0.1203963289888007})
     
     # OTHER PARAMETERS 
-    lo = 11.374821450184788 #offer arrival rate,
-    ip = 0.45356716416109194 #instrument parameter (affects 1991 wages)
+    lo = 8.4861977159094426 #offer arrival rate,
+    ip = 0.39916307819310826 #instrument parameter (affects 1991 wages)
     # two mean parameters and a standard deviation
-    lp = [-1.3808013227699647,-5.170318982125627,0.55080237964410705] #latent type probability,
+    lp = [-1.518518796354166,-3.4449688779775971,0.54461805780012695] #latent type probability,
     # base and qual dependence
     p = 0 # 1.282008407975466 #signing bonus distribution parameter
     
