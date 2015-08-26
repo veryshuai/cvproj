@@ -212,11 +212,14 @@ aut_pan['isMove'] = False
 # SAVE INITIAL MATRIX
 aut_pan.to_pickle('initial_panel.pickle')
 
+# ADDING HIGH AND LOW FIELD DEPARMENTS
+aut_pan['first_dep_qual'] = aut_pan.groupby('au').dep_qual.transform(lambda x: x.iloc[0])
+aut_pan['first_dmean'] = aut_pan.groupby('au').dmean.transform(lambda x: x.iloc[0])
+dmean_avg = aut_pan.first_dmean.describe()['50%']
+aut_pan['high_field_first_dep'] = 0
+aut_pan.loc[aut_pan['first_dmean'] > dmean_avg,'high_field_first_dep'] = 1
+
 # SAVE CIT LIK STUFF
-aut_pan = aut_pan[(aut_pan['date'] > first_yr) & (aut_pan['date'] <= last_yr)]
-first_deps = aut_pan.sort_index(by='date')\
-            .groupby('au').first().reset_index()
-first_ff = first_deps.set_index('au')[['dmean', 'isField', 'dep_qual']]
 first_cits = aut_pan[aut_pan['isCiter'] == 1].sort_index(by='date')\
              .groupby('au').first().reset_index()
 aut_pan['ever_cit'] = aut_pan.groupby('au')['isCiter']\
@@ -226,12 +229,12 @@ nocits = aut_pan[aut_pan['ever_cit'] == 0]
 first_cits.to_pickle('first_cits.pickle')
 citers.to_pickle('citers.pickle')
 nocits.to_pickle('nocits.pickle')
-first_ff.to_pickle('first_ff.pickle')
+
 
 # SAVE MOVLIK STUFF
 aut_pan['last_dep'] = aut_pan.groupby('au')['dep'].shift(1)
 mov_dat = aut_pan[pd.notnull(aut_pan['last_dep'])]
-mov_dat = mov_dat[['au','dep','last_dep','qual','isField','date']]
+mov_dat = mov_dat[['au','dep','last_dep','qual','isField','date','first_dep_qual','first_dmean']]
 mov_dat.to_pickle('mov_dat.pickle')
 
 # DONT COUNT MOVES TO AND FROM 'OTHER'

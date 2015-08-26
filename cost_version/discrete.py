@@ -32,7 +32,6 @@ def main(cit_params, big_mov_params, lp, ip):
     first_cits = pd.read_pickle('first_cits.pickle')
     citers = pd.read_pickle('citers.pickle')
     nocits = pd.read_pickle('nocits.pickle')
-    first_ff = pd.read_pickle('first_ff.pickle')
     bd = pd.read_pickle('budget_def.pickle')
 
     # OUTPUT
@@ -42,10 +41,11 @@ def main(cit_params, big_mov_params, lp, ip):
     out_writer = csv.writer(out_file)
 
     # ALL ONES INITIAL VALUES
-    for j in range(2):
-        for k in range(2):
-            for l in range(4):
-                init[j][k][l] = init[j][k][l].apply(lambda x: x ** 0)
+    for j in range(2): #high low field
+        for k in range(2): #high low quality
+            for l in range(4): #quadrature points
+                for m in range(2): #high or low initial field
+                    init[j][k][l][m] = dep_stats['dep_qual'] 
 
     # GET INITIAL LIKELIHOOD
     init, trans, itrans, mlik, flag = vd.val_init(big_mov_params, dep_stats,

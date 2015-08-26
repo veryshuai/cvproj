@@ -198,8 +198,6 @@ def val_calc(qual, field, lat, big_mov_params,
     [mov_params, lam, p] = big_mov_params
     
     # QUADRATURE POINTS 
-    qa = [4 * math.sqrt(3 - 2 * math.sqrt(6 / float(5))) / float(7),
-            4 * math.sqrt(3 + 2 * math.sqrt(6 / float(5))) / float(7)]
     qp =  [-qa[1], -qa[0], qa[0], qa[1]]
 
     # CALCULATE WAGES
