@@ -23,7 +23,7 @@ if __name__ == '__main__':
     lo = 8.4861977159094426 #offer arrival rate,
     ip = 0.39916307819310826 #instrument parameter (affects 1991 wages)
     # two mean parameters and a standard deviation
-    lp = [-1.518518796354166,-3.4449688779775971,0.54461805780012695] #latent type probability,
+    lp = [1.518518796354166,0.54461805780012695] #latent type probability,
     # base and qual dependence
     p = 0 # 1.282008407975466 #signing bonus distribution parameter
     

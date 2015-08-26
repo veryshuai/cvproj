@@ -40,6 +40,7 @@ def main(cit_params, big_mov_params, lp, ip):
     out_file = open('results/out_' + timestr + '.csv','wb')
     out_writer = csv.writer(out_file)
 
+    init = tree()
     # ALL ONES INITIAL VALUES
     for j in range(2): #high low field
         for k in range(2): #high low quality
@@ -67,7 +68,7 @@ def main(cit_params, big_mov_params, lp, ip):
         lik_dat.loc[:,'nocit_liks'] = nocit_liks[k]
         lik_pieces.append(lik_dat)
     lik = el.prior(cit_params, big_mov_params, lp, ip)
-    lik += el.recalc_lik(lik_pieces, first_ff, lp)
+    lik += el.recalc_lik(lik_pieces, lp)
 
     # CHECK FOR ERROR
     if flag == 1:
@@ -78,5 +79,5 @@ def main(cit_params, big_mov_params, lp, ip):
     el.est_loop(lik, lik_pieces, big_mov_params, cit_params,
             lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
             first_cits, citers, nocits,
-            out_file, out_writer, first_ff, ip, bd, timestr)
+            out_file, out_writer, ip, bd, timestr)
 

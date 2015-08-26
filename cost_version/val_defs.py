@@ -145,7 +145,6 @@ def val_loop(w, lam, dis, p, ip, bd, init='nope'):
                         index = w.index)
     insw = insw.apply(lambda x: x['w'] *
                       math.exp(- ip * x['bd']), axis=1)
-    insw['OTHER'] = w['OTHER']
     ins_trans = calc_trans(new, insw, lam, dis, p) 
 
     return new, trans, ins_trans
@@ -170,7 +169,7 @@ def calc_depprob(mp, dep, qual, field, lat, qp):
     depprobs = depprobs / depprobs.sum(1)
     return depprobs
 
-def calc_wage(mp, dep, qual, field, lat, qp):
+def calc_wage(mp, dep, qual, field, lat, hff, qp):
     # returns wage at each of the departments
 
     # EASY PARAMETER REFERENCE
@@ -182,7 +181,7 @@ def calc_wage(mp, dep, qual, field, lat, qp):
     wq = q * qual * dep['dep_qual']
     wf = f * field * dep['dmean']
     # quadrature points 
-    wl = l * dep['dmean'] * qp[lat]
+    wl = l * dep['dmean'] * qp[hff][lat]
     w_mid = wq + wf + wl
     w = w_mid.apply(lambda x: math.exp(x))
 

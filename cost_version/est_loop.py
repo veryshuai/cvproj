@@ -47,6 +47,8 @@ def prior(cit_params, big_mov_params, lp, ip):
     [mov_params, lam, p] = big_mov_params
     run_sum += norm.logpdf(alp[0],0,10)
     run_sum += norm.logpdf(alp[1],0,10)
+    run_sum += norm.logpdf(alp[2],0,10)
+    run_sum += norm.logpdf(alp[3],0,10)
     run_sum += norm.logpdf(bet, 0.11, 300) 
     run_sum += betad.logpdf(gam[0],1,2)
     run_sum += betad.logpdf(gam[1],0.125,2)
@@ -55,8 +57,7 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += norm.logpdf(mov_params['lat'],0,10)
     run_sum += expon.logpdf(lam,0,300)
     run_sum += norm.logpdf(lp[0],0,10)
-    run_sum += norm.logpdf(lp[1],0,10)
-    run_sum += expon.logpdf(lp[2], 0, 300) 
+    run_sum += expon.logpdf(lp[1], 0, 300) 
     run_sum += expon.logpdf(ip,0,300) 
     return run_sum
 
@@ -127,7 +128,7 @@ def update_movs(big_mov_params, ip, rnd):
 
 def calc_cit_lik(cit_params, big_mov_params, citers,
                                  nocits, first_cits, lp, lik_pieces,
-                                 init, first_ff, ip, cit_rnd):
+                                 init, ip, cit_rnd):
     # Updates cits and recalculates likelihood
 
     cit_params_u = update_cits(deepcopy(cit_params), cit_rnd)
@@ -146,7 +147,7 @@ def calc_cit_lik(cit_params, big_mov_params, citers,
         lik_pieces_u[lat]['fc_liks'] = fc_liks[lat]
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
 
-    lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
+    lik_u = recalc_lik(lik_pieces_u, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
     
     return lik_u, cit_params_u, big_mov_params_u,\
@@ -160,32 +161,18 @@ def init_cond(mean, qw, qp, lat, lp_u):
     return res
 
 
-def recalc_lik(lik_pieces_u, first_ff, lp_u):
+def recalc_lik(lik_pieces_u, lp_u):
     # recalculates lik from updates lik_pieces
 
-    lik_mid = []
-    # GET INDIVIDUAL SPECIFIC NORMAL MEAN, CAN ONLY BE 1/4 STD DEV
-    # AWAY FROM ZERO
-    # ff_mean = first_ff['dmean'].apply(lambda x: (0.5  *
-    #                            norm.cdf(lp_u[0] + x * lp_u[1]) - 0.25) * lp_u[2])
-    ff_mean = first_ff[['dmean', 'dep_qual']].apply(lambda row: row[0] * lp_u[1] + row[1] * lp_u[0], axis=1)
     
     # QUADRATURE POINTS AND WEIGHTS 
     # QUADRATURE POINTS 
-    qa = [4 * math.sqrt(3 - 2 * math.sqrt(6 / float(5))) / float(7),
-            4 * math.sqrt(3 + 2 * math.sqrt(6 / float(5))) / float(7)]
-    qp =  [-qa[1], -qa[0], qa[0], qa[1]]
-    qa = [4 * (18 + math.sqrt(30)) / float(36),
-            4 * (18 - math.sqrt(30)) / float(36)]
-    qw = [qa[1], qa[0], qa[0], qa[1]]
+    qw = [1.24023,1.05996, 1.05996, 1.24023]
 
+    lik_mid = []
     # GET WEIGHTED QUADRATURE SUM VALUES
     for k in range(4):
-        lik_pieces_u[k]['ff'] = ff_mean.apply(lambda x:
-                                        init_cond(x, qw,
-                                            qp, k, lp_u))
-        lik_mid.append(lik_pieces_u[0].prod(axis=1))
-
+        lik_mid.append(1 / math.pi * qw[k] * lik_pieces_u[0].prod(axis=1))
     lik_big = lik_mid[0] + lik_mid[1] + lik_mid[2] + lik_mid[3]
     try:
         lik_u = lik_big.apply(lambda x: math.log(x)).sum()
@@ -199,7 +186,7 @@ def recalc_lik(lik_pieces_u, first_ff, lp_u):
     return lik_u
 
 def calc_lp_lik(cit_params, big_mov_params,
-                lp, lik_pieces, init, first_ff,
+                lp, lik_pieces, init,
                 ip, citers, nocits, first_cits,
                 dep_stats, mov_dat91,
                 mov_dat_not91, bd):
@@ -210,10 +197,9 @@ def calc_lp_lik(cit_params, big_mov_params,
         jump = pd.read_csv('jump_size.csv').set_index('block')
         s0 = list(jump.loc['lp0'])[0]
         s1 = list(jump.loc['lp1'])[0]
-        s2 = list(jump.loc['lp2'])[0]
     except Exception as e:
         print e
-        s0, s1, s2 = 1, 1, 1
+        s0, s1 = 1, 1
 
     # COPY OLD DATA
     cit_params_u = deepcopy(cit_params)
@@ -224,9 +210,8 @@ def calc_lp_lik(cit_params, big_mov_params,
     # UPDATE PARAMETERS
     lp_u = []
     lp_u.append(deepcopy(lp[0]) + random.gauss(0, s0))
-    lp_u.append(deepcopy(lp[1]) + random.gauss(0, s1))
-    lp_u.append(2 * norm.cdf(norm.ppf(deepcopy(lp[2])
-                / float(2), 0, 1) + random.gauss(0, s2), 0, 1))
+    lp_u.append(2 * norm.cdf(norm.ppf(deepcopy(lp[1])
+                / float(2), 0, 1) + random.gauss(0, s1), 0, 1))
 
     # UPDATE MOVE LIKS
     init_u, trans_u, itrans_u, mlik, flag\
@@ -245,7 +230,7 @@ def calc_lp_lik(cit_params, big_mov_params,
         lik_pieces_u[lat]['cit_liks'] = cit_liks[lat]
         lik_pieces_u[lat]['fc_liks'] = fc_liks[lat]
         lik_pieces_u[lat]['nocit_liks'] = nocit_liks[lat]
-    lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
+    lik_u = recalc_lik(lik_pieces_u, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
 
     if flag == 1:
@@ -257,7 +242,7 @@ def calc_lp_lik(cit_params, big_mov_params,
 def calc_mov_lik(cit_params, big_mov_params,
                  lp, lik_pieces, dep_stats,
                  init, mov_dat91, mov_dat_not91,
-                 first_ff, ip, bd, loc_rnd):
+                 ip, bd, loc_rnd):
     # Updates movs and recalculates likelihood
 
     cit_params_u = deepcopy(cit_params)
@@ -275,7 +260,7 @@ def calc_mov_lik(cit_params, big_mov_params,
     # NEW LIKELIHOOD CALCUATION
     for lat in range(4):
         lik_pieces_u[lat]['mlik'] = mlik[lat]
-    lik_u = recalc_lik(lik_pieces_u, first_ff, lp_u)
+    lik_u = recalc_lik(lik_pieces_u, lp_u)
     lik_u += prior(cit_params_u, big_mov_params_u, lp_u, ip_u)
 
     # CHECK FOR ERROR
@@ -288,7 +273,7 @@ def calc_mov_lik(cit_params, big_mov_params,
 def est_loop(lik, lik_pieces, big_mov_params, cit_params,
         lp, init, trans, dep_stats, mov_dat91, mov_dat_not91,
         first_cits, citers, nocits,
-        out_file, out_writer, first_ff, ip, bd, timestr):
+        out_file, out_writer, ip, bd, timestr):
     """called by discrete.py, this is the boss of the
     estimation loop"""
 
@@ -310,7 +295,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                     lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_cit_lik(cit_params, big_mov_params, citers,
                                    nocits, first_cits, lp, lik_pieces,
-                                   init, first_ff, ip, cit_rnd)
+                                   init, ip, cit_rnd)
 
         # NEW LIPS
         if k % 7 == 0:
@@ -320,7 +305,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                     lp_u, lik_pieces_u, init_u, ip_u\
                     = calc_lp_lik(cit_params, big_mov_params,
                                   lp, lik_pieces, init,
-                                  first_ff, ip, citers, nocits,
+                                  ip, citers, nocits,
                                   first_cits, dep_stats,
                                   mov_dat91, mov_dat_not91, bd)
 
@@ -334,7 +319,7 @@ def est_loop(lik, lik_pieces, big_mov_params, cit_params,
                     = calc_mov_lik(cit_params, big_mov_params,
                             lp, lik_pieces, dep_stats,
                             init, mov_dat91, mov_dat_not91,
-                            first_ff, ip, bd, loc_rnd)
+                            ip, bd, loc_rnd)
 
         # LAST ERROR CHECK, FOR INF
         if lik_u > 1e12:

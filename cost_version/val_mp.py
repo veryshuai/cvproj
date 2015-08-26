@@ -41,11 +41,12 @@ class Consumer(multiprocessing.Process):
 
 
 class Task(object):
-    def __init__(self, q, f, l, bmp,
+    def __init__(self, q, f, l, hff, bmp,
                  ds, d, ip, bd, init, lp):
         self.q = q
         self.f = f
         self.l = l
+        self.hff = hff
         self.bmp = bmp
         self.ds = ds
         self.d = d
@@ -55,12 +56,12 @@ class Task(object):
         self.lp = lp
     def __call__(self):
         val, trans, itrans, flag = val_calc(self.q, self.f, 
-                              self.l, self.bmp, self.ds, 
+                              self.l, self.hff, self.bmp, self.ds, 
                               self.d, self.ip, self.bd,
                               self.init, self.lp)
-        return [self.q, self.f, self.l, val, trans, itrans, flag]
+        return [self.q, self.f, self.l, self.hff, val, trans, itrans, flag]
     def __str__(self):
-        return 'q %s, f %s, l %s ' % (self.q, self.f, self.l)
+        return 'q %s, f %s, l %s, hff %s ' % (self.q, self.f, self.l, self.hff)
 
 class Task_mlik(object):
     def __init__(self, n9, is9, trans, itrans, lat):
@@ -99,7 +100,8 @@ def call_parallel(big_mov_params, dep_stats, dis,
     for q in range(2):
         for f in range(2):
             for l in range(4):
-                tasks.put(Task(q, f, l, big_mov_params,
+                for hff in range(2):
+                    tasks.put(Task(q, f, l, hff, big_mov_params,
                                dep_stats, dis,
                                ip, bd, init, lp))
     
@@ -115,13 +117,13 @@ def call_parallel(big_mov_params, dep_stats, dis,
     trans = tree()
     itrans = tree()
     flag = 0 #error flag
-    num_jobs = 16
+    num_jobs = 32 
     while num_jobs:
         r = results.get()
-        vals[r[0]][r[1]][r[2]]   = r[3]
-        trans[r[0]][r[1]][r[2]]  = r[4]
-        itrans[r[0]][r[1]][r[2]] = r[5]
-        flag = max(flag,r[6]) #look for error flag
+        vals[r[0]][r[1]][r[2]][r[3]]   = r[4]
+        trans[r[0]][r[1]][r[2]][r[3]]  = r[5]
+        itrans[r[0]][r[1]][r[2]][r[3]] = r[6]
+        flag = max(flag,r[7]) #look for error flag
         num_jobs -= 1
 
     mlik, mflag = mlik_part(mov_dat_not91, mov_dat91,
@@ -187,7 +189,7 @@ def from_pickle(arg=0):
     if arg == 1:
         return mlik
 
-def val_calc(qual, field, lat, big_mov_params,
+def val_calc(qual, field, lat, hff, big_mov_params,
              dep_stats, dis, ip, bd, init, lp):
     """calculates a single value function"""
 
@@ -198,14 +200,17 @@ def val_calc(qual, field, lat, big_mov_params,
     [mov_params, lam, p] = big_mov_params
     
     # QUADRATURE POINTS 
-    qp =  [-qa[1], -qa[0], qa[0], qa[1]]
+    # Gauss Hermite Integration quadrature points 
+    qp = [[],[]]
+    qp[0] = [math.sqrt(2) * lp[1] * elem for elem in [-1.65068,-0.524648,0.524648,1.65068]]
+    qp[1] = [math.sqrt(2) * lp[1] * elem + lp[0] for elem in [-1.65068,-0.524648,0.524648,1.65068]] #high first field
 
     # CALCULATE WAGES
     wage = vd.calc_wage(mov_params, dep_stats,
-                     qual, field, lat, qp)
+                     qual, field, lat, hff, qp)
     try:
         #sp = init[qual][field][lat]
-        sp = init[0][0][0]
+        sp = init[0][0][0][0]
         vals, trans, itrans = vd.val_loop(wage, lam, dis,
                                   p, ip, bd, sp)
     except Exception as e:

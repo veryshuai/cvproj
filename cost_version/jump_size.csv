@@ -7,9 +7,8 @@ cit_alp4, 2
 cit_bet, 5 
 cit_gam0, 14 
 cit_gam1, 14 
-lp0, 0.070
-lp1, 0.17
-lp2, 0.017
+lp0, 0.15
+lp1, 0.15
 mov_p, 0.4
 mov_q, 1.5
 mov_l, 15.0

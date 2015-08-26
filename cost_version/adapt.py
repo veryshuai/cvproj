@@ -15,7 +15,7 @@ def get_cov(snip, k, block_name):
                      'alpha_4','gam_0', 'gam_1',
                      'bet', 'field_co', 'lat_co',
                      'qual_co', 'lo','p',
-                     'lp1', 'lp2', 'lp3', 'ip']
+                     'lp1', 'lp2', 'ip']
         if k < 1:
             dat = pd.read_csv('old_out.csv', header=None,
                     names=col_names)

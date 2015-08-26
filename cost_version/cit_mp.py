@@ -106,9 +106,10 @@ def cit_calc(cit_params,  lat, lp,
     [alp, gam, bet] = cit_params
 
     # QUADRATURE POINTS 
-    qa = [4 * math.sqrt(3 - 2 * math.sqrt(6 / float(5))) / float(7),
-            4 * math.sqrt(3 + 2 * math.sqrt(6 / float(5))) / float(7)]
-    qp =  [-qa[1], -qa[0], qa[0], qa[1]]
+    # Gauss Hermite Integration quadrature points 
+    qp = [[],[]]
+    qp[0] = [math.sqrt(2) * lp[1] * elem for elem in [-1.65068,-0.524648,0.524648,1.65068]]
+    qp[1] = [math.sqrt(2) * lp[1] * elem + lp[0] for elem in [-1.65068,-0.524648,0.524648,1.65068]] #high first field
 
     try: 
         cl_res = citers.groupby('au')\

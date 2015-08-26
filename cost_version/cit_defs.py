@@ -25,7 +25,7 @@ def no_cit_inner(row, alp, bet, lat, qp):
             + alp[2] * adj_yr ** 2\
             + alp[3] * dur\
             + alp[4] * dur ** 2\
-            + qp[lat]
+            + qp[row['high_field_first_dep']][lat]
     try:
         item = math.exp(-num) / (1 + math.exp(-num))
     except Exception as e:
@@ -72,7 +72,7 @@ def fc_lik(alp, bet, gam, dep_aut,
             + alp[2] * adj_yr ** 2\
             + alp[3] * dur\
             + alp[4] * dur ** 2\
-            + qp[lat]
+            + qp[lin1['high_field_first_dep']][lat]
     item = 1 / (1 + math.exp(-num))
     return item
 
@@ -86,7 +86,7 @@ def mov_lik(trans, group, lat):
     # DEPARTMENT, YOU NEVER MOVED!
 
     lin1 = group.iloc[0]
-    t = trans[lin1['qual']][lin1['isField']][lat]
+    t = trans[lin1['qual']][lin1['isField']][lat][lin1['high_field_first_dep']]
     # if not t: #I'm not sure what this check was for...
     #     return 0
     # else:
