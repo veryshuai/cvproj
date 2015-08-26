@@ -195,7 +195,7 @@ aut_pan['lag_total_exp'] = aut_pan.groupby('au').shift(1).total_exp.fillna(0) #s
 
 # GET DURATION BY AUTHOR
 aut_pan['ones'] = 1 # a row of ones, to cumsum
-aut_pan['duration'] = aut_pan.groupby('au')['ones'].cumsum()
+aut_pan['duration'] = aut_pan.groupby('au')['ones'].cumsum() - 1 # create duration (subtract one to match definition in reduced form section)
 
 # CREATE DEPARTMENT LIST
 dep_list = aut_pan[['dep','dep_qual','dmean']].drop_duplicates()
