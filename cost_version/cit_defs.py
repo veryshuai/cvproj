@@ -14,13 +14,14 @@ import numpy as np
 def tree():
     return collections.defaultdict(tree)
 
-def no_cit_inner(row, alp, bet, lat, qp):
+def no_cit_inner(row, alp, bet, gam, lat, qp):
 
     dur = row['duration']
     k_lev = row['lag_total_exp']
     adj_yr = row['date']-1987
     num = alp[0]\
             + bet[0] * k_lev\
+            + gam[0] * row['isField']\
             + alp[1] * adj_yr\
             + alp[2] * adj_yr ** 2\
             + alp[3] * dur\
@@ -38,11 +39,12 @@ def cit_lik_no_cit(alp, bet, gam, dep_aut,
     # calculates a single no cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    pgam = gam[lin1['isField']]
+    #pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                                   bet, 
+                                                   bet, gam,
                                                    lat, qp), axis=1)
-    arg = (1 - pgam + pgam * liks.prod())
+    #arg = (1 - pgam + pgam * liks.prod())
+    arg = liks.prod()
     return arg
 
 def cit_lik_cit(alp, bet, gam, dep_aut,
@@ -50,24 +52,26 @@ def cit_lik_cit(alp, bet, gam, dep_aut,
     # calculates a single cit authors lik
 
     lin1 = dep_aut.iloc[0]
-    pgam = gam[lin1['isField']]
+    #pgam = gam[lin1['isField']]
     liks = dep_aut.apply(lambda row: no_cit_inner(row, alp,
-                                               bet, 
+                                               bet, gam,
                                                lat, qp), axis=1)
-    arg = (pgam * liks.prod())
+    #arg = (pgam * liks.prod())
+    arg = liks.prod()
     return arg
 
 def fc_lik(alp, bet, gam, dep_aut,
             lat, qp):
     # calculates first cite likelihoods
     lin1 = dep_aut.iloc[-1]
-    pgam = gam[lin1['isField']]
+    #pgam = gam[lin1['isField']]
 
     dur = dep_aut['duration']
     k_lev = dep_aut['lag_total_exp']
     adj_yr = dep_aut['date']-1987
     num = alp[0]\
             + bet[0] * k_lev\
+            + gam[0] * lin1['isField']\
             + alp[1] * adj_yr\
             + alp[2] * adj_yr ** 2\
             + alp[3] * dur\

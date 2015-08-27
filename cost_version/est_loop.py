@@ -51,7 +51,6 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum += norm.logpdf(alp[3],0,10)
     run_sum += norm.logpdf(bet, 0.11, 300) 
     run_sum += betad.logpdf(gam[0],1,2)
-    run_sum += betad.logpdf(gam[1],0.125,2)
     run_sum += norm.logpdf(mov_params['qual'],0,10)
     run_sum += norm.logpdf(mov_params['field'],0,10)
     run_sum += norm.logpdf(mov_params['lat'],0,10)
@@ -74,11 +73,10 @@ def update_cits(cit_params, rnd):
         s_alp4 = list(j.loc['cit_alp4'])[0]
         s_bet = list(j.loc['cit_bet'])[0]
         s_gam0 = list(j.loc['cit_gam0'])[0]
-        s_gam1 = list(j.loc['cit_gam1'])[0]
     except Exception as e:
         print e
-        s_alp0, s_alp1, s_alp2, s_alp3, s_alp4, s_bet, s_gam0, s_gam1\
-                = 1, 1, 1, 1, 1, 1, 1, 1
+        s_alp0, s_alp1, s_alp2, s_alp3, s_alp4, s_bet, s_gam0\
+                = 1, 1, 1, 1, 1, 1, 1, 1, 1
 
     [alp, gam, bet] = cit_params
     alp[0] = alp[0] + random.gauss(0,rnd['alpha_0'] * s_alp0)
@@ -87,10 +85,7 @@ def update_cits(cit_params, rnd):
     alp[3] = alp[3] + random.gauss(0,rnd['alpha_3'] * s_alp3)
     alp[4] = alp[4] + random.gauss(0,rnd['alpha_4'] * s_alp4)
     bet[0] = bet[0] + random.gauss(0,rnd['bet'] * s_bet)
-    gam[0] = norm.cdf(norm.ppf(gam[0], 0, 1) +
-                      random.gauss(0,rnd['gam_0'] * s_gam0), 0, 1)
-    gam[1] = norm.cdf(norm.ppf(gam[1], 0, 1) +
-                      random.gauss(0,rnd['gam_1'] * s_gam1), 0, 1)
+    gam[0] = gam[0] + random.gauss(0,rnd['gam_0'] * s_gam0)
     cit_params_u = [alp, gam, bet]
     return cit_params_u
 

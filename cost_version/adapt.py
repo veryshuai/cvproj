@@ -12,7 +12,7 @@ def get_cov(snip, k, block_name):
         b = 0.001  # small number
         s = 2.38 ** 2 # optimal scaling factor 
         col_names = ['alpha_0','alpha_1', 'alpha_2', 'alpha_3', 
-                     'alpha_4','gam_0', 'gam_1',
+                     'alpha_4','gam_0',
                      'bet', 'field_co', 'lat_co',
                      'qual_co', 'lo','p',
                      'lp1', 'lp2', 'ip']
@@ -32,9 +32,8 @@ def get_cov(snip, k, block_name):
         # CIT BLOCK
         if block_name == 'cit':
             citdat = dat[['alpha_0', 'alpha_1', 'alpha_2', 'alpha_3',
-                'alpha_4','gam_0', 'gam_1', 'bet']]
+                'alpha_4','gam_0', 'bet']]
             citdat.loc[:,'gam_0'] = citdat['gam_0'].apply(lambda x: norm.ppf(x, 0, 1))
-            citdat.loc[:,'gam_1'] = citdat['gam_1'].apply(lambda x: norm.ppf(x, 0, 1))
 
             d = citdat.shape[1]
             if k % 4 + 1 < d:
@@ -48,7 +47,7 @@ def get_cov(snip, k, block_name):
                 cit_rnd = (1 - b) * mvn(np.zeros(d), cit_cov * s / float(d))\
                         + b * mvn(np.zeros(d), np.identity(d) * s / float(d))
             cit_rnd = pd.Series(cit_rnd, index=['alpha_0', 'alpha_1', 
-                'alpha_2', 'alpha_3','alpha_4','gam_0', 'gam_1', 'bet'])
+                'alpha_2', 'alpha_3','alpha_4','gam_0', 'bet'])
             loc_rnd = 0
         else:
             locdat = dat[['field_co', 'lat_co', 'qual_co',
