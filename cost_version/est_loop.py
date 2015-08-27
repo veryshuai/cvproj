@@ -45,19 +45,20 @@ def prior(cit_params, big_mov_params, lp, ip):
     run_sum = 0
     [alp, gam, bet] = cit_params
     [mov_params, lam, p] = big_mov_params
-    run_sum += norm.logpdf(alp[0],0,10)
-    run_sum += norm.logpdf(alp[1],0,10)
-    run_sum += norm.logpdf(alp[2],0,10)
-    run_sum += norm.logpdf(alp[3],0,10)
-    run_sum += norm.logpdf(bet, 0.11, 300) 
-    run_sum += betad.logpdf(gam[0],1,2)
-    run_sum += norm.logpdf(mov_params['qual'],0,10)
-    run_sum += norm.logpdf(mov_params['field'],0,10)
-    run_sum += norm.logpdf(mov_params['lat'],0,10)
-    run_sum += expon.logpdf(lam,0,300)
+    run_sum += norm.logpdf(alp[0],-6.790042,4 * 0.4362227)
+    run_sum += norm.logpdf(alp[1],0.9019128,4 * 0.2499767)
+    run_sum += norm.logpdf(alp[2],-0.0848484,4 * 0.0271546)
+    run_sum += norm.logpdf(alp[3],-0.2433166,4 * 0.1863863)
+    run_sum += norm.logpdf(alp[4],0.0044152,4 * 0.0295989)
+    run_sum += norm.logpdf(bet,.0375063,4 * 0.0204674) 
+    run_sum += norm.logpdf(gam[0],.9956376,4 * 0.3405921)
+    run_sum += norm.logpdf(mov_params['qual'],2.125403,4 * 0.146794)
+    run_sum += norm.logpdf(mov_params['field'],18.95004,4 * 1.844249)
+    run_sum += norm.logpdf(mov_params['lat'],18.95004,4 * 1.844249)
+    run_sum += expon.logpdf(lam,0,1)
     run_sum += norm.logpdf(lp[0],0,10)
-    run_sum += expon.logpdf(lp[1], 0, 300) 
-    run_sum += expon.logpdf(ip,0,300) 
+    run_sum += expon.logpdf(lp[1], 0,1)
+    run_sum += norm.logpdf(ip,0,10)
     return run_sum
 
 def update_cits(cit_params, rnd):
